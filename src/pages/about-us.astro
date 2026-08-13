@@ -1,0 +1,27 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArtPlaceholder from '../components/ArtPlaceholder.astro';
+---
+
+<BaseLayout
+  title="About Us"
+  description="aPaulogy is the gallery of cartoonist and watercolourist Paul Fernandes — an ‘ology on the life and times of 1970s Bangalore."
+  type="article"
+>
+  <div class="container-page py-16 grid lg:grid-cols-2 gap-12 items-start">
+    <div class="lg:sticky lg:top-24 rounded-sm overflow-hidden shadow-[var(--shadow-frame)]">
+      <ArtPlaceholder seed="bungalow" label="A Bangalore bungalow" ratio="4 / 5" />
+    </div>
+    <div class="prose-paper">
+      <p class="eyebrow">Our story</p>
+      <h1 class="text-5xl mt-2 mb-6">An ‘ology on a city that was</h1>
+      <p>aPaulogy is the gallery of cartoonist and watercolourist <strong>Paul Fernandes</strong>. It began as a personal ‘ology — a study, an affection, a chronicle — of the life and times of Bangalore in the 1970s.</p>
+      <p>Sixty watercolours trace a gentler city: monkey-topped bungalows and shaded avenues; the schools and colleges, churches and theatres; the bars and restaurants where the city gathered. Alongside them run detours through vintage Mumbai’s bazaars and cafes, and the sunlit calm of Goa.</p>
+      <h2>Made with care</h2>
+      <p>Every illustration is reproduced to archival standards and <strong>personally signed by the artist</strong> before it ships. Beyond framed prints, the illustrations live on mugs, tiles, coasters, bags and cards — small everyday objects that carry a little of the city with them.</p>
+      <h2>Visit the gallery</h2>
+      <p>The aPaulogy gallery is in Richards Town, Bengaluru. Prints and merchandise are available here in the online store and shipped across India and worldwide.</p>
+      <p><a href="/store/">Browse the store →</a></p>
+    </div>
+  </div>
+</BaseLayout>

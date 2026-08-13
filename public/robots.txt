@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /order-confirmed/
+Disallow: /api/
+
+Sitemap: https://apaulogy.com/sitemap-index.xml

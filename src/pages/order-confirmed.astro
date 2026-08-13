@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Order Confirmed" description="Thank you for your order." noindex={true}>
+  <div class="container-page py-24 text-center min-h-[60vh]">
+    <p class="text-6xl">✦</p>
+    <h1 class="text-5xl mt-4">Thank you</h1>
+    <p class="mt-4 text-lg text-[var(--color-ink-soft)] max-w-md mx-auto">
+      Your order <span id="order-ref" class="font-medium"></span> has been received. A confirmation is on its way to your inbox, and your signed pieces will be prepared with care.
+    </p>
+    <div class="mt-8 flex justify-center gap-3">
+      <a href="/store/" class="btn btn-primary">Continue shopping</a>
+      <a href="/" class="btn btn-outline">Back home</a>
+    </div>
+  </div>
+  <script>
+    const ref = new URLSearchParams(location.search).get('order');
+    if (ref) document.getElementById('order-ref')!.textContent = `#${ref}`;
+  </script>
+</BaseLayout>

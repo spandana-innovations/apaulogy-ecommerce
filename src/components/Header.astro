@@ -1,0 +1,87 @@
+---
+import { getTopCategories } from '../lib/catalog';
+import { SITE_NAME } from '../lib/seo';
+
+const nav = [
+  { label: 'Store', href: '/store/' },
+  { label: 'Bangalore in the 70s', href: '/category/bangalore-70s/' },
+  { label: 'Vintage Mumbai', href: '/category/vintage-mumbai/' },
+  { label: 'Goa', href: '/category/goa/' },
+  { label: 'Merchandise', href: '/category/merchandise/' },
+  { label: 'About', href: '/about-us/' },
+];
+---
+
+<header class="sticky top-0 z-40 bg-[var(--color-paper)]/95 backdrop-blur-sm border-b border-[var(--color-line)]">
+  <div class="container-page flex items-center justify-between h-[var(--header-h)] gap-4">
+    <!-- Mobile menu toggle -->
+    <button
+      id="menu-toggle"
+      class="md:hidden -ml-1 p-2"
+      aria-label="Open menu"
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round" />
+      </svg>
+    </button>
+
+    <a href="/" class="font-display text-3xl md:text-4xl leading-none tracking-tight shrink-0" aria-label={`${SITE_NAME} home`}>
+      aPaulogy
+    </a>
+
+    <nav class="hidden md:flex items-center gap-6 text-[0.8rem] tracking-wide" style="font-family:var(--font-sans)" aria-label="Primary">
+      {nav.map((item) => (
+        <a href={item.href} class="uppercase text-[var(--color-ink-soft)] hover:text-[var(--color-terracotta)] transition-colors">
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <a href="/cart/" class="relative p-2 shrink-0" aria-label="Cart">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" stroke-linejoin="round"/>
+        <path d="M3 6h18M16 10a4 4 0 0 1-8 0" stroke-linecap="round"/>
+      </svg>
+      <span
+        data-cart-count
+        hidden
+        class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-[var(--color-terracotta)] text-white text-[0.65rem] font-bold grid place-items-center"
+        style="font-family:var(--font-sans)"
+      >0</span>
+    </a>
+  </div>
+
+  <!-- Mobile nav -->
+  <nav
+    id="mobile-nav"
+    class="md:hidden hidden border-t border-[var(--color-line)] bg-[var(--color-paper)]"
+    aria-label="Mobile"
+  >
+    <ul class="container-page py-3">
+      {nav.map((item) => (
+        <li>
+          <a href={item.href} class="block py-2.5 text-[0.9rem] uppercase tracking-wide text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">
+            {item.label}
+          </a>
+        </li>
+      ))}
+      <li><a href="/faq/" class="block py-2.5 text-[0.9rem] uppercase tracking-wide text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">FAQ</a></li>
+    </ul>
+  </nav>
+</header>
+
+<script>
+  function initMenu() {
+    const btn = document.getElementById('menu-toggle');
+    const nav = document.getElementById('mobile-nav');
+    if (!btn || !nav) return;
+    btn.addEventListener('click', () => {
+      const open = nav.classList.toggle('hidden') === false;
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  }
+  initMenu();
+  document.addEventListener('astro:after-swap', initMenu);
+</script>

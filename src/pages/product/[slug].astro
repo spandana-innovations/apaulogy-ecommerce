@@ -1,0 +1,155 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import ArtPlaceholder from '../../components/ArtPlaceholder.astro';
+import { getProducts, getProduct, getRelatedProducts, effectivePrice } from '../../lib/catalog';
+import { formatINR } from '../../lib/format';
+import { productSchema, breadcrumbSchema, abs } from '../../lib/seo';
+
+export function getStaticPaths() {
+  return getProducts().map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const product = getProduct(slug!);
+if (!product) return Astro.redirect('/404');
+
+const price = effectivePrice(product);
+const onSale = product.sale_price != null && product.sale_price < product.price;
+const related = getRelatedProducts(product);
+const heroImg = product.images?.[0]?.url;
+const ogImage = heroImg || '/og-default.svg';
+
+const jsonld = [
+  productSchema(product, Astro.site, abs(ogImage, Astro.site)),
+  breadcrumbSchema(
+    [
+      { name: 'Home', url: '/' },
+      { name: 'Store', url: '/store/' },
+      { name: product.name, url: `/product/${product.slug}/` },
+    ],
+    Astro.site,
+  ),
+];
+---
+
+<BaseLayout
+  title={product.name}
+  description={product.short_desc || product.name}
+  image={ogImage}
+  type="product"
+  jsonld={jsonld}
+>
+  <div class="container-page py-10">
+    <nav class="text-xs text-[var(--color-muted)] mb-6" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-[var(--color-terracotta)]">Home</a> <span aria-hidden="true">/</span>
+      <a href="/store/" class="hover:text-[var(--color-terracotta)]">Store</a> <span aria-hidden="true">/</span>
+      <span class="text-[var(--color-ink-soft)]">{product.name}</span>
+    </nav>
+
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+      <!-- Gallery -->
+      <div class="lg:sticky lg:top-24">
+        <div class="rounded-sm overflow-hidden shadow-[var(--shadow-frame)]">
+          {heroImg ? (
+            <img src={heroImg} alt={product.images?.[0]?.alt || product.name} width="900" height="1125" class="w-full h-auto object-cover" />
+          ) : (
+            <ArtPlaceholder seed={product.art_seed || product.slug} label={product.name} ratio="4 / 5" />
+          )}
+        </div>
+        {product.images && product.images.length > 1 && (
+          <div class="grid grid-cols-4 gap-3 mt-3">
+            {product.images.slice(0, 4).map((im) => (
+              <img src={im.url} alt={im.alt || product.name} class="w-full aspect-square object-cover rounded-sm border border-[var(--color-line)]" loading="lazy" />
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Details -->
+      <div>
+        {product.collection && <p class="eyebrow">{product.collection}</p>}
+        <h1 class="text-4xl sm:text-5xl mt-2">{product.name}</h1>
+        {product.subtitle && <p class="text-[var(--color-muted)] mt-1 italic">{product.subtitle}</p>}
+
+        <div class="flex items-baseline gap-3 mt-5">
+          <span class="text-2xl font-medium">{formatINR(price)}</span>
+          {onSale && <span class="text-[var(--color-muted)] line-through">{formatINR(product.price)}</span>}
+          {onSale && <span class="text-[var(--color-terracotta)] text-sm font-semibold" style="font-family:var(--font-sans)">Save {formatINR(product.price - price)}</span>}
+        </div>
+
+        {product.short_desc && <p class="mt-5 text-[var(--color-ink-soft)] text-lg">{product.short_desc}</p>}
+
+        <!-- Quantity + actions -->
+        <div class="mt-7 flex flex-wrap items-center gap-3" data-buybox>
+          <div class="inline-flex items-center border border-[var(--color-ink)] rounded-sm">
+            <button type="button" data-qty-dec class="px-3.5 py-2.5 text-lg leading-none" aria-label="Decrease quantity">−</button>
+            <input data-qty value="1" inputmode="numeric" class="w-12 text-center bg-transparent py-2.5" aria-label="Quantity" />
+            <button type="button" data-qty-inc class="px-3.5 py-2.5 text-lg leading-none" aria-label="Increase quantity">+</button>
+          </div>
+          <button
+            class="btn btn-outline flex-1 min-w-[10rem]"
+            data-add
+            data-slug={product.slug}
+            data-name={product.name}
+            data-price={price}
+            data-image={heroImg || ''}
+          >Add to cart</button>
+        </div>
+        <a href="/cart/" class="btn btn-primary w-full mt-3" data-buynow
+           data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''}>
+          Buy it now
+        </a>
+
+        <!-- Description -->
+        {product.description && (
+          <div class="prose-paper mt-10 border-t border-[var(--color-line)] pt-8" set:html={product.description} />
+        )}
+
+        <!-- Assurances -->
+        <ul class="mt-8 grid sm:grid-cols-2 gap-3 text-sm text-[var(--color-ink-soft)]">
+          <li class="flex gap-2"><span aria-hidden="true">✦</span> Personally signed by Paul Fernandes</li>
+          <li class="flex gap-2"><span aria-hidden="true">✦</span> Archival giclée print</li>
+          <li class="flex gap-2"><span aria-hidden="true">✦</span> Ships across India & worldwide</li>
+          <li class="flex gap-2"><span aria-hidden="true">✦</span> Secure Razorpay checkout</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Related -->
+    {related.length > 0 && (
+      <section class="mt-24">
+        <h2 class="text-3xl mb-8">You may also like</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          {related.map((p) => <ProductCard product={p} />)}
+        </div>
+      </section>
+    )}
+  </div>
+
+  <script>
+    function initBuybox() {
+      const box = document.querySelector('[data-buybox]');
+      if (!box) return;
+      const input = box.querySelector('[data-qty]') as HTMLInputElement;
+      const qty = () => Math.max(1, parseInt(input.value || '1', 10) || 1);
+      box.querySelector('[data-qty-dec]')?.addEventListener('click', () => { input.value = String(Math.max(1, qty() - 1)); });
+      box.querySelector('[data-qty-inc]')?.addEventListener('click', () => { input.value = String(qty() + 1); });
+
+      const Cart = (window as any).Cart;
+      const btn = box.querySelector('[data-add]') as HTMLElement;
+      btn?.addEventListener('click', () => {
+        Cart.add({ slug: btn.dataset.slug, name: btn.dataset.name, price: Number(btn.dataset.price), image: btn.dataset.image || undefined, qty: qty() });
+        (window as any).cartToast?.(`Added “${btn.dataset.name}” to your cart`);
+      });
+      const buy = document.querySelector('[data-buynow]') as HTMLElement;
+      buy?.addEventListener('click', (e) => {
+        e.preventDefault();
+        Cart.add({ slug: buy.dataset.slug, name: buy.dataset.name, price: Number(buy.dataset.price), image: buy.dataset.image || undefined, qty: qty() });
+        window.location.href = '/cart/';
+      });
+    }
+    initBuybox();
+    document.addEventListener('astro:after-swap', initBuybox);
+  </script>
+</BaseLayout>

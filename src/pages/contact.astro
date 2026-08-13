@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Contact" description="Get in touch with the aPaulogy gallery for orders, commissions and gifting.">
+  <div class="container-page py-16 grid lg:grid-cols-2 gap-12">
+    <div class="prose-paper">
+      <p class="eyebrow">Say hello</p>
+      <h1 class="text-5xl mt-2 mb-6">Contact us</h1>
+      <p>For orders, commissions, bulk gifting or a visit to the gallery, we’d love to hear from you.</p>
+      <h2>Gallery</h2>
+      <p>aPaulogy, Richards Town<br />Bengaluru, Karnataka, India</p>
+      <h2>Email</h2>
+      <p><a href="mailto:hello@apaulogy.com">hello@apaulogy.com</a></p>
+      <h2>Follow</h2>
+      <p><a href="https://www.instagram.com/apaulogy/">Instagram</a> · <a href="https://www.facebook.com/apaulogy/">Facebook</a></p>
+    </div>
+
+    <form class="card p-6 h-fit" data-contact>
+      <div class="space-y-4">
+        <label class="block"><span class="lbl">Name</span><input name="name" required class="inp" /></label>
+        <label class="block"><span class="lbl">Email</span><input name="email" type="email" required class="inp" /></label>
+        <label class="block"><span class="lbl">Message</span><textarea name="message" rows="5" required class="inp"></textarea></label>
+        <button class="btn btn-primary w-full" type="submit">Send message</button>
+        <p data-contact-msg class="text-sm text-[var(--color-terracotta)]" hidden></p>
+      </div>
+    </form>
+  </div>
+
+  <style>
+    .lbl { display:block; font-family: var(--font-sans); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color: var(--color-muted); margin-bottom:.3rem; }
+    .inp { width:100%; background: var(--color-paper); border:1px solid var(--color-line); border-radius:2px; padding:.6rem .75rem; font-family: var(--font-serif); }
+    .inp:focus { outline:none; border-color: var(--color-terracotta); }
+  </style>
+
+  <script>
+    const form = document.querySelector('[data-contact]') as HTMLFormElement;
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = form.querySelector('[data-contact-msg]') as HTMLElement;
+      const fd = Object.fromEntries(new FormData(form).entries());
+      try {
+        await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fd) });
+        msg.textContent = 'Thank you — we’ll be in touch soon.'; msg.hidden = false; form.reset();
+      } catch {
+        msg.textContent = 'Something went wrong. Please email us directly.'; msg.hidden = false;
+      }
+    });
+  </script>
+</BaseLayout>
