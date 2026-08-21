@@ -99,6 +99,14 @@ function organise(children: typeof menu) {
           )}
         </div>
       )})}
+
+      <!-- Map — a standalone destination -->
+      <div class="flex items-center">
+        <a href="/map/" class="inline-flex items-center gap-1.5 h-full text-[0.76rem] font-medium uppercase tracking-[0.14em] text-[var(--color-ink)] hover:text-[var(--color-muted)] transition-colors">
+          <Icon name="pin" size={16} stroke={1.5} />
+          Map
+        </a>
+      </div>
     </nav>
 
     <!-- Actions -->
@@ -151,6 +159,7 @@ function organise(children: typeof menu) {
           )}
         </li>
       ))}
+      <li class="border-b border-[var(--color-line)]"><a href="/map/" class="flex items-center gap-2.5 py-3 text-[0.8rem] uppercase tracking-[0.12em] font-semibold"><Icon name="pin" size={17} stroke={1.5} />Map</a></li>
       <li class="border-b border-[var(--color-line)]"><a href="/contact-us/" class="flex items-center gap-2.5 py-3 text-[0.8rem] uppercase tracking-[0.12em] font-semibold"><Icon name="mail" size={17} stroke={1.5} />Contact</a></li>
     </ul>
   </nav>
