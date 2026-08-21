@@ -5,8 +5,8 @@ import { createPendingOrder, type CartLine } from '../../lib/db';
 
 export const prerender = false;
 
-const FREE_SHIPPING_OVER = 500000; // paise
-const SHIPPING_FLAT = 15000;
+const FREE_SHIPPING_OVER = 500000; // paise (₹5,000)
+const SHIPPING_FLAT = 15000;       // paise (₹150)
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -15,19 +15,26 @@ function json(data: unknown, status = 200) {
   });
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
-  const env = locals.runtime.env;
-  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
-    return json({ error: 'Payments are not configured yet.' }, 503);
-  }
+// Fallback human reference when the database isn't wired up yet.
+function fallbackRef(): string {
+  return `APG-${Math.floor(Date.now() / 1000) % 1000000}`;
+}
 
-  let body: { items?: { slug: string; qty: number; variant?: string }[]; customer?: Record<string, string> };
+export const POST: APIRoute = async ({ request, locals }) => {
+  const env = locals?.runtime?.env ?? ({} as Record<string, any>);
+
+  let body: {
+    items?: { slug: string; qty: number; variant?: string }[];
+    customer?: Record<string, string>;
+    mode?: string;
+  };
   try {
     body = await request.json();
   } catch {
     return json({ error: 'Invalid request.' }, 400);
   }
 
+  const mode = body.mode === 'bank' ? 'bank' : 'razorpay';
   const rawItems = body.items ?? [];
   const customer = body.customer ?? {};
   if (!rawItems.length) return json({ error: 'Your cart is empty.' }, 400);
@@ -61,6 +68,37 @@ export const POST: APIRoute = async ({ request, locals }) => {
     country: customer.country || 'India',
   };
 
+  // ---- Bank transfer: place the order now, no gateway required. -------------
+  if (mode === 'bank') {
+    let reference = fallbackRef();
+    if (env.DB) {
+      try {
+        const { orderNumber } = await createPendingOrder(env.DB, {
+          email: customer.email,
+          phone: customer.phone,
+          items: lines,
+          subtotal,
+          shipping,
+          total,
+          billing: address,
+          shipping_address: address,
+          razorpay_order_id: null,
+          payment_method: 'bank',
+        });
+        reference = orderNumber;
+      } catch (err) {
+        // DB not configured yet — still return a reference so the order can proceed.
+        console.error('bank order record failed', err);
+      }
+    }
+    return json({ mode: 'bank', reference, order_number: reference, amount: total, currency: 'INR' });
+  }
+
+  // ---- Online payment via Razorpay. ----------------------------------------
+  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
+    return json({ error: 'Online payments are not configured yet. Please choose bank transfer.' }, 503);
+  }
+
   try {
     const receipt = `apg_${Date.now()}`;
     const rzpOrder = await createRazorpayOrder(env, total, receipt, {
@@ -68,17 +106,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
       name: customer.name,
     });
 
-    const { orderNumber } = await createPendingOrder(env.DB, {
-      email: customer.email,
-      phone: customer.phone,
-      items: lines,
-      subtotal,
-      shipping,
-      total,
-      billing: address,
-      shipping_address: address,
-      razorpay_order_id: rzpOrder.id,
-    });
+    let orderNumber = fallbackRef();
+    if (env.DB) {
+      try {
+        const rec = await createPendingOrder(env.DB, {
+          email: customer.email,
+          phone: customer.phone,
+          items: lines,
+          subtotal,
+          shipping,
+          total,
+          billing: address,
+          shipping_address: address,
+          razorpay_order_id: rzpOrder.id,
+          payment_method: 'razorpay',
+        });
+        orderNumber = rec.orderNumber;
+      } catch (err) {
+        console.error('order record failed', err);
+      }
+    }
 
     return json({
       key_id: env.RAZORPAY_KEY_ID,

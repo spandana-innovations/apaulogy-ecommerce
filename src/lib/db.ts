@@ -31,7 +31,8 @@ export interface CreateOrderInput {
   total: number;
   billing?: Address;
   shipping_address?: Address;
-  razorpay_order_id: string;
+  razorpay_order_id?: string | null;
+  payment_method?: string; // 'razorpay' | 'bank'
 }
 
 function orderNumber(): string {
@@ -49,8 +50,8 @@ export async function createPendingOrder(
     .prepare(
       `INSERT INTO orders
         (order_number, email, phone, status, currency, subtotal, shipping, total,
-         billing_json, shipping_json, razorpay_order_id, source)
-       VALUES (?, ?, ?, 'pending', 'INR', ?, ?, ?, ?, ?, ?, 'web')`,
+         billing_json, shipping_json, razorpay_order_id, notes, source)
+       VALUES (?, ?, ?, 'pending', 'INR', ?, ?, ?, ?, ?, ?, ?, 'web')`,
     )
     .bind(
       number,
@@ -61,7 +62,8 @@ export async function createPendingOrder(
       input.total,
       input.billing ? JSON.stringify(input.billing) : null,
       input.shipping_address ? JSON.stringify(input.shipping_address) : null,
-      input.razorpay_order_id,
+      input.razorpay_order_id ?? null,
+      input.payment_method ? `payment_method:${input.payment_method}` : null,
     )
     .run();
 
