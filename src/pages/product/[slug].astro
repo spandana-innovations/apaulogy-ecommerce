@@ -36,7 +36,7 @@ const metaDesc = (plain ? plain.slice(0, 155) : `${product.name} — a watercolo
 const variations = product.variations.filter((v) => v.price != null);
 // Parse inch dimensions (w" x h") from each variation label for the scale figure.
 function dims(label: string): { w: number; h: number } | null {
-  let m = label.match(/(\d+(?:\.\d+)?)\s*["″”]\s*x\s*(\d+(?:\.\d+)?)/i);
+  let m = label.match(/(\d+(?:\.\d+)?)\s*["″”]\s*[×x]\s*(\d+(?:\.\d+)?)/i);
   if (m) return { w: parseFloat(m[1]), h: parseFloat(m[2]) };
   m = label.match(/(\d+(?:\.\d+)?)\s*ft\s*[×x]\s*(\d+(?:\.\d+)?)\s*ft/i);
   if (m) return { w: parseFloat(m[1]) * 12, h: parseFloat(m[2]) * 12 };
