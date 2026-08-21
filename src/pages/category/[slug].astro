@@ -2,7 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProductCard from '../../components/ProductCard.astro';
 import { getCategories, getCategory, getProductsByCategory, getChildCategories } from '../../lib/catalog';
-import { breadcrumbSchema } from '../../lib/seo';
+import { breadcrumbSchema, collectionSchema } from '../../lib/seo';
 
 export function getStaticPaths() {
   return getCategories().map((c) => ({ params: { slug: c.slug } }));
@@ -20,12 +20,15 @@ const crumbs = [{ name: 'Home', url: '/' }, { name: 'Store', url: '/store/' }];
 if (parent) crumbs.push({ name: parent.name, url: `/category/${parent.slug}/` });
 crumbs.push({ name: category.name, url: `/category/${category.slug}/` });
 
-const jsonld = [breadcrumbSchema(crumbs, Astro.site)];
+const catImage = products[0]?.images?.[0]?.url;
+const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.name, category.slug, products, Astro.site)];
 ---
 
 <BaseLayout
   title={category.name}
-  description={category.description || `Shop the ${category.name} collection from aPaulogy — signed prints and merchandise by Paul Fernandes.`}
+  description={category.description || `Shop the ${category.name} collection from aPaulogy — watercolour prints and merchandise by Paul Fernandes of old Bangalore, Mumbai and Goa.`}
+  image={catImage || '/og-default.png'}
+  imageAlt={`${category.name} — aPaulogy`}
   jsonld={jsonld}
 >
   <div class="container-page py-12">

@@ -7,7 +7,7 @@ import { categoryIcon } from '../lib/icons';
 import { organizationSchema, websiteSchema, SITE_DESCRIPTION } from '../lib/seo';
 import { SOCIALS } from '../lib/socials';
 
-const heroBanner = '/uploads/2025/06/Untitled-design-17.jpg';
+const heroBanner = '/uploads/2025/06/Untitled-design-17.webp';
 const preorder = getProduct('pre-order-11-limited-colaba-to-bandra-life-in-mumbai');
 
 const shelves = [
@@ -36,7 +36,7 @@ const mosaic = featured.slice(0, 4).map((p) => p.images?.[0]?.url).filter(Boolea
 const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
 ---
 
-<BaseLayout title="Watercolours of a city that was" description={SITE_DESCRIPTION} jsonld={jsonld}>
+<BaseLayout title="Watercolours of a city that was" description={SITE_DESCRIPTION} preloadImage={heroBanner} imageAlt="11 Limited — Colaba to Bandra, a Paul Fernandes illustration" jsonld={jsonld}>
   <!-- HERO: 11 Limited — Colaba to Bandra (matches the WordPress front page) -->
   <section class="container-page pt-8 pb-4">
     <div class="frame art-guard">
@@ -129,7 +129,7 @@ const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
   <!-- STORY -->
   <section class="container-page py-16 grid lg:grid-cols-2 gap-14 items-center border-t border-[var(--color-line)] mt-8">
     <div class="frame art-guard">
-      <img src="/uploads/2017/03/apaulogyCoffeeHouse-WITHWatermark.jpg" alt="Indian Coffee House" class="protected w-full h-auto object-contain art-pad" width="576" height="470" loading="lazy" />
+      <img src="/uploads/2017/03/apaulogyCoffeeHouse-WITHWatermark.webp" alt="Indian Coffee House" class="protected w-full h-auto object-contain art-pad" width="576" height="470" loading="lazy" />
     </div>
     <div class="max-w-lg">
       <p class="eyebrow">The story</p>

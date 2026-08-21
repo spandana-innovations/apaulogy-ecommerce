@@ -37,7 +37,7 @@ function organise(children: typeof menu) {
     </button>
 
     <a href="/" class="shrink-0 flex items-center" aria-label={`${SITE_NAME} home`}>
-      <img src="/brand/logo.jpeg" alt="aPaulogy — Curious Illustration" class="h-14 md:h-16 w-auto" width="360" height="139" />
+      <img src="/brand/logo.jpeg" alt="aPaulogy — Curious Illustration" class="h-[4.4rem] md:h-20 w-auto" width="360" height="139" />
     </a>
 
     <!-- Desktop nav -->
@@ -47,7 +47,7 @@ function organise(children: typeof menu) {
         return (
         <div class="group relative flex items-center">
           <a href={item.href || '#'}
-            class="inline-flex items-center gap-1.5 h-full text-[0.74rem] font-semibold uppercase tracking-[0.13em] text-[var(--color-ink)] hover:text-[var(--color-muted)] transition-colors"
+            class="inline-flex items-center gap-1.5 h-full text-[0.76rem] font-medium uppercase tracking-[0.14em] text-[var(--color-ink)] hover:text-[var(--color-muted)] transition-colors"
             aria-haspopup={item.children.length ? 'true' : undefined}>
             <Icon name={iconFor(item.label, item.href)} size={16} stroke={1.5} />
             {item.label}

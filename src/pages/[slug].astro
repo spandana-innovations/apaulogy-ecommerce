@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import pagesData from '../data/pages.json';
-import { breadcrumbSchema } from '../lib/seo';
+import { breadcrumbSchema, faqSchema } from '../lib/seo';
 
 interface ContentPage { slug: string; title: string; html: string; }
 const pages = pagesData as unknown as ContentPage[];
@@ -15,10 +15,32 @@ export function getStaticPaths() {
 }
 
 const { page } = Astro.props as { page: ContentPage };
-const jsonld = [breadcrumbSchema([{ name: 'Home', url: '/' }, { name: page.title, url: `/${page.slug}/` }], Astro.site)];
+
+// Plain-text summary of the page for a real meta description.
+const plain = (page.html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const metaDesc = plain ? plain.slice(0, 155).replace(/\s+\S*$/, '…') : `${page.title} — aPaulogy, the gallery of Paul Fernandes.`;
+
+const jsonld: Record<string, unknown>[] = [
+  breadcrumbSchema([{ name: 'Home', url: '/' }, { name: page.title, url: `/${page.slug}/` }], Astro.site),
+];
+
+// FAQPage rich result — parse Q/A pairs from the FAQ page markup.
+if (page.slug === 'faq') {
+  const qas: { q: string; a: string }[] = [];
+  // questions are <h4>/<strong>/<p><strong> style; answers follow. Fallback: split on '?'.
+  const text = page.html.replace(/<h[1-6][^>]*>/gi, '\n##').replace(/<\/h[1-6]>/gi, '\n')
+    .replace(/<[^>]+>/g, '\n').replace(/&nbsp;/g, ' ');
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].endsWith('?') && lines[i + 1] && !lines[i + 1].endsWith('?')) {
+      qas.push({ q: lines[i].replace(/^##/, '').trim(), a: lines[i + 1].trim() });
+    }
+  }
+  if (qas.length) jsonld.push(faqSchema(qas.slice(0, 20)));
+}
 ---
 
-<BaseLayout title={page.title} description={`${page.title} — aPaulogy, the gallery of Paul Fernandes.`} jsonld={jsonld}>
+<BaseLayout title={page.title} description={metaDesc} imageAlt={`${page.title} — aPaulogy`} type="article" jsonld={jsonld}>
   <div class="container-page py-16">
     <nav class="text-xs text-[var(--color-muted)] mb-6" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
       <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span> <span class="text-[var(--color-ink-soft)]">{page.title}</span>

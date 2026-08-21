@@ -30,6 +30,9 @@ crumbs.push({ name: product.name, url: `/product/${product.slug}/` });
 
 const jsonld = [productSchema(product, Astro.site, abs(ogImage, Astro.site)), breadcrumbSchema(crumbs, Astro.site)];
 
+const plain = (product.short_html || product.description_html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const metaDesc = (plain ? plain.slice(0, 155) : `${product.name} — a watercolour illustration by Paul Fernandes${primaryCat ? `, from the ${primaryCat.name} collection` : ''}.`).replace(/\s+\S*$/, plain.length > 155 ? '…' : '');
+
 const variations = product.variations.filter((v) => v.price != null);
 // Parse inch dimensions (w" x h") from each variation label for the scale figure.
 function dims(label: string): { w: number; h: number } | null {
@@ -42,7 +45,7 @@ const PX_PER_INCH = 2.3;            // runner ≈ 69in → ~158px tall
 const MAN_INCHES = 69;
 ---
 
-<BaseLayout title={product.name} description={product.name} image={ogImage} type="product" jsonld={jsonld}>
+<BaseLayout title={product.name} description={metaDesc} image={ogImage} imageAlt={`${product.name} — aPaulogy`} type="product" jsonld={jsonld}>
   <div class="container-page py-10">
     <nav class="text-xs text-[var(--color-muted)] mb-6 flex items-center gap-1.5 flex-wrap" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
       <a href="/" class="link-hover">Home</a> <Icon name="chevronRight" size={12} class="opacity-40" />
