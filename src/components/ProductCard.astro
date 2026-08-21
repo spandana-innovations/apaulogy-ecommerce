@@ -9,17 +9,16 @@ const price = effectivePrice(product);
 const onSale = isOnSale(product);
 const range = hasPriceRange(product);
 const img = product.images?.[0]?.url;
-const collectionSlug = product.primary_category;
 const href = `/product/${product.slug}/`;
 ---
 
 <article class="group">
-  <a href={href} class="block frame overflow-hidden">
-    <div class="relative overflow-hidden bg-[var(--color-paper-deep)]">
+  <a href={href} class="block frame art-guard overflow-hidden">
+    <div class="relative overflow-hidden bg-white art-pad">
       {onSale && <span class="absolute z-10 top-2.5 left-2.5 chip">Sale</span>}
       {img ? (
         <img src={img} alt={product.images?.[0]?.alt || product.name} width="600" height="470" loading="lazy" decoding="async"
-          class="w-full h-auto aspect-[4/3] object-contain bg-white transition-transform duration-500 group-hover:scale-[1.03]" />
+          class="protected w-full h-auto aspect-[4/3] object-contain transition-transform duration-500 group-hover:scale-[1.03]" />
       ) : (
         <div class="w-full aspect-[4/3] grid place-items-center text-[var(--color-muted)] text-sm" style="font-family:var(--font-sans)">aPaulogy</div>
       )}

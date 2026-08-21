@@ -1,0 +1,94 @@
+---
+import Icon from './Icon.astro';
+---
+<div id="cart-drawer-root" class="fixed inset-0 z-[70] hidden" role="dialog" aria-modal="true" aria-label="Shopping cart">
+  <div id="cart-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 transition-opacity duration-300"></div>
+  <aside id="cart-panel" class="absolute top-0 right-0 h-full w-full max-w-[26rem] bg-white shadow-[var(--shadow-frame)] flex flex-col translate-x-full transition-transform duration-300 ease-out border-l border-[var(--color-line-strong)]">
+    <div class="flex items-center justify-between px-5 h-[var(--header-h)] border-b border-[var(--color-line-strong)]">
+      <p class="flex items-center gap-2 text-lg" style="font-family:var(--font-display)"><Icon name="cart" size={20} /> Your cart <span id="cart-drawer-count" class="text-[var(--color-muted)] text-base"></span></p>
+      <button id="cart-drawer-close" class="p-1.5 hover:text-[var(--color-muted)]" aria-label="Close cart"><Icon name="close" size={22} /></button>
+    </div>
+
+    <div id="cart-drawer-items" class="flex-1 overflow-y-auto px-5 py-4"></div>
+
+    <div id="cart-drawer-empty" class="flex-1 grid place-items-center px-6 text-center" hidden>
+      <div>
+        <div class="flex justify-center opacity-30 mb-3"><Icon name="cart" size={48} stroke={1} /></div>
+        <p class="text-[var(--color-ink-soft)]">Your cart is empty.</p>
+        <a href="/store/" id="cart-drawer-shop" class="btn btn-outline mt-5">Browse the store</a>
+      </div>
+    </div>
+
+    <div id="cart-drawer-footer" class="border-t border-[var(--color-line-strong)] px-5 py-4">
+      <div class="flex items-center justify-between mb-4" style="font-family:var(--font-sans)">
+        <span class="text-sm uppercase tracking-[0.12em] text-[var(--color-muted)]">Subtotal</span>
+        <span id="cart-drawer-subtotal" class="text-lg" style="font-family:var(--font-serif)">₹0</span>
+      </div>
+      <a href="/cart/" class="btn btn-outline w-full mb-2">View cart</a>
+      <a href="/checkout/" class="btn btn-primary w-full">Checkout</a>
+      <p class="mt-3 text-center text-xs text-[var(--color-muted)] flex items-center justify-center gap-1.5" style="font-family:var(--font-sans)"><Icon name="shield" size={13} /> Secure checkout</p>
+    </div>
+  </aside>
+</div>
+
+<script>
+  function initCartDrawer() {
+    const root = document.getElementById('cart-drawer-root');
+    if (!root || (root as HTMLElement).dataset.bound) return;
+    (root as HTMLElement).dataset.bound = '1';
+    const panel = document.getElementById('cart-panel')!;
+    const backdrop = document.getElementById('cart-backdrop')!;
+    const itemsEl = document.getElementById('cart-drawer-items')!;
+    const emptyEl = document.getElementById('cart-drawer-empty')!;
+    const footer = document.getElementById('cart-drawer-footer')!;
+    const subtotalEl = document.getElementById('cart-drawer-subtotal')!;
+    const countEl = document.getElementById('cart-drawer-count')!;
+
+    const inr = (p:number) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100);
+    function Cart(){ return (window as any).Cart; }
+
+    function render() {
+      const items = Cart() ? Cart().all() : [];
+      const count = items.reduce((n:number,it:any)=>n+it.qty,0);
+      countEl.textContent = count ? `(${count})` : '';
+      if (!items.length) { itemsEl.hidden = true; footer.hidden = true; emptyEl.hidden = false; return; }
+      itemsEl.hidden = false; footer.hidden = false; emptyEl.hidden = true;
+      itemsEl.innerHTML = items.map((it:any) => `
+        <div class="flex gap-3 py-3 border-b border-[var(--color-line)]">
+          ${it.image ? `<img src="${it.image}" alt="" class="w-16 h-14 object-contain bg-white border border-[var(--color-ink)] flex-none"/>` : `<span class="w-16 h-14 bg-[var(--color-paper-deep)] flex-none"></span>`}
+          <div class="flex-1 min-w-0">
+            <p class="text-[0.98rem] leading-snug">${it.name}</p>
+            ${it.variant ? `<p class="text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)">${it.variant}</p>` : ''}
+            <div class="flex items-center justify-between mt-1.5" style="font-family:var(--font-sans)">
+              <div class="inline-flex items-center border border-[var(--color-ink)]">
+                <button class="cd-dec px-2 py-0.5" data-slug="${it.slug}" data-variant="${it.variant||''}" aria-label="Decrease">−</button>
+                <span class="px-2 text-sm">${it.qty}</span>
+                <button class="cd-inc px-2 py-0.5" data-slug="${it.slug}" data-variant="${it.variant||''}" aria-label="Increase">+</button>
+              </div>
+              <span class="text-sm">${inr(it.price*it.qty)}</span>
+            </div>
+          </div>
+          <button class="cd-rm p-1 text-[var(--color-muted)] hover:text-black" data-slug="${it.slug}" data-variant="${it.variant||''}" aria-label="Remove">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg>
+          </button>
+        </div>`).join('');
+      subtotalEl.textContent = inr(Cart().subtotal());
+      itemsEl.querySelectorAll('.cd-inc').forEach(b=>b.addEventListener('click',()=>{const s=(b as HTMLElement).dataset;Cart().setQty(s.slug,s.variant||undefined,(Cart().all().find((i:any)=>i.slug===s.slug&&(i.variant||'')===(s.variant||''))?.qty||0)+1);}));
+      itemsEl.querySelectorAll('.cd-dec').forEach(b=>b.addEventListener('click',()=>{const s=(b as HTMLElement).dataset;Cart().setQty(s.slug,s.variant||undefined,(Cart().all().find((i:any)=>i.slug===s.slug&&(i.variant||'')===(s.variant||''))?.qty||0)-1);}));
+      itemsEl.querySelectorAll('.cd-rm').forEach(b=>b.addEventListener('click',()=>{const s=(b as HTMLElement).dataset;Cart().remove(s.slug,s.variant||undefined);}));
+    }
+
+    function open(){ root!.classList.remove('hidden'); requestAnimationFrame(()=>{ panel.classList.remove('translate-x-full'); backdrop.classList.remove('opacity-0'); }); document.body.style.overflow='hidden'; render(); }
+    function close(){ panel.classList.add('translate-x-full'); backdrop.classList.add('opacity-0'); document.body.style.overflow=''; setTimeout(()=>root!.classList.add('hidden'),300); }
+
+    document.getElementById('cart-toggle')?.addEventListener('click',(e)=>{e.preventDefault();open();});
+    document.getElementById('cart-drawer-close')?.addEventListener('click',close);
+    backdrop.addEventListener('click',close);
+    document.addEventListener('keydown',(e)=>{if(e.key==='Escape'&&!root!.classList.contains('hidden'))close();});
+    document.addEventListener('cart:changed',()=>{ if(!root!.classList.contains('hidden')) render(); });
+    document.addEventListener('cart:added',open);
+    render();
+  }
+  initCartDrawer();
+  document.addEventListener('astro:after-swap', initCartDrawer);
+</script>

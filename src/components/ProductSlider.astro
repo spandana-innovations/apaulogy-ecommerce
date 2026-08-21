@@ -1,0 +1,44 @@
+---
+import type { Product } from '../lib/catalog';
+import ProductCard from './ProductCard.astro';
+import Icon from './Icon.astro';
+import { categoryIcon } from '../lib/icons';
+
+export interface Props { title: string; href?: string; icon?: string; products: Product[]; }
+const { title, href, icon = 'frame', products } = Astro.props;
+if (!products.length) return null;
+const id = 'sld-' + Math.random().toString(36).slice(2, 8);
+---
+<section class="container-page py-10">
+  <div class="flex items-end justify-between gap-4 mb-6">
+    <div class="flex items-center gap-3">
+      <Icon name={icon} size={26} stroke={1.4} class="text-[var(--color-ink)]" />
+      <h2 class="text-3xl sm:text-4xl">{href ? <a href={href} class="link-hover">{title}</a> : title}</h2>
+    </div>
+    <div class="flex items-center gap-2">
+      {href && <a href={href} class="hidden sm:flex items-center gap-1.5 text-sm link-underline mr-2" style="font-family:var(--font-sans)">View all <Icon name="arrowRight" size={15} /></a>}
+      <button class="slider-btn" data-slider-prev={id} aria-label={`Scroll ${title} left`}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="slider-btn" data-slider-next={id} aria-label={`Scroll ${title} right`}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+  <div class="slider-track" id={id}>
+    {products.map((p) => <ProductCard product={p} />)}
+  </div>
+</section>
+
+<script>
+  function initSliders() {
+    document.querySelectorAll('[data-slider-next]').forEach((btn) => {
+      if ((btn as HTMLElement).dataset.bound) return; (btn as HTMLElement).dataset.bound = '1';
+      const id = (btn as HTMLElement).dataset.sliderNext!;
+      btn.addEventListener('click', () => { const t = document.getElementById(id); t?.scrollBy({ left: t.clientWidth * 0.8, behavior: 'smooth' }); });
+    });
+    document.querySelectorAll('[data-slider-prev]').forEach((btn) => {
+      if ((btn as HTMLElement).dataset.bound) return; (btn as HTMLElement).dataset.bound = '1';
+      const id = (btn as HTMLElement).dataset.sliderPrev!;
+      btn.addEventListener('click', () => { const t = document.getElementById(id); t?.scrollBy({ left: -t.clientWidth * 0.8, behavior: 'smooth' }); });
+    });
+  }
+  initSliders();
+  document.addEventListener('astro:after-swap', initSliders);
+</script>

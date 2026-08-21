@@ -205,3 +205,73 @@
   html { scroll-behavior: auto; }
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* --------------------------------------------------------------------------
+   Additions: thin frames, themed form controls, image protection, zoom, sliders
+   -------------------------------------------------------------------------- */
+@layer components {
+  /* #3 — thin black border around art (replaces the thick mat) */
+  .frame { background:#fff; border:1px solid var(--color-ink); padding:0; }
+  .frame-tight { padding:0; }
+  .art-pad { padding:0.5rem; background:#fff; }
+
+  /* #19 — themed select / inputs (no native Apple chrome) */
+  .field {
+    -webkit-appearance:none; appearance:none;
+    width:100%; background:#fff; color:var(--color-ink);
+    border:1px solid var(--color-ink); border-radius:0;
+    padding:0.75rem 2.5rem 0.75rem 0.9rem;
+    font-family:var(--font-sans); font-size:0.86rem; letter-spacing:0.02em;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6'%3E%3Cpath d='M6 9l6 6 6-6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 0.9rem center;
+    cursor:pointer;
+  }
+  .field:focus { outline:none; box-shadow:0 0 0 1px var(--color-ink); }
+  select.field::-ms-expand { display:none; }
+
+  .input {
+    width:100%; background:#fff; color:var(--color-ink);
+    border:1px solid var(--color-ink); border-radius:0;
+    padding:0.7rem 0.9rem; font-family:var(--font-serif); font-size:1rem;
+  }
+  .input:focus { outline:none; box-shadow:0 0 0 1px var(--color-ink); }
+  .field-label { display:block; font-family:var(--font-sans); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-muted); margin-bottom:0.5rem; }
+}
+
+/* #20 — image copy protection: no drag, no select, no long-press save */
+img.protected, .protected img {
+  -webkit-user-drag: none; -khtml-user-drag: none; -moz-user-drag: none; user-drag: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  pointer-events: none;
+}
+.art-guard { position: relative; }
+/* transparent shield sits above the image to swallow right-click / drag / save */
+.art-guard::after {
+  content: ""; position: absolute; inset: 0; z-index: 2;
+  background: transparent; cursor: default;
+}
+.art-guard.zoomable::after { cursor: zoom-in; }
+
+/* #4 — zoom lightbox */
+#zoom-lightbox { position: fixed; inset: 0; z-index: 80; display: none; background: rgba(0,0,0,.92); }
+#zoom-lightbox.open { display: grid; place-items: center; }
+#zoom-lightbox img { max-width: 92vw; max-height: 88vh; object-fit: contain; cursor: zoom-out;
+  -webkit-user-drag:none; user-drag:none; user-select:none; -webkit-touch-callout:none; }
+#zoom-close { position: fixed; top: 1rem; right: 1rem; z-index: 81; color:#fff; padding:.5rem; }
+
+/* #14 — horizontal collection sliders */
+.slider-track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(58%, 1fr);
+  gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-left: 1.25rem;
+  -ms-overflow-style: none; scrollbar-width: none; padding-bottom: .5rem; }
+.slider-track::-webkit-scrollbar { display: none; }
+.slider-track > * { scroll-snap-align: start; }
+@media (min-width: 640px) { .slider-track { grid-auto-columns: minmax(31%, 1fr); } }
+@media (min-width: 1024px) { .slider-track { grid-auto-columns: minmax(23%, 1fr); } }
+.slider-btn { width:2.4rem; height:2.4rem; display:grid; place-items:center; border:1px solid var(--color-ink); background:#fff; transition:background .15s,color .15s; }
+.slider-btn:hover { background:#000; color:#fff; }
+.slider-btn:disabled { opacity:.3; cursor:default; background:#fff; color:var(--color-ink); }
+
+/* #22 — print-size scale visual */
+.size-figure { display:flex; align-items:flex-end; gap:1.5rem; height:120px; padding-left:.25rem; }
+.size-rect { border:1.5px solid var(--color-ink); background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,.05) 5px,rgba(0,0,0,.05) 6px); flex:none; }
+.size-man { width:26px; height:112px; flex:none; }

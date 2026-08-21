@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProductCard from '../../components/ProductCard.astro';
+import Icon from '../../components/Icon.astro';
 import { getProducts, getProduct, getCategory, getRelatedProducts, effectivePrice, isOnSale, hasPriceRange } from '../../lib/catalog';
 import { formatINR, formatINRRange } from '../../lib/format';
 import { productSchema, breadcrumbSchema, abs } from '../../lib/seo';
@@ -27,39 +28,51 @@ if (parentCat) crumbs.push({ name: parentCat.name, url: `/category/${parentCat.s
 if (primaryCat) crumbs.push({ name: primaryCat.name, url: `/category/${primaryCat.slug}/` });
 crumbs.push({ name: product.name, url: `/product/${product.slug}/` });
 
-const jsonld = [
-  productSchema(product, Astro.site, abs(ogImage, Astro.site)),
-  breadcrumbSchema(crumbs, Astro.site),
-];
+const jsonld = [productSchema(product, Astro.site, abs(ogImage, Astro.site)), breadcrumbSchema(crumbs, Astro.site)];
 
-// Variations available for purchase (with a price)
 const variations = product.variations.filter((v) => v.price != null);
+// Parse inch dimensions (w" x h") from each variation label for the scale figure.
+function dims(label: string): { w: number; h: number } | null {
+  const m = label.match(/(\d+(?:\.\d+)?)\s*["″”]\s*x\s*(\d+(?:\.\d+)?)/i);
+  return m ? { w: parseFloat(m[1]), h: parseFloat(m[2]) } : null;
+}
+const sizeData = variations.map((v) => ({ slug: v.slug, label: v.label, price: v.sale_price ?? v.price, image: v.image || '', ...(dims(v.label) || { w: 0, h: 0 }) }));
+const hasDims = sizeData.some((s) => s.h > 0);
+const PX_PER_INCH = 1.7;            // man ≈ 69in → ~117px
+const MAN_INCHES = 69;
 ---
 
 <BaseLayout title={product.name} description={product.name} image={ogImage} type="product" jsonld={jsonld}>
   <div class="container-page py-10">
-    <nav class="text-xs text-[var(--color-muted)] mb-6" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
-      <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span>
-      <a href="/store/" class="link-hover">Store</a> <span aria-hidden="true">/</span>
-      {primaryCat && (<><a href={`/category/${primaryCat.slug}/`} class="link-hover">{primaryCat.name}</a> <span aria-hidden="true">/</span> </>)}
+    <nav class="text-xs text-[var(--color-muted)] mb-6 flex items-center gap-1.5 flex-wrap" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+      <a href="/" class="link-hover">Home</a> <Icon name="chevronRight" size={12} class="opacity-40" />
+      <a href="/store/" class="link-hover">Store</a> <Icon name="chevronRight" size={12} class="opacity-40" />
+      {primaryCat && (<><a href={`/category/${primaryCat.slug}/`} class="link-hover">{primaryCat.name}</a> <Icon name="chevronRight" size={12} class="opacity-40" /></>)}
       <span class="text-[var(--color-ink-soft)]">{product.name}</span>
     </nav>
 
     <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
       <!-- Gallery -->
       <div class="lg:sticky lg:top-24">
-        <div class="frame shadow-[var(--shadow-frame)]">
-          {heroImg ? (
-            <img id="hero-img" src={heroImg} alt={product.images?.[0]?.alt || product.name} class="w-full h-auto object-contain bg-white" width="900" height="700" />
-          ) : (
-            <div class="w-full aspect-[4/3] grid place-items-center text-[var(--color-muted)]" style="font-family:var(--font-sans)">aPaulogy</div>
+        <div class="frame art-guard zoomable relative">
+          <div class="art-pad">
+            {heroImg ? (
+              <img id="hero-img" src={heroImg} alt={product.images?.[0]?.alt || product.name} class="protected w-full h-auto object-contain" width="900" height="700" />
+            ) : (
+              <div class="w-full aspect-[4/3] grid place-items-center text-[var(--color-muted)]" style="font-family:var(--font-sans)">aPaulogy</div>
+            )}
+          </div>
+          {heroImg && (
+            <button id="zoom-btn" class="absolute z-[3] bottom-3 right-3 bg-white border border-[var(--color-ink)] p-2 hover:bg-black hover:text-white transition-colors" aria-label="Zoom image">
+              <Icon name="zoom" size={18} />
+            </button>
           )}
         </div>
         {product.images && product.images.length > 1 && (
           <div class="grid grid-cols-5 gap-3 mt-3">
             {product.images.slice(0, 5).map((im, i) => (
-              <button type="button" class="thumb frame frame-tight bg-white" data-src={im.url} aria-label={`View image ${i + 1}`}>
-                <img src={im.url} alt={im.alt || product.name} class="w-full aspect-square object-contain" loading="lazy" />
+              <button type="button" class="thumb frame art-guard art-pad bg-white" data-src={im.url} aria-label={`View image ${i + 1}`}>
+                <img src={im.url} alt={im.alt || product.name} class="protected w-full aspect-square object-contain" loading="lazy" />
               </button>
             ))}
           </div>
@@ -68,7 +81,9 @@ const variations = product.variations.filter((v) => v.price != null);
 
       <!-- Details -->
       <div>
-        {primaryCat && <p class="eyebrow">{primaryCat.name}</p>}
+        {primaryCat && (
+          <p class="eyebrow flex items-center gap-2"><Icon name="frame" size={14} /> {primaryCat.name}</p>
+        )}
         <h1 class="text-4xl sm:text-5xl mt-3">{product.name}</h1>
 
         <div class="flex items-baseline gap-3 mt-5" style="font-family:var(--font-sans)">
@@ -81,31 +96,68 @@ const variations = product.variations.filter((v) => v.price != null);
 
         {product.short_html && <div class="prose-paper mt-5 text-[var(--color-ink-soft)]" set:html={product.short_html} />}
 
-        <!-- Variation selector -->
+        <!-- Print size: custom themed selector + scale figure -->
         {variations.length > 0 && (
-          <div class="mt-7" style="font-family:var(--font-sans)">
-            <label for="variation" class="block text-[0.7rem] uppercase tracking-[0.14em] text-[var(--color-muted)] mb-2">Print Size</label>
-            <select id="variation" class="w-full border border-[var(--color-ink)] bg-white px-3.5 py-3 text-sm focus:outline-none">
-              <option value="" data-price="">Choose an option</option>
-              {variations.map((v) => (
-                <option value={v.slug} data-price={v.sale_price ?? v.price} data-label={v.label} data-image={v.image || ''}>
-                  {v.label} — {formatINR(v.sale_price ?? v.price!)}
-                </option>
-              ))}
-            </select>
+          <div class="mt-8" style="font-family:var(--font-sans)">
+            <span class="field-label">Print size</span>
+            <div class="ps-select relative">
+              <button type="button" id="ps-button" class="field text-left flex items-center justify-between" aria-haspopup="listbox" aria-expanded="false">
+                <span id="ps-current" class="text-[var(--color-muted)]">Choose a print size</span>
+              </button>
+              <ul id="ps-list" class="hidden absolute z-20 left-0 right-0 mt-1 bg-white border border-[var(--color-ink)] shadow-[var(--shadow-frame)]" role="listbox">
+                {sizeData.map((s) => (
+                  <li role="option" class="ps-option flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-[var(--color-paper-deep)] border-b border-[var(--color-line)] last:border-0"
+                    data-slug={s.slug} data-label={s.label} data-price={s.price} data-image={s.image}>
+                    {s.h > 0 && (
+                      <span class="flex-none border border-[var(--color-ink)] bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(0,0,0,.06)_4px,rgba(0,0,0,.06)_5px)]"
+                        style={`width:${Math.max(12, s.w * 2.1)}px;height:${Math.max(12, s.h * 2.1)}px`}></span>
+                    )}
+                    <span class="flex-1 text-[0.85rem] text-[var(--color-ink)]">{s.label}</span>
+                    <span class="text-[0.85rem]">{formatINR(s.price!)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {hasDims && (
+              <div class="mt-6 border border-[var(--color-line)] p-4">
+                <p class="text-[0.62rem] uppercase tracking-[0.16em] text-[var(--color-muted)] mb-3">Size to scale</p>
+                <div class="size-figure" id="size-figure">
+                  <!-- man silhouette (~5'9") -->
+                  <svg class="size-man" viewBox="0 0 24 112" fill="var(--color-ink-soft)" aria-label="Average adult height, about 5 feet 9 inches">
+                    <circle cx="12" cy="9" r="7"/>
+                    <path d="M12 17c-4.2 0-6.6 2.3-6.6 5.8V40h1.9l-1 24h-1v3h3.4l1-27h.6l1 27h3.4v-3h-1l-1-24h1.9V22.8C18.6 19.3 16.2 17 12 17Z"/>
+                    <path d="M5.4 25 2.5 44l1.9.3 2.8-18Zm13.2 0 2.9 19-1.9.3-2.8-18Z"/>
+                  </svg>
+                  {sizeData.filter((s) => s.h > 0).map((s) => (
+                    <div class="size-rect" data-slug={s.slug}
+                      style={`width:${s.w * PX_PER_INCH}px;height:${s.h * PX_PER_INCH}px`}></div>
+                  ))}
+                </div>
+                <div class="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 pt-3 border-t border-[var(--color-line)]" style="font-family:var(--font-sans)">
+                  {sizeData.filter((s) => s.h > 0).map((s) => (
+                    <span class="size-legend flex items-center gap-1.5 text-[0.72rem] text-[var(--color-ink-soft)]" data-slug={s.slug}>
+                      <span class="inline-block border border-[var(--color-ink)]" style={`width:${Math.max(9, s.w)}px;height:${Math.max(9, s.h)}px`}></span>
+                      {s.w}″ × {s.h}″
+                    </span>
+                  ))}
+                  <span class="flex items-center gap-1.5 text-[0.72rem] text-[var(--color-muted)]"><svg width="10" height="24" viewBox="0 0 24 112" fill="currentColor"><circle cx="12" cy="9" r="7"/><rect x="6" y="16" width="12" height="90" rx="4"/></svg> ≈ 5′9″ adult</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         <!-- Quantity + actions -->
-        <div class="mt-6 flex flex-wrap items-center gap-3">
+        <div class="mt-7 flex flex-wrap items-center gap-3">
           <div class="inline-flex items-center border border-[var(--color-ink)]">
-            <button type="button" id="qty-dec" class="px-3.5 py-3 text-lg leading-none" aria-label="Decrease quantity">−</button>
+            <button type="button" id="qty-dec" class="px-3.5 py-3 leading-none" aria-label="Decrease quantity"><Icon name="minus" size={16} /></button>
             <input id="qty" value="1" inputmode="numeric" class="w-12 text-center bg-transparent py-3" aria-label="Quantity" />
-            <button type="button" id="qty-inc" class="px-3.5 py-3 text-lg leading-none" aria-label="Increase quantity">+</button>
+            <button type="button" id="qty-inc" class="px-3.5 py-3 leading-none" aria-label="Increase quantity"><Icon name="plus" size={16} /></button>
           </div>
-          <button id="add-btn" class="btn btn-outline flex-1 min-w-[10rem]"
+          <button id="add-btn" class="btn btn-outline flex-1 min-w-[10rem] gap-2"
             data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''} data-variable={variations.length > 0 ? '1' : '0'}>
-            Add to cart
+            <Icon name="cart" size={16} /> Add to cart
           </button>
         </div>
         <button id="buy-btn" class="btn btn-primary w-full mt-3"
@@ -114,17 +166,16 @@ const variations = product.variations.filter((v) => v.price != null);
         </button>
         <p id="variation-hint" class="mt-2 text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)" hidden>Please choose a print size first.</p>
 
-        <!-- Full description -->
         {product.description_html && (
           <div class="prose-paper mt-10 border-t border-[var(--color-line)] pt-8" set:html={product.description_html} />
         )}
 
-        <!-- Assurances -->
-        <ul class="mt-10 grid sm:grid-cols-2 gap-3 text-sm text-[var(--color-ink-soft)] border-t border-[var(--color-line)] pt-8">
-          <li class="flex gap-2"><span aria-hidden="true">—</span> Personally signed by Paul Fernandes</li>
-          <li class="flex gap-2"><span aria-hidden="true">—</span> Archival giclée print</li>
-          <li class="flex gap-2"><span aria-hidden="true">—</span> Ships across India &amp; worldwide</li>
-          <li class="flex gap-2"><span aria-hidden="true">—</span> Secure Razorpay checkout</li>
+        <!-- Assurances (claims removed per brief) -->
+        <ul class="mt-10 grid sm:grid-cols-2 gap-3 text-sm text-[var(--color-ink-soft)] border-t border-[var(--color-line)] pt-8" style="font-family:var(--font-sans)">
+          <li class="flex items-center gap-2.5"><Icon name="truck" size={18} class="flex-none" /> Shipped across India &amp; worldwide</li>
+          <li class="flex items-center gap-2.5"><Icon name="shield" size={18} class="flex-none" /> Secure checkout</li>
+          <li class="flex items-center gap-2.5"><Icon name="frame" size={18} class="flex-none" /> Made at the aPaulogy gallery</li>
+          <li class="flex items-center gap-2.5"><Icon name="mail" size={18} class="flex-none" /> Help with framing &amp; gifting</li>
         </ul>
       </div>
     </div>
@@ -133,7 +184,7 @@ const variations = product.variations.filter((v) => v.price != null);
       <section class="mt-24">
         <div class="flex items-end justify-between gap-4 mb-8">
           <h2 class="text-3xl sm:text-4xl">Related pieces</h2>
-          {primaryCat && <a href={`/category/${primaryCat.slug}/`} class="hidden sm:inline text-sm link-underline" style="font-family:var(--font-sans)">More from {primaryCat.name}</a>}
+          {primaryCat && <a href={`/category/${primaryCat.slug}/`} class="hidden sm:flex items-center gap-1.5 text-sm link-underline" style="font-family:var(--font-sans)">More from {primaryCat.name} <Icon name="arrowRight" size={15} /></a>}
         </div>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {related.map((p) => <ProductCard product={p} />)}
@@ -141,67 +192,91 @@ const variations = product.variations.filter((v) => v.price != null);
       </section>
     )}
   </div>
+
+  <!-- Zoom lightbox -->
+  <div id="zoom-lightbox" aria-hidden="true">
+    <button id="zoom-close" aria-label="Close zoom"><Icon name="close" size={28} /></button>
+    <img id="zoom-img" class="protected" src="" alt="" />
+  </div>
 </BaseLayout>
 
 <script>
   function initPDP() {
     const hero = document.getElementById('hero-img') as HTMLImageElement | null;
-    // thumbnail swap
     document.querySelectorAll('.thumb').forEach((t) => {
       if ((t as HTMLElement).dataset.bound) return;
       (t as HTMLElement).dataset.bound = '1';
-      t.addEventListener('click', () => {
-        const src = (t as HTMLElement).dataset.src;
-        if (hero && src) hero.src = src;
-      });
+      t.addEventListener('click', () => { const src=(t as HTMLElement).dataset.src; if(hero&&src) hero.src=src; });
     });
 
     const qtyEl = document.getElementById('qty') as HTMLInputElement | null;
     const getQty = () => Math.max(1, parseInt(qtyEl?.value || '1', 10) || 1);
-    document.getElementById('qty-dec')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(Math.max(1, getQty() - 1)); });
-    document.getElementById('qty-inc')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(getQty() + 1); });
+    document.getElementById('qty-dec')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(Math.max(1, getQty()-1)); });
+    document.getElementById('qty-inc')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(getQty()+1); });
 
-    const sel = document.getElementById('variation') as HTMLSelectElement | null;
+    // Custom print-size dropdown
+    const psBtn = document.getElementById('ps-button');
+    const psList = document.getElementById('ps-list');
+    const psCurrent = document.getElementById('ps-current');
     const priceDisplay = document.getElementById('price-display');
     const hint = document.getElementById('variation-hint');
     const addBtn = document.getElementById('add-btn') as HTMLElement | null;
     const isVariable = addBtn?.dataset.variable === '1';
+    let chosen: { slug:string;label:string;price:number;image:string } | null = null;
 
-    function fmt(paise: number) {
-      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(paise / 100);
-    }
-    function currentVariant() {
-      if (!sel || !sel.value) return null;
-      const opt = sel.selectedOptions[0];
-      return { slug: sel.value, label: opt.dataset.label || sel.value, price: parseInt(opt.dataset.price || '0', 10), image: opt.dataset.image || '' };
-    }
-    sel?.addEventListener('change', () => {
-      const v = currentVariant();
-      if (v && priceDisplay) priceDisplay.textContent = fmt(v.price);
-      if (v && hint) hint.hidden = true;
-      if (v && v.image && hero) hero.src = v.image;
+    const inr = (p:number) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100);
+    function closeList(){ psList?.classList.add('hidden'); psBtn?.setAttribute('aria-expanded','false'); }
+    psBtn?.addEventListener('click', () => {
+      const open = psList?.classList.toggle('hidden') === false;
+      psBtn.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('click', (e) => { if (psBtn && psList && !psBtn.contains(e.target as Node) && !psList.contains(e.target as Node)) closeList(); });
+    document.querySelectorAll('.ps-option').forEach((op) => {
+      op.addEventListener('click', () => {
+        const d = (op as HTMLElement).dataset;
+        chosen = { slug:d.slug!, label:d.label!, price:parseInt(d.price||'0',10), image:d.image||'' };
+        if (psCurrent) { psCurrent.textContent = chosen.label; psCurrent.classList.remove('text-[var(--color-muted)]'); }
+        if (priceDisplay) priceDisplay.textContent = inr(chosen.price);
+        if (chosen.image && hero) hero.src = chosen.image;
+        if (hint) hint.hidden = true;
+        // highlight the matching rectangle + legend in the size figure
+        document.querySelectorAll('.size-rect').forEach((r) => {
+          const on = (r as HTMLElement).dataset.slug === chosen!.slug;
+          (r as HTMLElement).style.background = on
+            ? 'rgba(0,0,0,.14)' : 'repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,.05) 5px,rgba(0,0,0,.05) 6px)';
+          (r as HTMLElement).style.borderColor = on ? '#000' : '';
+          (r as HTMLElement).style.borderWidth = on ? '2px' : '';
+        });
+        document.querySelectorAll('.size-legend').forEach((l) => {
+          const on = (l as HTMLElement).dataset.slug === chosen!.slug;
+          (l as HTMLElement).style.fontWeight = on ? '700' : '';
+          (l as HTMLElement).style.color = on ? '#000' : '';
+        });
+        closeList();
+      });
     });
 
-    function addToCart(): boolean {
-      const Cart = (window as any).Cart;
-      if (!Cart || !addBtn) return false;
-      let price = parseInt(addBtn.dataset.price || '0', 10);
-      let variant: string | undefined;
-      if (isVariable) {
-        const v = currentVariant();
-        if (!v) { if (hint) hint.hidden = false; return false; }
-        price = v.price; variant = v.label;
-      }
-      Cart.add({ slug: addBtn.dataset.slug!, name: addBtn.dataset.name!, price, image: addBtn.dataset.image || '', qty: getQty(), variant });
+    function add(): boolean {
+      const Cart=(window as any).Cart; if(!Cart||!addBtn) return false;
+      let price=parseInt(addBtn.dataset.price||'0',10); let variant:string|undefined;
+      if (isVariable){ if(!chosen){ if(hint) hint.hidden=false; psList?.classList.remove('hidden'); return false; } price=chosen.price; variant=chosen.label; }
+      Cart.add({ slug:addBtn.dataset.slug!, name:addBtn.dataset.name!, price, image:(chosen?.image||addBtn.dataset.image||''), qty:getQty(), variant });
+      document.dispatchEvent(new CustomEvent('cart:added'));
       return true;
     }
+    addBtn?.addEventListener('click', add);
+    document.getElementById('buy-btn')?.addEventListener('click', () => { if (add()) window.location.href='/checkout/'; });
 
-    addBtn?.addEventListener('click', () => {
-      if (addToCart()) (window as any).cartToast?.('Added to cart');
-    });
-    document.getElementById('buy-btn')?.addEventListener('click', () => {
-      if (addToCart()) window.location.href = '/cart/';
-    });
+    // Zoom lightbox
+    const lb = document.getElementById('zoom-lightbox');
+    const lbImg = document.getElementById('zoom-img') as HTMLImageElement | null;
+    function openZoom(){ if(lb&&lbImg&&hero){ lbImg.src=hero.src; lb.classList.add('open'); lb.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; } }
+    function closeZoom(){ if(lb){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); document.body.style.overflow=''; } }
+    document.getElementById('zoom-btn')?.addEventListener('click', openZoom);
+    document.querySelector('.art-guard.zoomable')?.addEventListener('click', (e)=>{ if((e.target as HTMLElement).id!=='zoom-btn' && !(e.target as HTMLElement).closest('#zoom-btn')) openZoom(); });
+    document.getElementById('zoom-close')?.addEventListener('click', closeZoom);
+    lb?.addEventListener('click', (e)=>{ if(e.target===lb||(e.target as HTMLElement).id==='zoom-img') closeZoom(); });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeZoom(); });
   }
   initPDP();
   document.addEventListener('astro:after-swap', initPDP);

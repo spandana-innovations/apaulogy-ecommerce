@@ -1,107 +1,74 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ProductCard from '../components/ProductCard.astro';
-import { getFeaturedProducts, getCategory } from '../lib/catalog';
+import ProductSlider from '../components/ProductSlider.astro';
+import Icon from '../components/Icon.astro';
+import { getProductsByCategory, getFeaturedProducts, getProduct } from '../lib/catalog';
+import { categoryIcon } from '../lib/icons';
 import { organizationSchema, websiteSchema, SITE_DESCRIPTION } from '../lib/seo';
 
-const featured = getFeaturedProducts(8);
+const heroBanner = '/uploads/2025/06/Untitled-design-17.jpg';
+const preorder = getProduct('pre-order-11-limited-colaba-to-bandra-life-in-mumbai');
 
-const collectionSlugs = ['bangalore-in-the-70s', 'vintage-mumbai', 'a-goan-holiday', 'mumbai-heritage', 'plaques', 'merchandise'];
-const collections = collectionSlugs.map((s) => getCategory(s)).filter(Boolean);
+const shelves = [
+  { slug: 'bangalore-in-the-70s', title: "Bangalore in the 70's" },
+  { slug: 'illustrations-on-tile', title: 'Illustrations on Tile' },
+  { slug: 'mumbai-heritage', title: 'Mumbai Heritage' },
+  { slug: 'vintage-mumbai', title: 'Vintage Mumbai' },
+  { slug: 'mangalore-series', title: 'Mangalore Series' },
+  { slug: 'a-goan-holiday', title: 'A Goan Holiday' },
+  { slug: 'gods-own-kerala', title: "God's Own Kerala" },
+].map((s) => ({ ...s, icon: categoryIcon(s.slug), products: getProductsByCategory(s.slug).slice(0, 12) }))
+ .filter((s) => s.products.length);
 
-const heroA = '/uploads/2017/03/apaulogyBangPalace-WITHWatermark.jpg';
-const heroB = '/uploads/2017/02/ChorBazaarFramed1.jpg';
-const storyImg = '/uploads/2017/03/apaulogyCoffeeHouse-WITHWatermark.jpg';
-
+const featured = getFeaturedProducts(10);
 const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
 ---
 
 <BaseLayout title="Watercolours of a city that was" description={SITE_DESCRIPTION} jsonld={jsonld}>
-  <!-- HERO -->
-  <section class="border-b border-[var(--color-line)]">
-    <div class="container-page grid lg:grid-cols-[1.05fr_1fr] gap-12 items-center py-16 lg:py-24">
-      <div class="max-w-xl">
-        <p class="eyebrow">The aPaulogy Gallery · Bengaluru</p>
-        <h1 class="mt-5 text-6xl sm:text-7xl lg:text-[5.2rem] leading-[0.98]">
-          Watercolours<br />of a city<br />that was
-        </h1>
-        <p class="mt-7 text-lg text-[var(--color-ink-soft)] max-w-md">
-          Signed reproductions of Paul Fernandes’ illustrations — the bars, bungalows and
-          back-lanes of 1970s Bangalore, vintage Mumbai and Goa. Each print personally signed
-          before it ships.
-        </p>
-        <div class="mt-9 flex flex-wrap gap-3">
-          <a href="/store/" class="btn btn-primary">Explore the store</a>
-          <a href="/category/bangalore-in-the-70s/" class="btn btn-outline">Bangalore in the 70’s</a>
-        </div>
-      </div>
-
-      <div class="relative grid grid-cols-2 gap-5">
-        <div class="frame shadow-[var(--shadow-frame)] rotate-[-1.5deg]">
-          <img src={heroA} alt="Bangalore Palace" class="w-full h-auto object-contain" width="576" height="470" />
-        </div>
-        <div class="frame shadow-[var(--shadow-frame)] rotate-[1.5deg] mt-10">
-          <img src={heroB} alt="Chor Bazaar, Mumbai" class="w-full h-auto object-contain" width="576" height="470" />
-        </div>
-      </div>
+  <!-- HERO: 11 Limited — Colaba to Bandra (matches the WordPress front page) -->
+  <section class="container-page pt-8 pb-4">
+    <div class="frame art-guard">
+      <img src={heroBanner} alt="11 Limited — Colaba to Bandra" class="protected w-full h-auto object-contain" width="1536" height="527" fetchpriority="high" />
+    </div>
+    <div class="max-w-3xl mx-auto text-center mt-8">
+      <h1 class="text-4xl sm:text-5xl uppercase tracking-wide">11 Limited — Colaba to Bandra</h1>
+      <p class="mt-5 text-[var(--color-ink-soft)] text-left sm:text-center">
+        Drift down the 11 Limited bus route in Mumbai with the dabbawalas, the pani-puri makers, the
+        pav-bhaji sellers, the waiters, the bus drivers, the traffic police, the touts; the shop keepers,
+        the merchants, the Irani restaurant owners; the dreamers, the dream makers, the sellers of dreams,
+        the extras, the stars, the starry eyed; the Bawas, the Babus, the Bhaus, the Bhais, the Bhaiyas…
+        the Bambaiyas.
+      </p>
+      <p class="mt-3 text-[var(--color-ink-soft)] italic">Enjoy the ride!</p>
+      {preorder && (
+        <a href={`/product/${preorder.slug}/`} class="btn btn-primary mt-7 gap-2"><Icon name="cart" size={16} /> Order now</a>
+      )}
     </div>
   </section>
 
-  <!-- TRUST STRIP -->
-  <section class="bg-black text-white">
-    <div class="container-page py-3.5 flex flex-wrap justify-center gap-x-10 gap-y-1.5 text-[0.68rem] tracking-[0.2em] uppercase" style="font-family:var(--font-sans)">
-      <span>Personally signed by the artist</span>
+  <!-- TRUST STRIP (claims removed per brief) -->
+  <section class="bg-black text-white mt-8">
+    <div class="container-page py-3.5 flex flex-wrap justify-center items-center gap-x-8 gap-y-1.5 text-[0.68rem] tracking-[0.18em] uppercase" style="font-family:var(--font-sans)">
+      <span class="flex items-center gap-2"><Icon name="truck" size={15} /> Shipped across India &amp; worldwide</span>
       <span class="opacity-40" aria-hidden="true">/</span>
-      <span>Archival giclée prints</span>
+      <span class="flex items-center gap-2"><Icon name="frame" size={15} /> From the aPaulogy gallery</span>
       <span class="opacity-40" aria-hidden="true">/</span>
-      <span>Shipped across India &amp; worldwide</span>
+      <span class="flex items-center gap-2"><Icon name="shield" size={15} /> Secure checkout</span>
     </div>
   </section>
 
-  <!-- COLLECTIONS -->
-  <section class="container-page py-20">
-    <div class="flex items-end justify-between gap-4 mb-10">
-      <div>
-        <p class="eyebrow">Collections</p>
-        <h2 class="text-4xl sm:text-5xl mt-2">Choose your era</h2>
-      </div>
-      <a href="/store/" class="hidden sm:inline text-sm link-underline hover:text-[var(--color-muted)]" style="font-family:var(--font-sans)">View all</a>
-    </div>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
-      {collections.map((c) => (
-        <a href={`/category/${c!.slug}/`} class="group block">
-          <div class="frame overflow-hidden">
-            <div class="overflow-hidden bg-white">
-              {c!.image && <img src={c!.image} alt={c!.name} class="w-full h-auto aspect-[5/4] object-contain transition-transform duration-500 group-hover:scale-[1.04]" loading="lazy" />}
-            </div>
-          </div>
-          <h3 class="text-2xl mt-4 link-hover">{c!.name}</h3>
-          {c!.description && <p class="text-[var(--color-ink-soft)] text-sm mt-1 line-clamp-2">{c!.description}</p>}
-        </a>
-      ))}
-    </div>
-  </section>
+  <!-- Best loved -->
+  <ProductSlider title="Best loved" href="/store/" icon="frame" products={featured} />
 
-  <!-- FEATURED -->
-  <section class="bg-[var(--color-paper-deep)] border-y border-[var(--color-line)]">
-    <div class="container-page py-20">
-      <div class="flex items-end justify-between gap-4 mb-10">
-        <div>
-          <p class="eyebrow">Best loved</p>
-          <h2 class="text-4xl sm:text-5xl mt-2">Featured prints</h2>
-        </div>
-        <a href="/store/" class="hidden sm:inline text-sm link-underline hover:text-[var(--color-muted)]" style="font-family:var(--font-sans)">Shop all</a>
-      </div>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-        {featured.map((p) => <ProductCard product={p} />)}
-      </div>
-    </div>
-  </section>
+  <!-- Collection shelves (match the WordPress homepage grids) -->
+  {shelves.map((s) => (
+    <ProductSlider title={s.title} href={`/category/${s.slug}/`} icon={s.icon} products={s.products} />
+  ))}
 
   <!-- STORY -->
-  <section class="container-page py-20 grid lg:grid-cols-2 gap-14 items-center">
-    <div class="frame shadow-[var(--shadow-frame)]">
-      <img src={storyImg} alt="Indian Coffee House" class="w-full h-auto object-contain" width="576" height="470" loading="lazy" />
+  <section class="container-page py-16 grid lg:grid-cols-2 gap-14 items-center border-t border-[var(--color-line)] mt-8">
+    <div class="frame art-guard">
+      <img src="/uploads/2017/03/apaulogyCoffeeHouse-WITHWatermark.jpg" alt="Indian Coffee House" class="protected w-full h-auto object-contain art-pad" width="576" height="470" loading="lazy" />
     </div>
     <div class="max-w-lg">
       <p class="eyebrow">The story</p>
@@ -112,11 +79,7 @@ const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
         cafes and characters that gave old Bangalore its charm — with detours through
         vintage Mumbai and sunlit Goa.
       </p>
-      <p class="mt-4 text-[var(--color-ink-soft)]">
-        Every reproduction is printed to archival standards and personally signed by the
-        artist before it makes its way to your wall.
-      </p>
-      <a href="/about-us/" class="btn btn-outline mt-8">Read our story</a>
+      <a href="/about-us/" class="btn btn-outline mt-8 gap-2">Read our story <Icon name="arrowRight" size={15} /></a>
     </div>
   </section>
 </BaseLayout>

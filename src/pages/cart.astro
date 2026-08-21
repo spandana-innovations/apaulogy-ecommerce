@@ -1,49 +1,53 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
-
 <BaseLayout title="Your Cart" description="Review the items in your aPaulogy cart." noindex={true}>
   <div class="container-page py-12 min-h-[60vh]">
-    <h1 class="text-5xl mb-8">Your Cart</h1>
+    <h1 class="text-5xl mb-8">Your cart</h1>
 
-    <div id="cart-empty" class="hidden">
+    <div id="cart-empty" class="hidden text-center py-20">
+      <div class="flex justify-center opacity-25 mb-4"><Icon name="cart" size={56} stroke={1} /></div>
       <p class="text-[var(--color-ink-soft)] text-lg">Your cart is empty.</p>
-      <a href="/store/" class="btn btn-primary mt-6">Browse the store</a>
+      <a href="/store/" class="btn btn-primary mt-6 gap-2"><Icon name="store" size={16} /> Browse the store</a>
     </div>
 
     <div id="cart-full" class="hidden grid lg:grid-cols-[1.6fr_1fr] gap-10 items-start">
       <div>
-        <ul id="cart-items" class="divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]"></ul>
+        <ul id="cart-items" class="border-t border-[var(--color-line-strong)]"></ul>
+        <a href="/store/" class="inline-flex items-center gap-1.5 mt-6 text-sm link-underline" style="font-family:var(--font-sans)"><Icon name="chevronRight" size={14} class="rotate-180" /> Continue shopping</a>
       </div>
 
-      <aside class="card p-6 lg:sticky lg:top-24">
+      <aside class="border border-[var(--color-line-strong)] p-6 lg:sticky lg:top-24">
         <h2 class="text-2xl mb-4">Summary</h2>
-        <dl class="space-y-2 text-sm">
+        <dl class="space-y-2 text-sm" style="font-family:var(--font-sans)">
           <div class="flex justify-between"><dt>Subtotal</dt><dd id="sum-subtotal">—</dd></div>
           <div class="flex justify-between text-[var(--color-muted)]"><dt>Shipping</dt><dd>Calculated at checkout</dd></div>
         </dl>
         <div class="flex justify-between text-lg font-medium mt-4 pt-4 border-t border-[var(--color-line)]">
           <span>Total</span><span id="sum-total">—</span>
         </div>
-        <a href="/checkout/" class="btn btn-primary w-full mt-6">Proceed to checkout</a>
-        <a href="/store/" class="block text-center text-sm mt-4 underline underline-offset-4 hover:text-[var(--color-terracotta)]">Continue shopping</a>
+        <a href="/checkout/" class="btn btn-primary w-full mt-6 gap-2"><Icon name="arrowRight" size={16} /> Checkout</a>
+        <p class="text-xs text-[var(--color-muted)] mt-4 text-center flex items-center justify-center gap-1.5" style="font-family:var(--font-sans)"><Icon name="shield" size={13} /> Secure checkout · UPI, cards, net-banking, bank transfer</p>
       </aside>
     </div>
   </div>
 
   <template id="cart-row">
-    <li class="py-5 flex gap-4">
-      <div class="w-20 h-24 shrink-0 bg-[var(--color-paper-deep)] rounded-sm overflow-hidden">
-        <img data-img alt="" class="w-full h-full object-cover" />
+    <li class="py-5 flex gap-4 border-b border-[var(--color-line)]">
+      <div class="w-20 h-20 shrink-0 bg-white border border-[var(--color-ink)] overflow-hidden art-guard">
+        <img data-img alt="" class="protected w-full h-full object-contain" />
       </div>
       <div class="flex-1 min-w-0">
         <p data-name class="text-lg leading-snug"></p>
-        <p data-variant class="text-xs text-[var(--color-muted)]"></p>
-        <button data-remove class="text-xs text-[var(--color-muted)] underline mt-1 hover:text-[var(--color-terracotta)]" style="font-family:var(--font-sans)">Remove</button>
+        <p data-variant class="text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)"></p>
+        <button data-remove class="inline-flex items-center gap-1 text-xs text-[var(--color-muted)] mt-1.5 hover:text-black" style="font-family:var(--font-sans)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/></svg> Remove
+        </button>
       </div>
       <div class="text-right">
         <p data-line-total class="font-medium"></p>
-        <div class="inline-flex items-center border border-[var(--color-line)] rounded-sm mt-2 text-sm">
+        <div class="inline-flex items-center border border-[var(--color-ink)] mt-2 text-sm" style="font-family:var(--font-sans)">
           <button data-dec class="px-2.5 py-1" aria-label="Decrease">−</button>
           <span data-qty class="px-2 min-w-[2rem] text-center"></span>
           <button data-inc class="px-2.5 py-1" aria-label="Increase">+</button>
@@ -54,40 +58,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   <script>
     function inr(paise: number) {
-      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: paise % 100 ? 2 : 0 }).format(paise / 100);
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(paise / 100);
     }
     function render() {
       const Cart = (window as any).Cart;
+      if (!Cart) return;
       const items = Cart.all();
       const empty = document.getElementById('cart-empty')!;
       const full = document.getElementById('cart-full')!;
       const list = document.getElementById('cart-items')!;
-      if (!items.length) {
-        empty.classList.remove('hidden');
-        full.classList.add('hidden'); full.classList.remove('grid');
-        return;
-      }
-      empty.classList.add('hidden');
-      full.classList.remove('hidden'); full.classList.add('grid');
+      if (!items.length) { empty.classList.remove('hidden'); full.classList.add('hidden'); full.classList.remove('grid'); return; }
+      empty.classList.add('hidden'); full.classList.remove('hidden'); full.classList.add('grid');
       list.innerHTML = '';
       const tpl = document.getElementById('cart-row') as HTMLTemplateElement;
       for (const it of items) {
         const row = tpl.content.cloneNode(true) as HTMLElement;
         const img = row.querySelector('[data-img]') as HTMLImageElement;
-        if (it.image) { img.src = it.image; img.alt = it.name; } else { img.remove(); }
+        if (it.image) { img.src = it.image; img.alt = it.name; } else { img.parentElement!.remove(); }
         (row.querySelector('[data-name]') as HTMLElement).textContent = it.name;
         (row.querySelector('[data-variant]') as HTMLElement).textContent = it.variant || '';
         (row.querySelector('[data-qty]') as HTMLElement).textContent = String(it.qty);
         (row.querySelector('[data-line-total]') as HTMLElement).textContent = inr(it.price * it.qty);
-        row.querySelector('[data-inc]')!.addEventListener('click', () => { Cart.setQty(it.slug, it.variant, it.qty + 1); });
-        row.querySelector('[data-dec]')!.addEventListener('click', () => { Cart.setQty(it.slug, it.variant, it.qty - 1); });
-        row.querySelector('[data-remove]')!.addEventListener('click', () => { Cart.remove(it.slug, it.variant); });
+        row.querySelector('[data-inc]')!.addEventListener('click', () => Cart.setQty(it.slug, it.variant, it.qty + 1));
+        row.querySelector('[data-dec]')!.addEventListener('click', () => Cart.setQty(it.slug, it.variant, it.qty - 1));
+        row.querySelector('[data-remove]')!.addEventListener('click', () => Cart.remove(it.slug, it.variant));
         list.appendChild(row);
       }
       document.getElementById('sum-subtotal')!.textContent = inr(Cart.subtotal());
       document.getElementById('sum-total')!.textContent = inr(Cart.subtotal());
     }
     render();
+    document.addEventListener('cart:ready', render);
     document.addEventListener('cart:changed', render);
     document.addEventListener('astro:after-swap', render);
   </script>

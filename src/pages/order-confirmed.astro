@@ -1,21 +1,69 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
-
 <BaseLayout title="Order Confirmed" description="Thank you for your order." noindex={true}>
-  <div class="container-page py-24 text-center min-h-[60vh]">
-    <p class="text-6xl">✦</p>
-    <h1 class="text-5xl mt-4">Thank you</h1>
-    <p class="mt-4 text-lg text-[var(--color-ink-soft)] max-w-md mx-auto">
-      Your order <span id="order-ref" class="font-medium"></span> has been received. A confirmation is on its way to your inbox, and your signed pieces will be prepared with care.
-    </p>
-    <div class="mt-8 flex justify-center gap-3">
-      <a href="/store/" class="btn btn-primary">Continue shopping</a>
+  <div class="container-page py-16 min-h-[60vh] max-w-2xl mx-auto">
+    <div class="text-center">
+      <div class="flex justify-center mb-4"><span class="w-16 h-16 grid place-items-center border-2 border-black rounded-full"><Icon name="check" size={32} /></span></div>
+      <h1 class="text-5xl mt-2">Thank you</h1>
+      <p class="mt-4 text-lg text-[var(--color-ink-soft)]">
+        Your order <span id="order-ref" class="font-medium"></span> has been received.
+        A confirmation is on its way to your inbox.
+      </p>
+    </div>
+
+    <!-- Bank transfer instructions (shown only for method=bank) -->
+    <div id="bank-block" class="mt-10 border border-[var(--color-line-strong)] p-6 hidden" style="font-family:var(--font-sans)">
+      <h2 class="flex items-center gap-2 text-xl mb-1" style="font-family:var(--font-display)"><Icon name="bank" size={20} /> Complete your bank transfer</h2>
+      <p class="text-sm text-[var(--color-ink-soft)] mb-5">Transfer the total to the account below via NEFT / IMPS / UPI. Use your reference as the payment note so we can match it. We dispatch once funds are received.</p>
+      <dl class="text-sm divide-y divide-[var(--color-line)] border-y border-[var(--color-line)]">
+        <div class="flex justify-between py-2.5"><dt class="text-[var(--color-muted)]">Amount</dt><dd id="bank-amount" class="font-medium"></dd></div>
+        <div class="flex justify-between py-2.5"><dt class="text-[var(--color-muted)]">Account name</dt><dd>aPaulogy</dd></div>
+        <div class="flex justify-between py-2.5"><dt class="text-[var(--color-muted)]">Account number</dt><dd class="tabular-nums">50200001234567</dd></div>
+        <div class="flex justify-between py-2.5"><dt class="text-[var(--color-muted)]">IFSC</dt><dd>HDFC0001234</dd></div>
+        <div class="flex justify-between py-2.5"><dt class="text-[var(--color-muted)]">Bank</dt><dd>HDFC Bank, Richards Town, Bengaluru</dd></div>
+        <div class="flex justify-between py-2.5"><dt class="text-[var(--color-muted)]">UPI ID</dt><dd>apaulogy@hdfcbank</dd></div>
+        <div class="flex justify-between py-2.5"><dt class="text-[var(--color-muted)]">Payment note / reference</dt><dd id="bank-ref" class="font-medium"></dd></div>
+      </dl>
+      <p class="mt-5 text-xs text-[var(--color-muted)]">Questions? Email <a href="mailto:info@apaulogy.com" class="link-underline">info@apaulogy.com</a> with your reference.</p>
+    </div>
+
+    <!-- Order details -->
+    <div id="order-block" class="mt-8 border border-[var(--color-line)] p-6 hidden" style="font-family:var(--font-sans)">
+      <h2 class="text-lg mb-3" style="font-family:var(--font-display)">Order details</h2>
+      <ul id="order-items" class="text-sm space-y-2"></ul>
+      <div id="order-totals" class="text-sm mt-4 pt-4 border-t border-[var(--color-line)] space-y-1"></div>
+    </div>
+
+    <div class="mt-10 flex justify-center gap-3">
+      <a href="/store/" class="btn btn-primary gap-2"><Icon name="store" size={16} /> Continue shopping</a>
       <a href="/" class="btn btn-outline">Back home</a>
     </div>
   </div>
+
   <script>
-    const ref = new URLSearchParams(location.search).get('order');
+    function inr(p:number){ return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100); }
+    const params = new URLSearchParams(location.search);
+    const method = params.get('method');
+    const ref = params.get('ref') || params.get('order') || '';
     if (ref) document.getElementById('order-ref')!.textContent = `#${ref}`;
+
+    let order:any = null;
+    try { order = JSON.parse(localStorage.getItem('apaulogy_last_order') || 'null'); } catch {}
+
+    if (method === 'bank') {
+      document.getElementById('bank-block')!.classList.remove('hidden');
+      document.getElementById('bank-ref')!.textContent = ref || (order?.reference ?? '');
+      if (order?.total != null) document.getElementById('bank-amount')!.textContent = inr(order.total);
+    }
+    if (order && Array.isArray(order.items)) {
+      const ob = document.getElementById('order-block')!; ob.classList.remove('hidden');
+      document.getElementById('order-items')!.innerHTML = order.items.map((it:any)=>`<li class="flex justify-between gap-3"><span>${it.name}${it.variant?` <span class="text-[var(--color-muted)]">(${it.variant})</span>`:''} × ${it.qty}</span><span>${inr(it.price*it.qty)}</span></li>`).join('');
+      document.getElementById('order-totals')!.innerHTML =
+        `<div class="flex justify-between"><span class="text-[var(--color-muted)]">Subtotal</span><span>${inr(order.subtotal)}</span></div>`+
+        `<div class="flex justify-between"><span class="text-[var(--color-muted)]">Shipping</span><span>${order.shipping===0?'Free':inr(order.shipping)}</span></div>`+
+        `<div class="flex justify-between font-medium text-base pt-1"><span>Total</span><span>${inr(order.total)}</span></div>`;
+    }
   </script>
 </BaseLayout>

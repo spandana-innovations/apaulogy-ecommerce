@@ -1,166 +1,193 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
 ---
-
 <BaseLayout title="Checkout" description="Secure checkout for your aPaulogy order." noindex={true}>
   <div class="container-page py-12 min-h-[60vh]">
     <h1 class="text-5xl mb-8">Checkout</h1>
 
-    <div id="co-empty" class="hidden">
+    <div id="co-empty" class="hidden text-center py-20">
+      <div class="flex justify-center opacity-25 mb-4"><Icon name="cart" size={56} stroke={1} /></div>
       <p class="text-[var(--color-ink-soft)] text-lg">Your cart is empty.</p>
-      <a href="/store/" class="btn btn-primary mt-6">Browse the store</a>
+      <a href="/store/" class="btn btn-primary mt-6 gap-2"><Icon name="store" size={16} /> Browse the store</a>
     </div>
 
-    <form id="co-form" class="hidden grid lg:grid-cols-[1.4fr_1fr] gap-10 items-start">
+    <form id="co-form" class="hidden grid lg:grid-cols-[1.4fr_1fr] gap-10 items-start" novalidate>
       <div class="space-y-6">
-        <fieldset class="card p-6">
-          <legend class="text-2xl px-1">Contact</legend>
+        <fieldset class="border border-[var(--color-line-strong)] p-6">
+          <legend class="text-2xl px-2 flex items-center gap-2"><Icon name="user" size={18} /> Contact</legend>
           <div class="grid sm:grid-cols-2 gap-4 mt-3">
-            <label class="block sm:col-span-2">
-              <span class="lbl">Full name</span>
-              <input name="name" required class="inp" autocomplete="name" />
-            </label>
-            <label class="block">
-              <span class="lbl">Email</span>
-              <input name="email" type="email" required class="inp" autocomplete="email" />
-            </label>
-            <label class="block">
-              <span class="lbl">Phone</span>
-              <input name="phone" required class="inp" autocomplete="tel" inputmode="tel" />
-            </label>
+            <label class="block sm:col-span-2"><span class="field-label">Full name</span><input name="name" required class="input" autocomplete="name" /><small class="err" data-err></small></label>
+            <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /><small class="err" data-err></small></label>
+            <label class="block"><span class="field-label">Phone</span><input name="phone" required class="input" autocomplete="tel" inputmode="tel" /><small class="err" data-err></small></label>
           </div>
         </fieldset>
 
-        <fieldset class="card p-6">
-          <legend class="text-2xl px-1">Shipping address</legend>
+        <fieldset class="border border-[var(--color-line-strong)] p-6">
+          <legend class="text-2xl px-2 flex items-center gap-2"><Icon name="truck" size={18} /> Shipping address</legend>
           <div class="grid sm:grid-cols-2 gap-4 mt-3">
-            <label class="block sm:col-span-2"><span class="lbl">Address line 1</span><input name="line1" required class="inp" autocomplete="address-line1" /></label>
-            <label class="block sm:col-span-2"><span class="lbl">Address line 2</span><input name="line2" class="inp" autocomplete="address-line2" /></label>
-            <label class="block"><span class="lbl">City</span><input name="city" required class="inp" autocomplete="address-level2" /></label>
-            <label class="block"><span class="lbl">State</span><input name="state" required class="inp" autocomplete="address-level1" /></label>
-            <label class="block"><span class="lbl">PIN code</span><input name="postcode" required class="inp" autocomplete="postal-code" inputmode="numeric" /></label>
-            <label class="block"><span class="lbl">Country</span><input name="country" value="India" required class="inp" autocomplete="country-name" /></label>
+            <label class="block sm:col-span-2"><span class="field-label">Address line 1</span><input name="line1" required class="input" autocomplete="address-line1" /><small class="err" data-err></small></label>
+            <label class="block sm:col-span-2"><span class="field-label">Address line 2 (optional)</span><input name="line2" class="input" autocomplete="address-line2" /></label>
+            <label class="block"><span class="field-label">City</span><input name="city" required class="input" autocomplete="address-level2" /><small class="err" data-err></small></label>
+            <label class="block"><span class="field-label">State</span><input name="state" required class="input" autocomplete="address-level1" /><small class="err" data-err></small></label>
+            <label class="block"><span class="field-label">PIN code</span><input name="postcode" required class="input" autocomplete="postal-code" inputmode="numeric" maxlength="6" /><small class="err" data-err></small></label>
+            <label class="block"><span class="field-label">Country</span><input name="country" value="India" required class="input" autocomplete="country-name" /></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="border border-[var(--color-line-strong)] p-6">
+          <legend class="text-2xl px-2 flex items-center gap-2"><Icon name="shield" size={18} /> Payment</legend>
+          <div class="mt-4 space-y-3" style="font-family:var(--font-sans)">
+            <label class="pay-opt flex items-start gap-3 border border-[var(--color-ink)] p-4 cursor-pointer">
+              <input type="radio" name="payment" value="razorpay" checked class="mt-1 accent-black" />
+              <span>
+                <span class="flex items-center gap-2 font-semibold text-[0.9rem]"><Icon name="shield" size={16} /> Pay online</span>
+                <span class="block text-xs text-[var(--color-muted)] mt-1">UPI, cards, net-banking &amp; wallets via Razorpay. Instant confirmation.</span>
+              </span>
+            </label>
+            <label class="pay-opt flex items-start gap-3 border border-[var(--color-ink)] p-4 cursor-pointer">
+              <input type="radio" name="payment" value="bank" class="mt-1 accent-black" />
+              <span>
+                <span class="flex items-center gap-2 font-semibold text-[0.9rem]"><Icon name="bank" size={16} /> Bank transfer (NEFT / IMPS / UPI)</span>
+                <span class="block text-xs text-[var(--color-muted)] mt-1">Place the order now and pay by direct transfer. We’ll email account details and dispatch once received.</span>
+              </span>
+            </label>
           </div>
         </fieldset>
       </div>
 
-      <aside class="card p-6 lg:sticky lg:top-24">
+      <aside class="border border-[var(--color-line-strong)] p-6 lg:sticky lg:top-24">
         <h2 class="text-2xl mb-4">Order summary</h2>
-        <ul id="co-items" class="space-y-3 text-sm mb-4"></ul>
-        <dl class="space-y-2 text-sm border-t border-[var(--color-line)] pt-4">
+        <ul id="co-items" class="space-y-3 text-sm mb-4" style="font-family:var(--font-sans)"></ul>
+        <dl class="space-y-2 text-sm border-t border-[var(--color-line)] pt-4" style="font-family:var(--font-sans)">
           <div class="flex justify-between"><dt>Subtotal</dt><dd id="co-subtotal">—</dd></div>
           <div class="flex justify-between"><dt>Shipping</dt><dd id="co-shipping">—</dd></div>
         </dl>
         <div class="flex justify-between text-lg font-medium mt-3 pt-3 border-t border-[var(--color-line)]">
           <span>Total</span><span id="co-total">—</span>
         </div>
-        <button type="submit" id="co-pay" class="btn btn-primary w-full mt-6">Pay securely</button>
-        <p id="co-error" class="text-[var(--color-terracotta)] text-sm mt-3" hidden></p>
-        <p class="text-xs text-[var(--color-muted)] mt-4 text-center">Payments processed securely by Razorpay. You’ll see UPI, cards, net-banking & wallets.</p>
+        <button type="submit" id="co-pay" class="btn btn-primary w-full mt-6 gap-2"><Icon name="shield" size={16} /> <span id="co-pay-label">Pay securely</span></button>
+        <p id="co-error" class="text-sm mt-3 flex items-center gap-1.5" style="color:#b00020;font-family:var(--font-sans)" hidden></p>
+        <p class="text-xs text-[var(--color-muted)] mt-4 text-center" style="font-family:var(--font-sans)">By placing your order you agree to our <a href="/terms-conditions/" class="link-underline">Terms</a> &amp; <a href="/privacy-policy/" class="link-underline">Privacy Policy</a>.</p>
       </aside>
     </form>
   </div>
 
   <style>
-    .lbl { display:block; font-family: var(--font-sans); font-size: .72rem; letter-spacing:.08em; text-transform:uppercase; color: var(--color-muted); margin-bottom:.3rem; }
-    .inp { width:100%; background: var(--color-paper); border:1px solid var(--color-line); border-radius:2px; padding:.6rem .75rem; font-family: var(--font-serif); }
-    .inp:focus { outline:none; border-color: var(--color-terracotta); }
+    .err { display:none; font-family:var(--font-sans); font-size:.72rem; color:#b00020; margin-top:.3rem; }
+    .err.show { display:block; }
+    .input.invalid { border-color:#b00020; box-shadow:0 0 0 1px #b00020; }
+    .pay-opt:has(input:checked) { background: var(--color-paper-deep); box-shadow: inset 0 0 0 1px var(--color-ink); }
   </style>
 
   <script>
-    const FREE_SHIPPING_OVER = 500000; // paise (₹5,000)
-    const SHIPPING_FLAT = 15000;       // paise (₹150)
+    const FREE_SHIPPING_OVER = 500000; // ₹5,000
+    const SHIPPING_FLAT = 15000;       // ₹150
+    function inr(p:number){ return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100); }
+    function loadRazorpay(){ return new Promise<boolean>((res)=>{ if((window as any).Razorpay) return res(true); const s=document.createElement('script'); s.src='https://checkout.razorpay.com/v1/checkout.js'; s.onload=()=>res(true); s.onerror=()=>res(false); document.body.appendChild(s); }); }
 
-    function inr(paise: number) {
-      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: paise % 100 ? 2 : 0 }).format(paise / 100);
+    function setErr(input:HTMLInputElement, msg:string){
+      input.classList.add('invalid');
+      const small = input.parentElement?.querySelector('[data-err]') as HTMLElement | null;
+      if (small){ small.textContent = msg; small.classList.add('show'); }
     }
-    function loadRazorpay(): Promise<boolean> {
-      return new Promise((resolve) => {
-        if ((window as any).Razorpay) return resolve(true);
-        const s = document.createElement('script');
-        s.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        s.onload = () => resolve(true);
-        s.onerror = () => resolve(false);
-        document.body.appendChild(s);
-      });
+    function clearErr(input:HTMLInputElement){
+      input.classList.remove('invalid');
+      const small = input.parentElement?.querySelector('[data-err]') as HTMLElement | null;
+      if (small){ small.textContent=''; small.classList.remove('show'); }
+    }
+    function validate(form:HTMLFormElement):boolean{
+      let ok=true;
+      const req=['name','email','phone','line1','city','state','postcode','country'];
+      for(const n of req){
+        const el=form.elements.namedItem(n) as HTMLInputElement; if(!el) continue;
+        clearErr(el);
+        if(!el.value.trim()){ setErr(el,'Required'); ok=false; continue; }
+      }
+      const email=form.elements.namedItem('email') as HTMLInputElement;
+      if(email.value && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value)){ setErr(email,'Enter a valid email'); ok=false; }
+      const phone=form.elements.namedItem('phone') as HTMLInputElement;
+      if(phone.value && !/^[+]?[\d\s-]{7,15}$/.test(phone.value)){ setErr(phone,'Enter a valid phone number'); ok=false; }
+      const pin=form.elements.namedItem('postcode') as HTMLInputElement;
+      if(pin.value && !/^\d{6}$/.test(pin.value)){ setErr(pin,'Indian PIN is 6 digits'); ok=false; }
+      if(!ok){ (form.querySelector('.invalid') as HTMLElement)?.scrollIntoView({behavior:'smooth',block:'center'}); }
+      return ok;
     }
 
-    function initCheckout() {
-      const Cart = (window as any).Cart;
-      const items = Cart.all();
-      const empty = document.getElementById('co-empty')!;
-      const form = document.getElementById('co-form') as HTMLFormElement;
-      if (!items.length) { empty.classList.remove('hidden'); form.classList.add('hidden'); return; }
+    function initCheckout(){
+      const Cart=(window as any).Cart; if(!Cart) return;
+      const items=Cart.all();
+      const empty=document.getElementById('co-empty')!;
+      const form=document.getElementById('co-form') as HTMLFormElement;
+      if(!items.length){ empty.classList.remove('hidden'); form.classList.add('hidden'); form.classList.remove('grid'); return; }
       empty.classList.add('hidden'); form.classList.remove('hidden'); form.classList.add('grid');
 
-      const subtotal = Cart.subtotal();
-      const shipping = subtotal >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
-      const total = subtotal + shipping;
+      const subtotal=Cart.subtotal();
+      const shipping=subtotal>=FREE_SHIPPING_OVER?0:SHIPPING_FLAT;
+      const total=subtotal+shipping;
+      document.getElementById('co-items')!.innerHTML=items.map((it:any)=>`<li class="flex justify-between gap-3"><span>${it.name}${it.variant?` <span class="text-[var(--color-muted)]">(${it.variant})</span>`:''} × ${it.qty}</span><span>${inr(it.price*it.qty)}</span></li>`).join('');
+      document.getElementById('co-subtotal')!.textContent=inr(subtotal);
+      document.getElementById('co-shipping')!.textContent=shipping===0?'Free':inr(shipping);
+      document.getElementById('co-total')!.textContent=inr(total);
 
-      const list = document.getElementById('co-items')!;
-      list.innerHTML = items.map((it: any) =>
-        `<li class="flex justify-between gap-3"><span>${it.name} × ${it.qty}</span><span>${inr(it.price * it.qty)}</span></li>`,
-      ).join('');
-      document.getElementById('co-subtotal')!.textContent = inr(subtotal);
-      document.getElementById('co-shipping')!.textContent = shipping === 0 ? 'Free' : inr(shipping);
-      document.getElementById('co-total')!.textContent = inr(total);
+      // update pay button label with method
+      const payLabel=document.getElementById('co-pay-label')!;
+      form.querySelectorAll('input[name=payment]').forEach((r)=>r.addEventListener('change',()=>{
+        const m=(form.elements.namedItem('payment') as RadioNodeList).value;
+        payLabel.textContent = m==='bank' ? 'Place order' : 'Pay securely';
+      }));
 
-      form.onsubmit = async (e) => {
+      form.onsubmit=async(e)=>{
         e.preventDefault();
-        const err = document.getElementById('co-error') as HTMLElement;
-        const payBtn = document.getElementById('co-pay') as HTMLButtonElement;
-        err.hidden = true; payBtn.disabled = true; payBtn.textContent = 'Preparing…';
+        const err=document.getElementById('co-error') as HTMLElement;
+        const payBtn=document.getElementById('co-pay') as HTMLButtonElement;
+        err.hidden=true;
+        if(!validate(form)) return;
+        payBtn.disabled=true; const orig=payLabel.textContent; payLabel.textContent='Working…';
 
-        const fd = new FormData(form);
-        const customer = Object.fromEntries(fd.entries());
+        const fd=new FormData(form);
+        const customer=Object.fromEntries(fd.entries());
+        const method=(customer as any).payment;
+        const order={ items:items.map((it:any)=>({slug:it.slug,name:it.name,qty:it.qty,variant:it.variant,price:it.price})), customer, subtotal, shipping, total, method, created:new Date().toISOString() };
 
-        try {
-          const res = await fetch('/api/checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              items: items.map((it: any) => ({ slug: it.slug, qty: it.qty, variant: it.variant })),
-              customer,
-            }),
-          });
-          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Could not start payment');
-          const data = await res.json();
-
-          const ok = await loadRazorpay();
-          if (!ok) throw new Error('Could not reach Razorpay. Check your connection.');
-
-          const rzp = new (window as any).Razorpay({
-            key: data.key_id,
-            order_id: data.order_id,
-            amount: data.amount,
-            currency: 'INR',
-            name: 'aPaulogy',
-            description: 'Watercolours of a city that was',
-            prefill: { name: customer.name, email: customer.email, contact: customer.phone },
-            theme: { color: '#b8543c' },
-            handler: async (resp: any) => {
-              await fetch('/api/verify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(resp),
-              });
+        try{
+          if(method==='bank'){
+            // Place order for manual bank transfer — no gateway needed.
+            let ref='AP'+Date.now().toString(36).toUpperCase();
+            try{ const r=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...order,mode:'bank'})}); if(r.ok){ const d=await r.json().catch(()=>({})); if(d.reference) ref=d.reference; } }catch{}
+            try{ localStorage.setItem('apaulogy_last_order', JSON.stringify({...order,reference:ref})); }catch{}
+            Cart.clear();
+            window.location.href='/order-confirmed/?method=bank&ref='+encodeURIComponent(ref);
+            return;
+          }
+          // Online payment via Razorpay
+          const res=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...order,mode:'razorpay'})});
+          if(!res.ok) throw new Error(((await res.json().catch(()=>({}))) as any).error||'Could not start payment');
+          const data=await res.json();
+          const ok=await loadRazorpay();
+          if(!ok) throw new Error('Could not reach the payment gateway. Check your connection or use bank transfer.');
+          const rzp=new (window as any).Razorpay({
+            key:data.key_id, order_id:data.order_id, amount:data.amount, currency:'INR',
+            name:'aPaulogy', description:'Watercolours of a city that was',
+            prefill:{ name:(customer as any).name, email:(customer as any).email, contact:(customer as any).phone },
+            theme:{ color:'#000000' },
+            handler:function(resp:any){
+              try{ localStorage.setItem('apaulogy_last_order', JSON.stringify({...order,reference:resp.razorpay_payment_id||data.order_id})); }catch{}
               Cart.clear();
-              window.location.href = `/order-confirmed/?order=${encodeURIComponent(data.order_number)}`;
+              window.location.href='/order-confirmed/?method=online&ref='+encodeURIComponent(resp.razorpay_payment_id||data.order_id||'');
             },
-            modal: { ondismiss: () => { payBtn.disabled = false; payBtn.textContent = 'Pay securely'; } },
-          });
-          rzp.on('payment.failed', () => {
-            err.textContent = 'Payment failed. Please try again.'; err.hidden = false;
-            payBtn.disabled = false; payBtn.textContent = 'Pay securely';
+            modal:{ ondismiss:function(){ payBtn.disabled=false; payLabel.textContent=orig; } },
           });
           rzp.open();
-        } catch (e: any) {
-          err.textContent = e.message || 'Something went wrong.'; err.hidden = false;
-          payBtn.disabled = false; payBtn.textContent = 'Pay securely';
+        }catch(ex:any){
+          err.textContent=ex.message||'Something went wrong. Please try again.'; err.hidden=false;
+          payBtn.disabled=false; payLabel.textContent=orig;
         }
       };
     }
     initCheckout();
+    document.addEventListener('cart:ready', initCheckout);
+    document.addEventListener('cart:changed', initCheckout);
     document.addEventListener('astro:after-swap', initCheckout);
   </script>
 </BaseLayout>

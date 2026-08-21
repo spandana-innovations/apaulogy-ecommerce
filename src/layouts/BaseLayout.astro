@@ -2,6 +2,8 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import SearchOverlay from '../components/SearchOverlay.astro';
+import CartDrawer from '../components/CartDrawer.astro';
 import { SITE_NAME, SITE_DESCRIPTION } from '../lib/seo';
 
 export interface Props {
@@ -80,6 +82,31 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
     </main>
     <Footer />
 
+    <SearchOverlay />
+    <CartDrawer />
+
     <script src="../scripts/cart.ts"></script>
+    <script>
+      // #20 — deter casual image copying (right-click, drag, long-press save).
+      // Note: no client protection is absolute, but this removes the easy paths.
+      function guardImages() {
+        document.querySelectorAll('img.protected, .art-guard img, .frame img').forEach((img) => {
+          const el = img as HTMLElement;
+          if (el.dataset.guarded) return;
+          el.dataset.guarded = '1';
+          el.setAttribute('draggable', 'false');
+          el.addEventListener('dragstart', (e) => e.preventDefault());
+          el.addEventListener('contextmenu', (e) => e.preventDefault());
+        });
+      }
+      // Block right-click specifically over artwork containers
+      document.addEventListener('contextmenu', (e) => {
+        const t = e.target as HTMLElement;
+        if (t.closest('.art-guard, .frame, #zoom-lightbox')) e.preventDefault();
+      });
+      guardImages();
+      document.addEventListener('astro:after-swap', guardImages);
+      document.addEventListener('astro:page-load', guardImages);
+    </script>
   </body>
 </html>

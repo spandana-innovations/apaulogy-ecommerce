@@ -1,0 +1,114 @@
+---
+import { getCategories } from '../lib/catalog';
+import { ICONS, categoryIcon } from '../lib/icons';
+import Icon from './Icon.astro';
+
+// Build a slug -> {name, icon-path} map for the client to label results by kind.
+const cats = getCategories();
+const iconMap: Record<string, { name: string; path: string }> = {};
+for (const c of cats) iconMap[c.slug] = { name: c.name, path: ICONS[categoryIcon(c.slug)] || ICONS.frame };
+const fallback = ICONS.frame;
+---
+
+<div id="search-overlay" class="fixed inset-0 z-[60] hidden" role="dialog" aria-modal="true" aria-label="Search">
+  <div id="search-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-[2px]"></div>
+  <div class="relative bg-white border-b border-[var(--color-line-strong)] shadow-[var(--shadow-frame)]">
+    <div class="container-page py-5">
+      <div class="flex items-center gap-3 border-b-2 border-black pb-3">
+        <Icon name="search" size={24} />
+        <input id="search-input" type="search" placeholder="Search prints, books, merchandise…" autocomplete="off"
+          class="flex-1 bg-transparent text-lg outline-none placeholder:text-[var(--color-muted)]" style="font-family:var(--font-serif)" aria-label="Search products" />
+        <button id="search-close" class="p-1.5 hover:text-[var(--color-muted)]" aria-label="Close search"><Icon name="close" size={22} /></button>
+      </div>
+
+      <!-- Kind summary (what categories the results cover) -->
+      <div id="search-kinds" class="flex flex-wrap gap-2 mt-4" style="font-family:var(--font-sans)"></div>
+
+      <div id="search-results" class="mt-4 max-h-[60vh] overflow-y-auto"></div>
+      <p id="search-hint" class="mt-4 text-sm text-[var(--color-muted)]" style="font-family:var(--font-sans)">Type at least two letters to search the collection.</p>
+    </div>
+  </div>
+
+  <script type="application/json" id="search-iconmap" set:html={JSON.stringify({ map: iconMap, fallback })}></script>
+</div>
+
+<style is:global>
+  #search-overlay .kind-chip { display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .7rem; border:1px solid var(--color-line-strong); font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color:var(--color-ink); }
+  #search-overlay .kind-chip:hover { background:var(--color-paper-deep); }
+  #search-overlay .kind-chip svg { width:15px !important; height:15px !important; flex:none; }
+  #search-overlay .sr-row { display:flex; align-items:center; gap:1rem; padding:.6rem; border:1px solid transparent; }
+  #search-overlay .sr-row:hover { border-color: var(--color-line); background: var(--color-paper-deep); }
+  #search-overlay .sr-thumb { width:56px; height:44px; object-fit:contain; background:#fff; border:1px solid var(--color-ink); flex:none; }
+  #search-overlay .sr-kind { display:inline-flex; align-items:center; gap:.35rem; font-family:var(--font-sans); font-size:.62rem; text-transform:uppercase; letter-spacing:.1em; color:var(--color-muted); }
+  #search-overlay .sr-kind svg { width:13px !important; height:13px !important; flex:none; }
+</style>
+
+<script>
+  function initSearch() {
+    const overlay = document.getElementById('search-overlay');
+    const toggle = document.getElementById('search-toggle');
+    if (!overlay || (overlay as HTMLElement).dataset.bound) return;
+    (overlay as HTMLElement).dataset.bound = '1';
+
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    const results = document.getElementById('search-results')!;
+    const kinds = document.getElementById('search-kinds')!;
+    const hint = document.getElementById('search-hint')!;
+    const iconData = JSON.parse(document.getElementById('search-iconmap')!.textContent || '{}');
+    const iconMap = iconData.map || {}; const fallback = iconData.fallback || '';
+
+    let index: any[] = [];
+    let loaded = false;
+    async function ensureIndex() {
+      if (loaded) return;
+      try { index = await (await fetch('/data/search-index.json')).json(); loaded = true; } catch {}
+    }
+    const inr = (p:number) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100);
+    const svg = (path:string) => `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">${path}</svg>`;
+
+    function open() {
+      overlay!.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      ensureIndex().then(() => setTimeout(() => input?.focus(), 30));
+    }
+    function close() { overlay!.classList.add('hidden'); document.body.style.overflow = ''; }
+
+    toggle?.addEventListener('click', open);
+    document.getElementById('search-close')?.addEventListener('click', close);
+    document.getElementById('search-backdrop')?.addEventListener('click', close);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+    function render(q: string) {
+      const query = q.trim().toLowerCase();
+      if (query.length < 2) { results.innerHTML = ''; kinds.innerHTML = ''; hint.hidden = false; return; }
+      hint.hidden = true;
+      const hits = index.filter((p) => p.n.toLowerCase().includes(query) || (p.cn && p.cn.toLowerCase().includes(query))).slice(0, 40);
+      // kind summary
+      const byCat = new Map<string, number>();
+      for (const h of hits) if (h.c) byCat.set(h.c, (byCat.get(h.c) || 0) + 1);
+      kinds.innerHTML = byCat.size
+        ? [...byCat.entries()].sort((a,b)=>b[1]-a[1]).map(([slug,n]) => {
+            const ic = iconMap[slug] || { name: slug, path: fallback };
+            return `<a class="kind-chip" href="/category/${slug}/">${svg(ic.path)} ${ic.name} · ${n}</a>`;
+          }).join('')
+        : '';
+      results.innerHTML = hits.length
+        ? hits.map((h) => {
+            const ic = iconMap[h.c] || { name: h.cn || '', path: fallback };
+            const price = h.pm ? `${inr(h.p)} – ${inr(h.pm)}` : inr(h.p);
+            return `<a class="sr-row" href="/product/${h.s}/">
+              ${h.img ? `<img class="sr-thumb" src="${h.img}" alt="" loading="lazy"/>` : `<span class="sr-thumb"></span>`}
+              <span style="flex:1">
+                <span style="display:block;font-size:1.05rem">${h.n}</span>
+                <span class="sr-kind">${svg(ic.path)} ${ic.name}</span>
+              </span>
+              <span style="font-family:var(--font-sans);font-size:.85rem">${price}</span>
+            </a>`;
+          }).join('')
+        : `<p class="text-sm text-[var(--color-muted)]" style="font-family:var(--font-sans)">No pieces match “${q}”.</p>`;
+    }
+    input?.addEventListener('input', () => render(input.value));
+  }
+  initSearch();
+  document.addEventListener('astro:after-swap', initSearch);
+</script>

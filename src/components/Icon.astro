@@ -1,0 +1,7 @@
+---
+import { ICONS } from '../lib/icons';
+export interface Props { name: string; size?: number; stroke?: number; class?: string; }
+const { name, size = 20, stroke = 1.4, class: cls = '' } = Astro.props;
+const path = ICONS[name] || ICONS.frame;
+---
+<svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width={stroke} class={cls} aria-hidden="true" set:html={path} />

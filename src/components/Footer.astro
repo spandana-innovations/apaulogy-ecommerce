@@ -1,5 +1,6 @@
 ---
 import { SITE_TAGLINE } from '../lib/seo';
+import Icon from './Icon.astro';
 const year = new Date().getFullYear();
 
 const cols = [
@@ -28,7 +29,6 @@ const cols = [
     title: 'Information',
     links: [
       { label: 'About', href: '/about-us/' },
-      { label: 'Contact', href: '/contact-us/' },
       { label: 'FAQ', href: '/faq/' },
       { label: 'Shipping Policy', href: '/shipping-policy/' },
       { label: 'Returns & Refunds', href: '/return-and-refund-policy/' },
@@ -44,7 +44,13 @@ const cols = [
     <div class="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr_1.2fr]">
       <div>
         <img src="/brand/logo-white.png" alt="aPaulogy" class="h-9 w-auto" width="360" height="139" />
-        <p class="mt-4 text-sm text-white/70 max-w-xs">{SITE_TAGLINE}. Signed watercolour prints & merchandise by Paul Fernandes, from Bengaluru.</p>
+        <p class="mt-4 text-sm text-white/70 max-w-xs">{SITE_TAGLINE}. Watercolour prints & merchandise by Paul Fernandes, from Bengaluru.</p>
+        <address class="mt-5 not-italic space-y-2 text-sm text-white/80">
+          <p class="flex items-start gap-2.5"><Icon name="pin" size={16} class="mt-0.5 flex-none opacity-70" /> aPaulogy Gallery, 002 Edward House, 37 Pottery Road, Richards Town, Bengaluru 560 005</p>
+          <p class="flex items-center gap-2.5"><Icon name="mail" size={16} class="flex-none opacity-70" /> <a href="mailto:info@apaulogy.com" class="hover:text-white">info@apaulogy.com</a></p>
+          <p class="flex items-center gap-2.5"><Icon name="facebook" size={16} class="flex-none opacity-70" /> <a href="https://www.facebook.com/aPaulogyGallery" class="hover:text-white" rel="noopener">aPaulogy Gallery</a></p>
+          <p><a href="/contact-us/" class="inline-flex items-center gap-1.5 mt-1 link-underline text-white/90 hover:text-white">Contact us <Icon name="arrowRight" size={14} /></a></p>
+        </address>
         <form class="mt-6 flex max-w-sm" data-newsletter>
           <input type="email" name="email" required placeholder="Your email" aria-label="Email for newsletter"
             class="flex-1 bg-white/5 border border-white/25 px-3 py-2.5 text-sm placeholder:text-white/40 focus:outline-none focus:border-white" />
