@@ -123,3 +123,31 @@ export function hasPriceRange(p: Product): boolean {
 
 /* -------------------------------- Menu ------------------------------ */
 export function getMenu(): MenuNode[] { return menu; }
+
+/** A short, human noun for what a product physically is — for mixed-type listings. */
+const KIND_BY_CAT: Record<string, string> = {
+  'laptop-bags': 'Laptop Bag', 'sling-bags': 'Sling Bag',
+  'illustrations-on-tile': 'Tile', 'plaques': 'Plaque', 'posters': 'Poster',
+  'coffee-table-books': 'Book', 'coaster-sets': 'Coaster Set', 'coffee-mugs': 'Mug',
+  'paperweights': 'Paperweight', 'spectacle-cases': 'Spectacle Case', 'bookmarks': 'Bookmark',
+  'postcards': 'Postcard', 'gift-cards': 'Gift Card', 'e-gift-vouchers': 'Gift Voucher',
+};
+const PRINT_CATS = new Set([
+  'wall-art','bangalore-in-the-70s','vintage-mumbai','a-goan-holiday','mangalore-series',
+  'mumbai-heritage','gods-own-kerala','bangalore-morphed','street-wise','ambassador-of-india',
+  'inside-the-old-house','jungle-series','try-cycling-for-the-love-of-it',
+]);
+export function productKind(p: Product): string {
+  for (const slug of p.categories) if (KIND_BY_CAT[slug]) return KIND_BY_CAT[slug];
+  if (p.primary_category && KIND_BY_CAT[p.primary_category]) return KIND_BY_CAT[p.primary_category];
+  for (const slug of p.categories) if (PRINT_CATS.has(slug)) return 'Print';
+  if (/\bbag\b/i.test(p.name)) return 'Bag';
+  if (/tile/i.test(p.name)) return 'Tile';
+  if (/plaque/i.test(p.name)) return 'Plaque';
+  return 'Print';
+}
+/** True when a set of products spans more than one physical kind. */
+export function hasMixedKinds(products: Product[]): boolean {
+  const kinds = new Set(products.map((p) => productKind(p)));
+  return kinds.size > 1;
+}

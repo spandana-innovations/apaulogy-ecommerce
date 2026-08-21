@@ -36,6 +36,7 @@ const cols = [
       { label: 'Returns & Refunds', href: '/return-and-refund-policy/' },
       { label: 'Terms & Conditions', href: '/terms-conditions/' },
       { label: 'Privacy Policy', href: '/privacy-policy/' },
+      { label: 'Data Deletion', href: '/data-deletion/' },
     ],
   },
 ];
@@ -91,18 +92,25 @@ const cols = [
         <span class="pay" title="Mastercard"><svg viewBox="0 0 48 28" aria-label="Mastercard"><circle cx="19" cy="14" r="8" fill="currentColor" opacity=".85"/><circle cx="29" cy="14" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
         <span class="pay" title="RuPay"><svg viewBox="0 0 48 28" aria-label="RuPay"><text x="22" y="18.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="11" fill="currentColor">RuPay</text><path d="M40 8l4 6-4 6z" fill="currentColor"/></svg></span>
         <span class="pay" title="UPI"><svg viewBox="0 0 48 28" aria-label="UPI"><text x="20" y="18.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="12" fill="currentColor">UPI</text><path d="M34 8l5 6-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
-        <span class="pay" title="Net Banking"><svg viewBox="0 0 48 28" aria-label="Net banking"><path d="M14 12h20M15.5 12l8.5-5 8.5 5M17 12v7M21.5 12v7M26.5 12v7M31 12v7M14 21h20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
-        <span class="pay" title="Bank transfer — NEFT / IMPS"><svg viewBox="0 0 48 28" aria-label="NEFT and IMPS bank transfer"><text x="24" y="17.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="7.5" fill="currentColor">NEFT/IMPS</text></svg></span>
+
+        <span class="mx-1 text-white/25" aria-hidden="true">|</span>
+
+        <!-- Payment gateway credit -->
+        <span class="flex items-center gap-2 text-xs text-white/70" style="font-family:var(--font-sans)">
+          <span class="inline-flex items-center gap-1.5 bg-white rounded-[3px] px-2.5 py-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 3 8.6 21h3.1l1.5-4h-2l4-11z" fill="#3395FF"/><path d="M8.6 3 5.5 12l6.3-2.4L13 6z" fill="#072654"/></svg>
+            <span class="text-[0.82rem] font-semibold tracking-tight" style="color:#072654">Razorpay</span>
+          </span>
+          Secure payments by Razorpay
+        </span>
       </div>
     </div>
 
-    <div class="mt-8 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60" style="font-family:var(--font-sans)">
-      <p>© {year} aPaulogy. All artwork © Paul Fernandes.</p>
-      <p class="flex items-center gap-2">
-        <span>Secure payments by Razorpay</span>
-        <span aria-hidden="true">·</span>
-        <span>Made in Bengaluru</span>
-      </p>
+    <div class="mt-8 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60" style="font-family:var(--font-sans)">
+      <p>© {year} aPaulogy Gallery <span class="text-white/30">|</span> All artwork © Paul Fernandes</p>
+      <a href="https://quantump2x.com" rel="noopener" target="_blank" class="opacity-70 hover:opacity-100 transition-opacity" aria-label="Quantum P2X">
+        <img src="/brand/quantump2x.svg" alt="Quantum P2X" width="30" height="30" class="w-[30px] h-[30px]" />
+      </a>
     </div>
   </div>
 </footer>

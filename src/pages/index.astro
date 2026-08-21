@@ -32,7 +32,6 @@ const mediums = [
   { icon: 'book',   name: 'Books', desc: 'Coffee-table books to drift through, cover to cover.', href: '/category/coffee-table-books/' },
   { icon: 'bag',    name: 'Carriables & Gifts', desc: 'Bags, coasters, paperweights and small delights.', href: '/category/merchandise/' },
 ];
-const mosaic = featured.slice(0, 4).map((p) => p.images?.[0]?.url).filter(Boolean);
 const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
 ---
 
@@ -99,27 +98,20 @@ const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
     <ProductSlider title={s.title} href={`/category/${s.slug}/`} icon={s.icon} products={s.products} />
   ))}
 
-  <!-- FOLLOW ALONG -->
+  <!-- FOLLOW ALONG (compact) -->
   <section class="bg-black text-white mt-16">
-    <div class="container-page py-14 grid lg:grid-cols-2 gap-10 items-center">
+    <div class="container-page py-9 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
       <div>
         <p class="eyebrow !text-white/60">From the gallery</p>
-        <h2 class="text-4xl sm:text-5xl mt-2">Follow along</h2>
-        <p class="mt-4 text-white/75 max-w-md">New pieces, works in progress and the odd story from the aPaulogy gallery — on Instagram and Facebook.</p>
-        <div class="flex flex-wrap items-center gap-3 mt-7">
-          {SOCIALS.map((s) => (
-            <a href={s.href} rel="noopener" target="_blank" aria-label={`aPaulogy on ${s.name}`}
-              class="flex items-center gap-2.5 border border-white/35 px-5 py-3 hover:bg-white hover:text-black transition-colors">
-              <Icon name={s.icon} size={20} stroke={1.5} />
-              <span class="text-[0.74rem] uppercase tracking-[0.15em] font-semibold" style="font-family:var(--font-sans)">{s.handle}</span>
-            </a>
-          ))}
-        </div>
+        <h2 class="text-3xl sm:text-4xl mt-1.5">Follow along</h2>
+        <p class="mt-2 text-white/70 max-w-md text-sm">New pieces, works in progress and the odd story — on Instagram and Facebook.</p>
       </div>
-      <div class="grid grid-cols-2 gap-3">
-        {mosaic.map((img) => (
-          <a href={SOCIALS[0].href} rel="noopener" target="_blank" class="frame art-guard !border-white/25 bg-white">
-            <img src={img} alt="From the aPaulogy gallery" class="protected w-full aspect-square object-contain art-pad" loading="lazy" />
+      <div class="flex flex-wrap items-center justify-center gap-3 shrink-0">
+        {SOCIALS.map((s) => (
+          <a href={s.href} rel="noopener" target="_blank" aria-label={`aPaulogy on ${s.name}`}
+            class="flex items-center gap-2.5 border border-white/35 px-5 py-3 hover:bg-white hover:text-black transition-colors">
+            <Icon name={s.icon} size={20} stroke={1.5} />
+            <span class="text-[0.74rem] uppercase tracking-[0.15em] font-semibold" style="font-family:var(--font-sans)">{s.handle}</span>
           </a>
         ))}
       </div>

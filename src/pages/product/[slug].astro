@@ -36,11 +36,16 @@ const metaDesc = (plain ? plain.slice(0, 155) : `${product.name} — a watercolo
 const variations = product.variations.filter((v) => v.price != null);
 // Parse inch dimensions (w" x h") from each variation label for the scale figure.
 function dims(label: string): { w: number; h: number } | null {
-  const m = label.match(/(\d+(?:\.\d+)?)\s*["″”]\s*x\s*(\d+(?:\.\d+)?)/i);
-  return m ? { w: parseFloat(m[1]), h: parseFloat(m[2]) } : null;
+  let m = label.match(/(\d+(?:\.\d+)?)\s*["″”]\s*x\s*(\d+(?:\.\d+)?)/i);
+  if (m) return { w: parseFloat(m[1]), h: parseFloat(m[2]) };
+  m = label.match(/(\d+(?:\.\d+)?)\s*ft\s*[×x]\s*(\d+(?:\.\d+)?)\s*ft/i);
+  if (m) return { w: parseFloat(m[1]) * 12, h: parseFloat(m[2]) * 12 };
+  return null;
 }
 const sizeData = variations.map((v) => ({ slug: v.slug, label: v.label, price: v.sale_price ?? v.price, image: v.image || '', ...(dims(v.label) || { w: 0, h: 0 }) }));
 const hasDims = sizeData.some((s) => s.h > 0);
+const isCanvas = variations.some((v) => /canvas/i.test(v.label));
+const optionLabel = isCanvas ? 'Format' : 'Print size';
 const PX_PER_INCH = 2.3;            // runner ≈ 69in → ~158px tall
 const MAN_INCHES = 69;
 ---
@@ -97,23 +102,25 @@ const MAN_INCHES = 69;
 
         {product.short_html && <div class="prose-paper mt-5 text-[var(--color-ink-soft)]" set:html={product.short_html} />}
 
-        <!-- Print size: pick a plaque to scale (desktop) / themed select (mobile) -->
+        <!-- Format / size: pick to scale against the runner (desktop) / themed select (mobile) -->
         {variations.length > 0 && (
           <div class="mt-8" style="font-family:var(--font-sans)">
-            <span class="field-label">Print size</span>
+            <span class="field-label">{optionLabel}</span>
 
             <!-- Mobile: simple themed select -->
-            <select id="ps-mobile" class="field sm:hidden" aria-label="Choose a print size">
-              <option value="" selected disabled>Choose a print size</option>
+            <select id="ps-mobile" class="field sm:hidden" aria-label={`Choose ${isCanvas ? 'a format' : 'a print size'}`}>
+              <option value="" selected disabled>{isCanvas ? 'Choose a format' : 'Choose a print size'}</option>
               {sizeData.map((s) => (
                 <option value={s.slug}>{s.label} — {formatINR(s.price!)}</option>
               ))}
             </select>
 
-            <!-- Desktop: the plaques are the picker -->
+            <!-- Desktop: pick to see it to scale -->
             <div class="size-panel hidden sm:block">
               <p class="size-intro">
-                <strong>Select a print below</strong> to see it against our runner — he's about 5′9″, fish included.
+                {hasDims
+                  ? <><strong>Select an option below</strong> to see it against our runner — he's about 5′9″{isCanvas ? '' : ', fish included'}.</>
+                  : <><strong>Choose a format</strong> for this piece.</>}
               </p>
               {hasDims && (
                 <div class="size-stage" id="size-stage">

@@ -1,15 +1,16 @@
 ---
 import type { Product } from '../lib/catalog';
-import { effectivePrice, isOnSale, hasPriceRange } from '../lib/catalog';
+import { effectivePrice, isOnSale, hasPriceRange, productKind } from '../lib/catalog';
 import { formatINR, formatINRRange } from '../lib/format';
 
-export interface Props { product: Product; }
-const { product } = Astro.props;
+export interface Props { product: Product; showKind?: boolean; }
+const { product, showKind = false } = Astro.props;
 const price = effectivePrice(product);
 const onSale = isOnSale(product);
 const range = hasPriceRange(product);
 const img = product.images?.[0]?.url;
 const href = `/product/${product.slug}/`;
+const kind = showKind ? productKind(product) : null;
 ---
 
 <article class="group">
@@ -26,8 +27,9 @@ const href = `/product/${product.slug}/`;
   </a>
 
   <div class="pt-3">
-    <h3 class="text-2xl leading-snug">
-      <a href={href} class="link-hover">{product.name}</a>
+    {kind && <p class="text-[0.6rem] uppercase tracking-[0.16em] text-[var(--color-muted)] mb-1" style="font-family:var(--font-sans)">{kind}</p>}
+    <h3 class="text-2xl leading-snug truncate">
+      <a href={href} class="link-hover" title={product.name}>{product.name}</a>
     </h3>
     <div class="mt-1 flex items-baseline gap-2" style="font-family:var(--font-sans)">
       <span class="text-[var(--color-ink)] text-[0.9rem] font-medium">

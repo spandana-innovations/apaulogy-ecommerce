@@ -1,0 +1,140 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import { breadcrumbSchema } from '../lib/seo';
+const jsonld = [breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'Data Deletion Request', url: '/data-deletion/' }], Astro.site)];
+---
+<BaseLayout
+  title="Data Deletion Request"
+  description="Request deletion of your personal data held by aPaulogy. Submit the form and we’ll process your request in line with our Privacy Policy."
+  type="article"
+  jsonld={jsonld}
+>
+  <div class="container-page py-16">
+    <div class="max-w-2xl mx-auto">
+      <nav class="text-xs text-[var(--color-muted)] mb-6" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+        <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span> <span class="text-[var(--color-ink-soft)]">Data Deletion Request</span>
+      </nav>
+
+      <header class="mb-8">
+        <p class="eyebrow">Privacy</p>
+        <h1 class="text-5xl sm:text-6xl mt-3">Data deletion request</h1>
+        <p class="mt-5 text-[var(--color-ink-soft)]">
+          You can ask us to delete the personal data we hold about you — your account details, contact
+          information and order history. Submit the form below and we’ll verify and process your request,
+          usually within 30 days, in line with our <a href="/privacy-policy/" class="link-underline">Privacy Policy</a>.
+          Some records we’re legally required to keep (for tax or accounting) may be retained for the
+          statutory period before deletion.
+        </p>
+      </header>
+
+      <form id="dd-form" class="space-y-5" novalidate style="font-family:var(--font-sans)">
+        <div class="grid sm:grid-cols-2 gap-4">
+          <label class="block sm:col-span-2"><span class="field-label">Full name</span><input name="name" required class="input" autocomplete="name" /><small class="dd-err" data-err></small></label>
+          <label class="block"><span class="field-label">Email on your account</span><input name="email" type="email" required class="input" autocomplete="email" /><small class="dd-err" data-err></small></label>
+          <label class="block"><span class="field-label">Phone (optional)</span><input name="phone" class="input" autocomplete="tel" inputmode="tel" /></label>
+          <label class="block sm:col-span-2"><span class="field-label">Order reference (optional)</span><input name="reference" class="input" placeholder="e.g. APG-123456" /></label>
+        </div>
+
+        <div>
+          <span class="field-label">What would you like us to do?</span>
+          <div class="space-y-2 mt-1">
+            <label class="flex items-start gap-3 border border-[var(--color-ink)] p-3.5 cursor-pointer dd-opt">
+              <input type="radio" name="scope" value="delete-all" checked class="mt-1 accent-black" />
+              <span><span class="font-semibold text-[0.9rem]">Delete all my data</span><span class="block text-xs text-[var(--color-muted)] mt-0.5">Remove my account, contact details and order history.</span></span>
+            </label>
+            <label class="flex items-start gap-3 border border-[var(--color-ink)] p-3.5 cursor-pointer dd-opt">
+              <input type="radio" name="scope" value="access" class="mt-1 accent-black" />
+              <span><span class="font-semibold text-[0.9rem]">Send me a copy of my data</span><span class="block text-xs text-[var(--color-muted)] mt-0.5">Export the personal data you hold about me.</span></span>
+            </label>
+            <label class="flex items-start gap-3 border border-[var(--color-ink)] p-3.5 cursor-pointer dd-opt">
+              <input type="radio" name="scope" value="unsubscribe" class="mt-1 accent-black" />
+              <span><span class="font-semibold text-[0.9rem]">Stop contacting me</span><span class="block text-xs text-[var(--color-muted)] mt-0.5">Remove me from any marketing, keep my order records.</span></span>
+            </label>
+          </div>
+        </div>
+
+        <label class="block"><span class="field-label">Anything else? (optional)</span><textarea name="details" rows="3" class="input"></textarea></label>
+
+        <label class="flex items-start gap-3 text-sm text-[var(--color-ink-soft)]">
+          <input type="checkbox" name="confirm" class="mt-1 accent-black" />
+          <span>I confirm this is my own data and I understand that deletion is permanent and may end my access to past orders. <small class="dd-err" data-err></small></span>
+        </label>
+
+        <button type="submit" id="dd-submit" class="btn btn-primary w-full gap-2"><Icon name="shield" size={16} /> Submit request</button>
+        <p id="dd-error" class="text-sm flex items-center gap-1.5" style="color:#b00020" hidden></p>
+      </form>
+
+      <!-- Success -->
+      <div id="dd-done" class="hidden text-center border border-[var(--color-line-strong)] p-10">
+        <div class="flex justify-center mb-4"><span class="w-14 h-14 grid place-items-center border-2 border-black rounded-full"><Icon name="check" size={26} /></span></div>
+        <h2 class="text-3xl" style="font-family:var(--font-display)">Request received</h2>
+        <p class="mt-3 text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">
+          Your reference is <span id="dd-ref" class="font-semibold"></span>. We’ve logged your request and will
+          email you at the address provided to confirm. If you don’t hear back within a few days, write to
+          <a href="mailto:info@apaulogy.com" class="link-underline">info@apaulogy.com</a>.
+        </p>
+        <a href="/" class="btn btn-outline mt-6">Back home</a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .dd-err { display:none; font-size:.72rem; color:#b00020; margin-top:.3rem; }
+    .dd-err.show { display:block; }
+    .input.invalid { border-color:#b00020; box-shadow:0 0 0 1px #b00020; }
+    .dd-opt:has(input:checked) { background: var(--color-paper-deep); box-shadow: inset 0 0 0 1px var(--color-ink); }
+  </style>
+
+  <script>
+    function initDD() {
+      const form = document.getElementById('dd-form') as HTMLFormElement | null;
+      if (!form || form.dataset.bound) return;
+      form.dataset.bound = '1';
+      const err = document.getElementById('dd-error') as HTMLElement;
+
+      function setErr(el: HTMLElement, msg: string) {
+        el.classList.add('invalid');
+        const s = el.closest('label')?.querySelector('[data-err]') as HTMLElement | null;
+        if (s) { s.textContent = msg; s.classList.add('show'); }
+      }
+      function clearErr(el: HTMLElement) {
+        el.classList.remove('invalid');
+        const s = el.closest('label')?.querySelector('[data-err]') as HTMLElement | null;
+        if (s) { s.textContent = ''; s.classList.remove('show'); }
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        err.hidden = true;
+        let ok = true;
+        const name = form.elements.namedItem('name') as HTMLInputElement;
+        const email = form.elements.namedItem('email') as HTMLInputElement;
+        const confirm = form.elements.namedItem('confirm') as HTMLInputElement;
+        [name, email].forEach(clearErr); clearErr(confirm);
+        if (!name.value.trim()) { setErr(name, 'Required'); ok = false; }
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.value)) { setErr(email, 'Enter a valid email'); ok = false; }
+        if (!confirm.checked) { setErr(confirm, 'Please confirm to proceed.'); ok = false; }
+        if (!ok) { (form.querySelector('.invalid, input[name=confirm]') as HTMLElement)?.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
+
+        const btn = document.getElementById('dd-submit') as HTMLButtonElement;
+        btn.disabled = true;
+        const payload = Object.fromEntries(new FormData(form).entries());
+        const reference = 'DEL-' + Date.now().toString(36).toUpperCase();
+        try {
+          await fetch('/api/data-deletion', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...payload, reference }) });
+        } catch {}
+        // Always confirm client-side; also open a prefilled email as a reliable fallback.
+        (document.getElementById('dd-ref') as HTMLElement).textContent = reference;
+        form.classList.add('hidden');
+        document.getElementById('dd-done')!.classList.remove('hidden');
+        const body = encodeURIComponent(`Data request (${reference})\nName: ${payload.name}\nEmail: ${payload.email}\nPhone: ${payload.phone || '-'}\nReference: ${payload.reference || '-'}\nRequest: ${payload.scope}\nDetails: ${payload.details || '-'}`);
+        const mail = document.createElement('a');
+        mail.href = `mailto:info@apaulogy.com?subject=Data%20Deletion%20Request%20${reference}&body=${body}`;
+        mail.click();
+      });
+    }
+    initDD();
+    document.addEventListener('astro:after-swap', initDD);
+  </script>
+</BaseLayout>

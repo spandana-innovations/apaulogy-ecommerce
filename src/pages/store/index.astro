@@ -1,10 +1,11 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { getProducts, getTopCategories, getCategories, getChildCategories } from '../../lib/catalog';
+import { getProducts, getTopCategories, getCategories, getChildCategories, hasMixedKinds } from '../../lib/catalog';
 import { breadcrumbSchema } from '../../lib/seo';
 
 const products = getProducts();
+const mixedKinds = hasMixedKinds(products);
 const topCats = getTopCategories().filter((c) => (c.count ?? 0) > 0 || getChildCategories(c.slug).length);
 const allCats = getCategories();
 
@@ -56,7 +57,7 @@ const jsonld = [breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'Store', u
     <div id="store-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
       {products.map((p, i) => (
         <div class="store-item" data-cats={productMeta[i].tops} data-name={productMeta[i].name}>
-          <ProductCard product={p} />
+          <ProductCard product={p} showKind={mixedKinds} />
         </div>
       ))}
     </div>

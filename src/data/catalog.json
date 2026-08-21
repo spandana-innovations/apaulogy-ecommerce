@@ -313,9 +313,9 @@
    "slug": "bawa-nu-bliss",
    "name": "Bawa Nu Bliss",
    "sku": "MUM01",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -324,7 +324,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Bawa Nu Bliss: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Bawa Nu Bliss: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -337,15 +337,30 @@
      "alt": "IraniRestP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "bawa-nu-bliss-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/IraniRestrevised.webp"
+    },
+    {
+     "slug": "bawa-nu-bliss-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/IraniRestrevised.webp"
+    }
+   ]
   },
   {
    "slug": "anjuna",
    "name": "Anjuna",
    "sku": "GOA01",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -354,7 +369,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Anjuna: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Anjuna: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -367,15 +382,30 @@
      "alt": "AnjunaWhiteFrame"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "anjuna-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/AnjunaBlackFrame-1.webp"
+    },
+    {
+     "slug": "anjuna-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/AnjunaBlackFrame-1.webp"
+    }
+   ]
   },
   {
    "slug": "bhaan-copper-water-boiler",
    "name": "Bhaan: Copper Water Boiler",
    "sku": "MANG01",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -384,7 +414,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "",
    "images": [
@@ -397,7 +427,22 @@
      "alt": "Bhaan-p"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "bhaan-copper-water-boiler-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Bhaan.webp"
+    },
+    {
+     "slug": "bhaan-copper-water-boiler-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Bhaan.webp"
+    }
+   ]
   },
   {
    "slug": "rythym-house-kalaghoda",
@@ -1274,7 +1319,7 @@
      "alt": "Shines1"
     },
     {
-     "url": "/uploads/2017/03/Shines2.webp.webp",
+     "url": "/uploads/2017/03/Shines2.webp",
      "alt": "Shines2.jpg"
     }
    ],
@@ -4645,7 +4690,7 @@
     "bangalore-in-the-70s"
    ],
    "primary_category": "bangalore-in-the-70s",
-   "short_html": "<p>On its Northern fringes, the BGC connects with the southern tip of  the Bangalore Palace. Generations of Wodeyar Rajas were known to be keen golfers.</p><ul><li>Only available as unframed mounted print</li><li>Colour of mount may differ as per availability</li><li>Framed prints only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
+   "short_html": "<p>On its Northern fringes, the BGC connects with the southern tip of the Bangalore Palace. Generations of Wodeyar Rajas were known to be keen golfers.</p><ul><li>Only available as unframed mounted print</li><li>Colour of mount may differ as per availability</li><li>Framed prints only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.55",
    "images": [
@@ -5195,9 +5240,9 @@
    "slug": "countless-corners-in-colaba",
    "name": "Countless Corners in Colaba",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5206,7 +5251,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Countless Corners in Colaba: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Countless Corners in Colaba: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5219,15 +5264,30 @@
      "alt": "ColabaP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "countless-corners-in-colaba-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Colabarevised.webp"
+    },
+    {
+     "slug": "countless-corners-in-colaba-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Colabarevised.webp"
+    }
+   ]
   },
   {
    "slug": "high-tide-at-the-gateway",
    "name": "High Tide at the Gateway",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5236,7 +5296,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>High Tide at the Gateway: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>High Tide at the Gateway: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5249,15 +5309,30 @@
      "alt": "GatewayP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "high-tide-at-the-gateway-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/02/High-Tide-at-the-Gateway-1.webp"
+    },
+    {
+     "slug": "high-tide-at-the-gateway-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/02/High-Tide-at-the-Gateway-1.webp"
+    }
+   ]
   },
   {
    "slug": "fauna-and-flora-at-the-fountain",
    "name": "Fauna and Flora at the Fountain",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5266,7 +5341,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Fauna and Flora at the Fountain: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Fauna and Flora at the Fountain: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5279,15 +5354,30 @@
      "alt": "FloraP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "fauna-and-flora-at-the-fountain-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Florarevised.webp"
+    },
+    {
+     "slug": "fauna-and-flora-at-the-fountain-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Florarevised.webp"
+    }
+   ]
   },
   {
    "slug": "in-top-gear-on-marine-drive",
    "name": "In Top Gear on Marine Drive",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5296,7 +5386,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>In Top Gear on Marine Drive: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>In Top Gear on Marine Drive: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5309,15 +5399,30 @@
      "alt": "MarineDriveP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "in-top-gear-on-marine-drive-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/MarinedriveRestrevised-copy.webp"
+    },
+    {
+     "slug": "in-top-gear-on-marine-drive-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/MarinedriveRestrevised-copy.webp"
+    }
+   ]
   },
   {
    "slug": "all-time-classics-eros-cinema",
    "name": "All Time Classics: Eros Cinema",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5326,7 +5431,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>All Time Classics, Eros Cinema: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>All Time Classics, Eros Cinema: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5339,15 +5444,30 @@
      "alt": "ErosP (1)"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "all-time-classics-eros-cinema-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/ErosRestrevised-copy.webp"
+    },
+    {
+     "slug": "all-time-classics-eros-cinema-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/ErosRestrevised-copy.webp"
+    }
+   ]
   },
   {
    "slug": "leisures-and-pleasures-at-the-causeway",
    "name": "Leisures and Pleasures at the Causeway",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5356,7 +5476,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Leisures and Pleasures at the Causeway: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Leisures and Pleasures at the Causeway: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5369,15 +5489,30 @@
      "alt": "LeopoldCafeP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "leisures-and-pleasures-at-the-causeway-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Leopoldrevised.webp"
+    },
+    {
+     "slug": "leisures-and-pleasures-at-the-causeway-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Leopoldrevised.webp"
+    }
+   ]
   },
   {
    "slug": "fresh-catch-at-sasoon-dock",
    "name": "Fresh Catch at Sasoon Dock",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5386,7 +5521,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Fresh Catch at Sasoon Dock: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Fresh Catch at Sasoon Dock: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5399,15 +5534,30 @@
      "alt": "Sasoonnoframerevised"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "fresh-catch-at-sasoon-dock-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Sasoonrevised.webp"
+    },
+    {
+     "slug": "fresh-catch-at-sasoon-dock-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Sasoonrevised.webp"
+    }
+   ]
   },
   {
    "slug": "matinee-at-regal-cinema",
    "name": "Matinee at Regal Cinema",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5416,7 +5566,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Matinee at Regal Cinema: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Matinee at Regal Cinema: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5429,15 +5579,30 @@
      "alt": "RegalCinemaP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "matinee-at-regal-cinema-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/RegalRevised.webp"
+    },
+    {
+     "slug": "matinee-at-regal-cinema-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/RegalRevised.webp"
+    }
+   ]
   },
   {
    "slug": "traffic-situation-at-kala-ghoda",
    "name": "Traffic Situation at Kala Ghoda",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5446,7 +5611,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Traffic Situation at Kala Ghoda: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Traffic Situation at Kala Ghoda: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5459,15 +5624,30 @@
      "alt": "KalaghodaP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "traffic-situation-at-kala-ghoda-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/KalaghodaRevised.webp"
+    },
+    {
+     "slug": "traffic-situation-at-kala-ghoda-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/KalaghodaRevised.webp"
+    }
+   ]
   },
   {
    "slug": "full-house-new-mumbai-talkies",
    "name": "Full House: New Mumbai Talkies",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5476,7 +5656,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Full House, New Mumbai Talkies: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Full House, New Mumbai Talkies: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5489,15 +5669,30 @@
      "alt": "TalkiesP"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "full-house-new-mumbai-talkies-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Talkiesrevised.webp"
+    },
+    {
+     "slug": "full-house-new-mumbai-talkies-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Talkiesrevised.webp"
+    }
+   ]
   },
   {
    "slug": "ages-in-cages",
    "name": "Ages in Cages",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5506,7 +5701,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Ages in Cages: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Ages in Cages: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5519,15 +5714,30 @@
      "alt": "AgesinCages1"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "ages-in-cages-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/AgesinCages.webp"
+    },
+    {
+     "slug": "ages-in-cages-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/AgesinCages.webp"
+    }
+   ]
   },
   {
    "slug": "bambaiyya-mumbai-street-delights",
    "name": "Bambaiyya: Mumbai Street Delights",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5536,7 +5746,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Bambaiyya: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Bambaiyya: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5549,15 +5759,30 @@
      "alt": "Bam Baiyya1"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "bambaiyya-mumbai-street-delights-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Bam-Baiyya.webp"
+    },
+    {
+     "slug": "bambaiyya-mumbai-street-delights-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Bam-Baiyya.webp"
+    }
+   ]
   },
   {
    "slug": "chor-bazaar",
    "name": "Chor Bazaar",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5566,7 +5791,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Chor Bazaar: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Chor Bazaar: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5579,15 +5804,30 @@
      "alt": "Chor Bazaar1"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "chor-bazaar-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/02/ChorBazaarFramed1.webp"
+    },
+    {
+     "slug": "chor-bazaar-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/02/ChorBazaarFramed1.webp"
+    }
+   ]
   },
   {
    "slug": "close-shave-on-warden-road",
    "name": "Close Shave on Warden Road",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5596,7 +5836,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Close Shave on Warden Road: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Close Shave on Warden Road: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5609,15 +5849,30 @@
      "alt": "CloseShave1"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "close-shave-on-warden-road-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/CloseShave.webp"
+    },
+    {
+     "slug": "close-shave-on-warden-road-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/CloseShave.webp"
+    }
+   ]
   },
   {
    "slug": "fort-flavour",
    "name": "Fort Flavour",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5626,7 +5881,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Fort Flavour: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Fort Flavour: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5639,15 +5894,30 @@
      "alt": "Fort Flavour1"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "fort-flavour-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Fort-Flavour.webp"
+    },
+    {
+     "slug": "fort-flavour-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Fort-Flavour.webp"
+    }
+   ]
   },
   {
    "slug": "harmonious-mix",
    "name": "Harmonious Mix",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5656,7 +5926,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Harmonious Mix: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Harmonious Mix: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5669,15 +5939,30 @@
      "alt": "Harmonious1"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "harmonious-mix-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Harmonious.webp"
+    },
+    {
+     "slug": "harmonious-mix-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Harmonious.webp"
+    }
+   ]
   },
   {
    "slug": "mount-mary-bandra",
    "name": "Mount Mary, Bandra",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5686,7 +5971,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>Sing a Prayer: Mount Mary, Bandra: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Sing a Prayer: Mount Mary, Bandra: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5699,15 +5984,30 @@
      "alt": "Mount Mary1"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "mount-mary-bandra-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Mount-Mary.webp"
+    },
+    {
+     "slug": "mount-mary-bandra-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Mount-Mary.webp"
+    }
+   ]
   },
   {
    "slug": "an-afternoon-at-samovar",
    "name": "An Afternoon at Samovar",
    "sku": "",
-   "type": "simple",
+   "type": "variable",
    "price": 320000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -5716,7 +6016,7 @@
     "vintage-mumbai"
    ],
    "primary_category": "vintage-mumbai",
-   "short_html": "<p>An Afternoon at Samovar : 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>An Afternoon at Samovar : 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -5729,7 +6029,22 @@
      "alt": "Samovar1"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "an-afternoon-at-samovar-print",
+     "label": "Mounted Print (unframed)",
+     "price": 320000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Samovar.webp"
+    },
+    {
+     "slug": "an-afternoon-at-samovar-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/03/Samovar.webp"
+    }
+   ]
   },
   {
    "slug": "shineboard-coaster-set",
@@ -6037,7 +6352,7 @@
    "weight": "0.4",
    "images": [
     {
-     "url": "/uploads/2017/04/AmbyTouristPC.webp.webp",
+     "url": "/uploads/2017/04/AmbyTouristPC.webp",
      "alt": "Tourist Ambassador Plaque"
     }
    ],
@@ -6470,7 +6785,7 @@
    "weight": "",
    "images": [
     {
-     "url": "/uploads/2017/04/Morphing3Revised.webp.webp",
+     "url": "/uploads/2017/04/Morphing3Revised.webp",
      "alt": "Pub City"
     }
    ],
@@ -6825,9 +7140,9 @@
    "slug": "in-the-balcao",
    "name": "In The Balcao",
    "sku": "GOA02",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -6836,7 +7151,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>In the Balcao: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>In the Balcao: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -6849,15 +7164,30 @@
      "alt": "In the Balcao Goa"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "in-the-balcao-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/BalcaoWhiteFrame-1.webp"
+    },
+    {
+     "slug": "in-the-balcao-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/BalcaoWhiteFrame-1.webp"
+    }
+   ]
   },
   {
    "slug": "eco-pig-hygiene",
    "name": "Eco Pig Hygiene",
    "sku": "GOA04",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -6866,7 +7196,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Eco Pig Hygeine: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Eco Pig Hygeine: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -6879,15 +7209,30 @@
      "alt": "Eco Pig Hygeine"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "eco-pig-hygiene-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/EcoPigBlackFrame-copy-1.webp"
+    },
+    {
+     "slug": "eco-pig-hygiene-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/EcoPigBlackFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "fiesta-siesta",
    "name": "Fiesta Siesta",
    "sku": "GOA03",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -6896,7 +7241,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Fiesta Siesta: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Fiesta Siesta: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -6909,15 +7254,30 @@
      "alt": "Fiesta Siesta Goa"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "fiesta-siesta-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/FiestaSiestaWhiteFrame-1.webp"
+    },
+    {
+     "slug": "fiesta-siesta-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/FiestaSiestaWhiteFrame-1.webp"
+    }
+   ]
   },
   {
    "slug": "sunshine-shack",
    "name": "Sunshine Shack",
    "sku": "GOA05",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -6926,7 +7286,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Sunshine Shack: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Sunshine Shack: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -6939,15 +7299,30 @@
      "alt": "Beach Shack Goa"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "sunshine-shack-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/ShoreBarBlackFrame-copy-1.webp"
+    },
+    {
+     "slug": "sunshine-shack-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/ShoreBarBlackFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "painted-house",
    "name": "Painted House",
    "sku": "GOA06",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -6956,7 +7331,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Painted House: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Painted House: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -6969,15 +7344,30 @@
      "alt": "Painted House Goa"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "painted-house-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/PaintedHouseWhiteFrame-copy-1.webp"
+    },
+    {
+     "slug": "painted-house-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/PaintedHouseWhiteFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "pilot-pillion",
    "name": "Pilot & Pillion",
    "sku": "GOA07",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -6986,7 +7376,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Pilot &amp; Pillion: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Pilot &amp; Pillion: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -6999,15 +7389,30 @@
      "alt": "Pilot and Pillion"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "pilot-pillion-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/PilotPillionBlackFrame-copy-1.webp"
+    },
+    {
+     "slug": "pilot-pillion-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/PilotPillionBlackFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "fontainhas",
    "name": "Fontainhas",
    "sku": "GOA08",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -7016,7 +7421,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Fontainhas: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Fontainhas: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -7029,15 +7434,30 @@
      "alt": "Fontainhas Goa"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "fontainhas-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/FontainhasWhiteframe-1.webp"
+    },
+    {
+     "slug": "fontainhas-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/FontainhasWhiteframe-1.webp"
+    }
+   ]
   },
   {
    "slug": "red-lobster",
    "name": "Red Lobster",
    "sku": "GOA09",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -7046,7 +7466,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Red Lobster: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Red Lobster: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -7059,15 +7479,30 @@
      "alt": "Red Lobster"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "red-lobster-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/RedLobsterBlackFrame-copy-1.webp"
+    },
+    {
+     "slug": "red-lobster-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/RedLobsterBlackFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "susse-garde",
    "name": "Susse Garde",
    "sku": "GOA10",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -7076,7 +7511,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Susse Garde: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Susse Garde: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -7089,15 +7524,30 @@
      "alt": "Dancers in Goa"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "susse-garde-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/SusseGardeWhiteFrame-copy-1.webp"
+    },
+    {
+     "slug": "susse-garde-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/SusseGardeWhiteFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "church-square",
    "name": "Church Square",
    "sku": "GOA11",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -7106,7 +7556,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Church Square: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Church Square: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -7119,15 +7569,30 @@
      "alt": "St Jerome Goa"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "church-square-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/StJeromeBlackFrame-1.webp"
+    },
+    {
+     "slug": "church-square-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/StJeromeBlackFrame-1.webp"
+    }
+   ]
   },
   {
    "slug": "innocencio-wines",
    "name": "Innocencio Wines",
    "sku": "GOA12",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -7136,7 +7601,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Innocencio Wines: 12.5\" x 12.5\" Print &nbsp;</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Innocencio Wines: 12.5\" x 12.5\" Print &nbsp;</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -7149,15 +7614,30 @@
      "alt": "Innocencio Wines Goa"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "innocencio-wines-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/RocketFuelWhiteFrame-copy-1.webp"
+    },
+    {
+     "slug": "innocencio-wines-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/RocketFuelWhiteFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "wayside-taverna",
    "name": "Wayside Taverna",
    "sku": "GOA13",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -7166,7 +7646,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Wayside Taverna: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Wayside Taverna: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -7179,15 +7659,30 @@
      "alt": "Wayside Tavern"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "wayside-taverna-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/WaysideTavernaBlackFrame-copy-1.webp"
+    },
+    {
+     "slug": "wayside-taverna-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/WaysideTavernaBlackFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "xit-coddi",
    "name": "Xit-Coddi",
    "sku": "GOA14",
-   "type": "simple",
+   "type": "variable",
    "price": 215000,
-   "price_max": null,
+   "price_max": 4250000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -7196,7 +7691,7 @@
     "a-goan-holiday"
    ],
    "primary_category": "a-goan-holiday",
-   "short_html": "<p>Xit Coddi: 12.5\" x 12.5\" Print</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 5ft x 5ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Xit Coddi: 12.5\" x 12.5\" Print</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.45",
    "images": [
@@ -7209,7 +7704,22 @@
      "alt": "Xit-Coddi"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "xit-coddi-print",
+     "label": "Mounted Print (unframed)",
+     "price": 215000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/XitCoddiWhiteFrame-copy-1.webp"
+    },
+    {
+     "slug": "xit-coddi-canvas",
+     "label": "Canvas Print · Unframed · up to 5ft × 5ft",
+     "price": 4250000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/XitCoddiWhiteFrame-copy-1.webp"
+    }
+   ]
   },
   {
    "slug": "crawford-market",
@@ -8099,9 +8609,9 @@
    "slug": "ponnus-jackfruit",
    "name": "Ponnus: Jackfruit",
    "sku": "MANG02",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8110,7 +8620,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8123,15 +8633,30 @@
      "alt": "Ponnus Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "ponnus-jackfruit-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Ponnus-1.webp"
+    },
+    {
+     "slug": "ponnus-jackfruit-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Ponnus-1.webp"
+    }
+   ]
   },
   {
    "slug": "kambala-buffalo-race",
    "name": "Kambala: Buffalo Race",
    "sku": "MANG03",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8140,7 +8665,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8153,15 +8678,30 @@
      "alt": "Kambala Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "kambala-buffalo-race-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Kambala-1.webp"
+    },
+    {
+     "slug": "kambala-buffalo-race-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Kambala-1.webp"
+    }
+   ]
   },
   {
    "slug": "pad-baretalo-bard",
    "name": "Pad Baretalo: Bard",
    "sku": "MANG04",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8170,7 +8710,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8183,15 +8723,30 @@
      "alt": "Pad Baretalo Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "pad-baretalo-bard-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Pad-Baretalo-1.webp"
+    },
+    {
+     "slug": "pad-baretalo-bard-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Pad-Baretalo-1.webp"
+    }
+   ]
   },
   {
    "slug": "vokil-baank-varandah-seat",
    "name": "Vokil Baank: Varandah Seat",
    "sku": "MANG05",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8200,7 +8755,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8213,15 +8768,30 @@
      "alt": "Vokil Baank Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "vokil-baank-varandah-seat-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Vokil-Baank-1.webp"
+    },
+    {
+     "slug": "vokil-baank-varandah-seat-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Vokil-Baank-1.webp"
+    }
+   ]
   },
   {
    "slug": "mograanche-fishmonger",
    "name": "Mograanche: Fishmonger",
    "sku": "MANG06",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8230,7 +8800,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8243,15 +8813,30 @@
      "alt": "Mograanche Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "mograanche-fishmonger-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Mograanche-1.webp"
+    },
+    {
+     "slug": "mograanche-fishmonger-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Mograanche-1.webp"
+    }
+   ]
   },
   {
    "slug": "siesta-restful-times",
    "name": "Siesta: Restful Times",
    "sku": "MANG07",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8260,7 +8845,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8273,15 +8858,30 @@
      "alt": "Siesta Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "siesta-restful-times-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Siesta1-1.webp"
+    },
+    {
+     "slug": "siesta-restful-times-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Siesta1-1.webp"
+    }
+   ]
   },
   {
    "slug": "anila-airy-windy",
    "name": "Sorpotel: Pork and Sannas",
    "sku": "MANG08",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8290,7 +8890,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8303,15 +8903,30 @@
      "alt": "Sorpotel Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "anila-airy-windy-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Sorpotel-1.webp"
+    },
+    {
+     "slug": "anila-airy-windy-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Sorpotel-1.webp"
+    }
+   ]
   },
   {
    "slug": "sorpotel-pork-and-sannas",
    "name": "Anila: Airy, Windy",
    "sku": "MANG09",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8320,7 +8935,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8333,15 +8948,30 @@
      "alt": "Anila Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "sorpotel-pork-and-sannas-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Anila-1.webp"
+    },
+    {
+     "slug": "sorpotel-pork-and-sannas-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Anila-1.webp"
+    }
+   ]
   },
   {
    "slug": "roce-wedding-ceremony",
    "name": "Roce: Wedding Ceremony",
    "sku": "MANG10",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8350,7 +8980,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8363,15 +8993,30 @@
      "alt": "Roce Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "roce-wedding-ceremony-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Roce-1.webp"
+    },
+    {
+     "slug": "roce-wedding-ceremony-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Roce-1.webp"
+    }
+   ]
   },
   {
    "slug": "shendhi-coconut-country-liquor",
    "name": "Shendhi: Coconut Country Liquor",
    "sku": "MANG11",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8380,7 +9025,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8393,15 +9038,30 @@
      "alt": "Shendhi Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "shendhi-coconut-country-liquor-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Shendhi1-1.webp"
+    },
+    {
+     "slug": "shendhi-coconut-country-liquor-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Shendhi1-1.webp"
+    }
+   ]
   },
   {
    "slug": "fishing-boat-boat-builders-yard",
    "name": "Fishing Boat: Boat Builder's Yard",
    "sku": "MANG12",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8410,7 +9070,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8423,15 +9083,30 @@
      "alt": "Fishing Boat Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "fishing-boat-boat-builders-yard-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Fishing-Boat-1.webp"
+    },
+    {
+     "slug": "fishing-boat-boat-builders-yard-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Fishing-Boat-1.webp"
+    }
+   ]
   },
   {
    "slug": "ge-ge-re-sahiba-great-tempo-total-masti",
    "name": "Ge Ge Re Sahiba: Great Tempo, Total Masti",
    "sku": "MANG13",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8440,7 +9115,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8453,15 +9128,30 @@
      "alt": "Ge Ge Re Sahiba Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "ge-ge-re-sahiba-great-tempo-total-masti-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Ge-Ge-Re-Sahiba-1.webp"
+    },
+    {
+     "slug": "ge-ge-re-sahiba-great-tempo-total-masti-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Ge-Ge-Re-Sahiba-1.webp"
+    }
+   ]
   },
   {
    "slug": "igarji-basilica",
    "name": "Igarji: Basilica",
    "sku": "MANG14",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8470,7 +9160,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8483,15 +9173,30 @@
      "alt": "Igarji Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "igarji-basilica-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Igarji-1.webp"
+    },
+    {
+     "slug": "igarji-basilica-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Igarji-1.webp"
+    }
+   ]
   },
   {
    "slug": "bussa-bus-transport",
    "name": "Bussa: Bus Transport",
    "sku": "MANG15",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8500,7 +9205,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8513,15 +9218,30 @@
      "alt": "Bussa Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "bussa-bus-transport-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Bussa-1.webp"
+    },
+    {
+     "slug": "bussa-bus-transport-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Bussa-1.webp"
+    }
+   ]
   },
   {
    "slug": "meet-mirsaang-laavche-to-embellish-gossip",
    "name": "Meet Mirsaang Laavche: To Embellish Gossip",
    "sku": "MANG16",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8530,7 +9250,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8543,15 +9263,30 @@
      "alt": "Meet Mirsaang Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "meet-mirsaang-laavche-to-embellish-gossip-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Meet-Mirsaang-1.webp"
+    },
+    {
+     "slug": "meet-mirsaang-laavche-to-embellish-gossip-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Meet-Mirsaang-1.webp"
+    }
+   ]
   },
   {
    "slug": "rickshaw-local-transport",
    "name": "Rickshaw: Local Transport",
    "sku": "MANG17",
-   "type": "simple",
+   "type": "variable",
    "price": 95000,
-   "price_max": null,
+   "price_max": 1530000,
    "sale_price": null,
    "stock_status": "instock",
    "featured": false,
@@ -8560,7 +9295,7 @@
     "mangalore-series"
    ],
    "primary_category": "mangalore-series",
-   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note:  Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li><li>This piece is also available as a customized print on canvas (Unframed). May be requested at a maximum size of 3ft x 3ft (Rs 1300/- to Rs 1700/- per sqft). Please mail us if interested.</li></ul>",
+   "short_html": "<p>Black and White Print: 9\" x 9\"</p><ul><li>Please note: Prints are dispatched anywhere between 2-5 business days depending on production requirements.</li><li>Framed pieces are only available at aPaulogy Gallery Bangalore and aPaulogy Mumbai</li></ul>",
    "description_html": "",
    "weight": "0.3",
    "images": [
@@ -8573,7 +9308,22 @@
      "alt": "Richshaw Mangalore"
     }
    ],
-   "variations": []
+   "variations": [
+    {
+     "slug": "rickshaw-local-transport-print",
+     "label": "Mounted Print (unframed)",
+     "price": 95000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Richshaw1-1.webp"
+    },
+    {
+     "slug": "rickshaw-local-transport-canvas",
+     "label": "Canvas Print · Unframed · up to 3ft × 3ft",
+     "price": 1530000,
+     "sale_price": null,
+     "image": "/uploads/2017/04/Richshaw1-1.webp"
+    }
+   ]
   },
   {
    "slug": "coffee-house-spectacle-case",
@@ -8869,7 +9619,7 @@
    "weight": "0.6",
    "images": [
     {
-     "url": "/uploads/2017/04/Morphing3Revised.webp.webp",
+     "url": "/uploads/2017/04/Morphing3Revised.webp",
      "alt": "Pub City"
     }
    ],
@@ -11032,8 +11782,8 @@
     "coffee-table-books"
    ],
    "primary_category": "coffee-table-books",
-   "short_html": "<p>The title says it all. Starting from the story of Bangalore's founding, we journey through the city's many avatars – from a sleepy pensioner's paradise and garden city, to a cosmopolitan wonderland of snazzy pubs with draft beer on tap, and through the 'IT boom', which made Bangalore the poster child of successful globalisation. Soon Bangalore became India's fastest growing city, expanding chaotically in all ways and directions; for better and worse. And then came the pandemic… “This gorgeously illustrated and sensitively written book brings alive Bangalore's past, present and possible future like no other work I have seen.” Ramachandra Guha “Here's to the authors’<span class=\"Apple-converted-space\">  </span>remarkable vision and the kaleidoscopic tale of Bangalore's morphosis!” Shashi Tharoor</p>",
-   "description_html": "<p>The title says it all. Starting from<span class=\"Apple-converted-space\"> </span>the story of Bangalore's founding, we journey through the city's many avatars – from a sleepy pensioner's paradise and garden city, to a cosmopolitan wonderland of snazzy pubs with draft beer on tap, and through the 'IT boom', which made Bangalore the poster child of successful globalisation. Soon Bangalore became India's fastest growing city, expanding chaotically in all ways and directions; for better and worse. And then came the pandemic…</p>\n<p>“This gorgeously illustrated and sensitively written book brings alive Bangalore's past, present and possible future like no other work I have seen.”<span class=\"Apple-converted-space\"> </span></p>\n<p>Ramachandra Guha</p>\n<p>“Here's to the authors’<span class=\"Apple-converted-space\">  </span>remarkable vision and the kaleidoscopic tale of Bangalore's morphosis!”</p>\n<p>Shashi Tharoor</p>",
+   "short_html": "<p>The title says it all. Starting from the story of Bangalore's founding, we journey through the city's many avatars – from a sleepy pensioner's paradise and garden city, to a cosmopolitan wonderland of snazzy pubs with draft beer on tap, and through the 'IT boom', which made Bangalore the poster child of successful globalisation. Soon Bangalore became India's fastest growing city, expanding chaotically in all ways and directions; for better and worse. And then came the pandemic… “This gorgeously illustrated and sensitively written book brings alive Bangalore's past, present and possible future like no other work I have seen.” Ramachandra Guha “Here's to the authors’<span class=\"Apple-converted-space\"> </span>remarkable vision and the kaleidoscopic tale of Bangalore's morphosis!” Shashi Tharoor</p>",
+   "description_html": "<p>The title says it all. Starting from<span class=\"Apple-converted-space\"> </span>the story of Bangalore's founding, we journey through the city's many avatars – from a sleepy pensioner's paradise and garden city, to a cosmopolitan wonderland of snazzy pubs with draft beer on tap, and through the 'IT boom', which made Bangalore the poster child of successful globalisation. Soon Bangalore became India's fastest growing city, expanding chaotically in all ways and directions; for better and worse. And then came the pandemic…</p>\n<p>“This gorgeously illustrated and sensitively written book brings alive Bangalore's past, present and possible future like no other work I have seen.”<span class=\"Apple-converted-space\"> </span></p>\n<p>Ramachandra Guha</p>\n<p>“Here's to the authors’<span class=\"Apple-converted-space\"> </span>remarkable vision and the kaleidoscopic tale of Bangalore's morphosis!”</p>\n<p>Shashi Tharoor</p>",
    "weight": "1.3",
    "images": [
     {
