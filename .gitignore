@@ -1,0 +1,28 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# cloudflare / wrangler
+.wrangler/
+.dev.vars
+.mf/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# import working data (large; regenerate from exports)
+/import/raw/
+/import/images/
+
+# os / editor
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.vscode/
+.idea/

@@ -1,0 +1,102 @@
+---
+import { SITE_TAGLINE } from '../lib/seo';
+const year = new Date().getFullYear();
+
+const cols = [
+  {
+    title: 'Art & Books',
+    links: [
+      { label: 'Bangalore in the 70’s', href: '/category/bangalore-in-the-70s/' },
+      { label: 'Vintage Mumbai', href: '/category/vintage-mumbai/' },
+      { label: 'A Goan Holiday', href: '/category/a-goan-holiday/' },
+      { label: 'Plaques', href: '/category/plaques/' },
+      { label: 'Posters', href: '/category/posters/' },
+      { label: 'Coffee Table Books', href: '/category/coffee-table-books/' },
+    ],
+  },
+  {
+    title: 'Shop',
+    links: [
+      { label: 'All Products', href: '/store/' },
+      { label: 'Laptop Bags', href: '/category/laptop-bags/' },
+      { label: 'Sling Bags', href: '/category/sling-bags/' },
+      { label: 'Merchandise', href: '/category/merchandise/' },
+      { label: 'Gift Cards', href: '/category/gift-cards/' },
+    ],
+  },
+  {
+    title: 'Information',
+    links: [
+      { label: 'About', href: '/about-us/' },
+      { label: 'Contact', href: '/contact-us/' },
+      { label: 'FAQ', href: '/faq/' },
+      { label: 'Shipping Policy', href: '/shipping-policy/' },
+      { label: 'Returns & Refunds', href: '/return-and-refund-policy/' },
+      { label: 'Terms & Conditions', href: '/terms-conditions/' },
+      { label: 'Privacy Policy', href: '/privacy-policy/' },
+    ],
+  },
+];
+---
+
+<footer class="mt-28 bg-black text-white">
+  <div class="container-page py-16">
+    <div class="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr_1.2fr]">
+      <div>
+        <img src="/brand/logo-white.png" alt="aPaulogy" class="h-9 w-auto" width="360" height="139" />
+        <p class="mt-4 text-sm text-white/70 max-w-xs">{SITE_TAGLINE}. Signed watercolour prints & merchandise by Paul Fernandes, from Bengaluru.</p>
+        <form class="mt-6 flex max-w-sm" data-newsletter>
+          <input type="email" name="email" required placeholder="Your email" aria-label="Email for newsletter"
+            class="flex-1 bg-white/5 border border-white/25 px-3 py-2.5 text-sm placeholder:text-white/40 focus:outline-none focus:border-white" />
+          <button class="btn btn-primary !rounded-none !bg-white !text-black !border-white hover:!bg-transparent hover:!text-white !px-5 !py-2.5" type="submit">Join</button>
+        </form>
+        <p data-newsletter-msg class="mt-2 text-xs text-white/80" hidden></p>
+      </div>
+
+      {cols.map((col) => (
+        <nav aria-label={col.title}>
+          <h2 class="text-[0.66rem] font-semibold tracking-[0.22em] uppercase text-white/60" style="font-family:var(--font-sans)">{col.title}</h2>
+          <ul class="mt-4 space-y-2.5 text-sm text-white/85">
+            {col.links.map((l) => (
+              <li><a href={l.href} class="hover:text-white hover:underline underline-offset-4 transition-colors">{l.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+
+    <div class="mt-14 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60" style="font-family:var(--font-sans)">
+      <p>© {year} aPaulogy. All artwork © Paul Fernandes.</p>
+      <p class="flex items-center gap-2">
+        <a href="https://www.facebook.com/aPaulogyGallery" class="hover:text-white" rel="noopener">Facebook</a>
+        <span aria-hidden="true">·</span>
+        <span>Secure payments by Razorpay</span>
+        <span aria-hidden="true">·</span>
+        <span>Made in Bengaluru</span>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function initNewsletter() {
+    document.querySelectorAll<HTMLFormElement>('[data-newsletter]').forEach((form) => {
+      if (form.dataset.bound) return;
+      form.dataset.bound = '1';
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = (form.querySelector('input[name=email]') as HTMLInputElement).value;
+        const msg = form.parentElement?.querySelector('[data-newsletter-msg]') as HTMLElement | null;
+        try {
+          await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+          if (msg) { msg.textContent = 'Thank you — you’re on the list.'; msg.hidden = false; }
+          form.reset();
+        } catch {
+          if (msg) { msg.textContent = 'Something went wrong. Please try again.'; msg.hidden = false; }
+        }
+      });
+    });
+  }
+  initNewsletter();
+  document.addEventListener('astro:after-swap', initNewsletter);
+</script>

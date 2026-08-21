@@ -1,0 +1,32 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import pagesData from '../data/pages.json';
+import { breadcrumbSchema } from '../lib/seo';
+
+interface ContentPage { slug: string; title: string; html: string; }
+const pages = pagesData as unknown as ContentPage[];
+
+// contact-us has its own page (form); render the rest here.
+const RENDER = pages.filter((p) => p.slug !== 'contact-us');
+
+export function getStaticPaths() {
+  const all = pagesData as unknown as ContentPage[];
+  return all.filter((p) => p.slug !== 'contact-us').map((p) => ({ params: { slug: p.slug }, props: { page: p } }));
+}
+
+const { page } = Astro.props as { page: ContentPage };
+const jsonld = [breadcrumbSchema([{ name: 'Home', url: '/' }, { name: page.title, url: `/${page.slug}/` }], Astro.site)];
+---
+
+<BaseLayout title={page.title} description={`${page.title} — aPaulogy, the gallery of Paul Fernandes.`} jsonld={jsonld}>
+  <div class="container-page py-16">
+    <nav class="text-xs text-[var(--color-muted)] mb-6" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+      <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span> <span class="text-[var(--color-ink-soft)]">{page.title}</span>
+    </nav>
+    <header class="mb-10 max-w-3xl">
+      <p class="eyebrow">aPaulogy</p>
+      <h1 class="text-5xl sm:text-6xl mt-3">{page.title}</h1>
+    </header>
+    <article class="prose-paper" set:html={page.html} />
+  </div>
+</BaseLayout>

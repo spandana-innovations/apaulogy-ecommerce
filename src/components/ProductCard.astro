@@ -1,0 +1,48 @@
+---
+import type { Product } from '../lib/catalog';
+import { effectivePrice, isOnSale, hasPriceRange } from '../lib/catalog';
+import { formatINR, formatINRRange } from '../lib/format';
+
+export interface Props { product: Product; }
+const { product } = Astro.props;
+const price = effectivePrice(product);
+const onSale = isOnSale(product);
+const range = hasPriceRange(product);
+const img = product.images?.[0]?.url;
+const collectionSlug = product.primary_category;
+const href = `/product/${product.slug}/`;
+---
+
+<article class="group">
+  <a href={href} class="block frame overflow-hidden">
+    <div class="relative overflow-hidden bg-[var(--color-paper-deep)]">
+      {onSale && <span class="absolute z-10 top-2.5 left-2.5 chip">Sale</span>}
+      {img ? (
+        <img src={img} alt={product.images?.[0]?.alt || product.name} width="600" height="470" loading="lazy" decoding="async"
+          class="w-full h-auto aspect-[4/3] object-contain bg-white transition-transform duration-500 group-hover:scale-[1.03]" />
+      ) : (
+        <div class="w-full aspect-[4/3] grid place-items-center text-[var(--color-muted)] text-sm" style="font-family:var(--font-sans)">aPaulogy</div>
+      )}
+    </div>
+  </a>
+
+  <div class="pt-3">
+    <h3 class="text-xl leading-snug">
+      <a href={href} class="link-hover">{product.name}</a>
+    </h3>
+    <div class="mt-1 flex items-baseline gap-2" style="font-family:var(--font-sans)">
+      <span class="text-[var(--color-ink)] text-[0.9rem] font-medium">
+        {range ? formatINRRange(price, product.price_max!) : formatINR(price)}
+      </span>
+      {onSale && !range && <span class="text-[var(--color-muted)] line-through text-sm">{formatINR(product.price)}</span>}
+    </div>
+    {product.type === 'variable' ? (
+      <a href={href} class="btn btn-outline mt-3 w-full !py-2 text-[0.7rem]">Select options</a>
+    ) : (
+      <button class="btn btn-outline mt-3 w-full !py-2 text-[0.7rem]" data-add-to-cart
+        data-slug={product.slug} data-name={product.name} data-price={price} data-image={img || ''}>
+        Add to cart
+      </button>
+    )}
+  </div>
+</article>

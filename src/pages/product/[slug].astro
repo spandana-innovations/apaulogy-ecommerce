@@ -1,0 +1,208 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { getProducts, getProduct, getCategory, getRelatedProducts, effectivePrice, isOnSale, hasPriceRange } from '../../lib/catalog';
+import { formatINR, formatINRRange } from '../../lib/format';
+import { productSchema, breadcrumbSchema, abs } from '../../lib/seo';
+
+export function getStaticPaths() {
+  return getProducts().map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const product = getProduct(slug!);
+if (!product) return Astro.redirect('/404');
+
+const price = effectivePrice(product);
+const onSale = isOnSale(product);
+const range = hasPriceRange(product);
+const related = getRelatedProducts(product);
+const heroImg = product.images?.[0]?.url;
+const ogImage = heroImg || '/og-default.svg';
+const primaryCat = product.primary_category ? getCategory(product.primary_category) : null;
+const parentCat = primaryCat?.parent_slug ? getCategory(primaryCat.parent_slug) : null;
+
+const crumbs = [{ name: 'Home', url: '/' }, { name: 'Store', url: '/store/' }];
+if (parentCat) crumbs.push({ name: parentCat.name, url: `/category/${parentCat.slug}/` });
+if (primaryCat) crumbs.push({ name: primaryCat.name, url: `/category/${primaryCat.slug}/` });
+crumbs.push({ name: product.name, url: `/product/${product.slug}/` });
+
+const jsonld = [
+  productSchema(product, Astro.site, abs(ogImage, Astro.site)),
+  breadcrumbSchema(crumbs, Astro.site),
+];
+
+// Variations available for purchase (with a price)
+const variations = product.variations.filter((v) => v.price != null);
+---
+
+<BaseLayout title={product.name} description={product.name} image={ogImage} type="product" jsonld={jsonld}>
+  <div class="container-page py-10">
+    <nav class="text-xs text-[var(--color-muted)] mb-6" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+      <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span>
+      <a href="/store/" class="link-hover">Store</a> <span aria-hidden="true">/</span>
+      {primaryCat && (<><a href={`/category/${primaryCat.slug}/`} class="link-hover">{primaryCat.name}</a> <span aria-hidden="true">/</span> </>)}
+      <span class="text-[var(--color-ink-soft)]">{product.name}</span>
+    </nav>
+
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+      <!-- Gallery -->
+      <div class="lg:sticky lg:top-24">
+        <div class="frame shadow-[var(--shadow-frame)]">
+          {heroImg ? (
+            <img id="hero-img" src={heroImg} alt={product.images?.[0]?.alt || product.name} class="w-full h-auto object-contain bg-white" width="900" height="700" />
+          ) : (
+            <div class="w-full aspect-[4/3] grid place-items-center text-[var(--color-muted)]" style="font-family:var(--font-sans)">aPaulogy</div>
+          )}
+        </div>
+        {product.images && product.images.length > 1 && (
+          <div class="grid grid-cols-5 gap-3 mt-3">
+            {product.images.slice(0, 5).map((im, i) => (
+              <button type="button" class="thumb frame frame-tight bg-white" data-src={im.url} aria-label={`View image ${i + 1}`}>
+                <img src={im.url} alt={im.alt || product.name} class="w-full aspect-square object-contain" loading="lazy" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <!-- Details -->
+      <div>
+        {primaryCat && <p class="eyebrow">{primaryCat.name}</p>}
+        <h1 class="text-4xl sm:text-5xl mt-3">{product.name}</h1>
+
+        <div class="flex items-baseline gap-3 mt-5" style="font-family:var(--font-sans)">
+          <span id="price-display" class="text-2xl font-medium" style="font-family:var(--font-serif)">
+            {range ? formatINRRange(price, product.price_max!) : formatINR(price)}
+          </span>
+          {onSale && !range && <span class="text-[var(--color-muted)] line-through">{formatINR(product.price)}</span>}
+        </div>
+        {product.sku && <p class="mt-2 text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)">SKU: {product.sku}</p>}
+
+        {product.short_html && <div class="prose-paper mt-5 text-[var(--color-ink-soft)]" set:html={product.short_html} />}
+
+        <!-- Variation selector -->
+        {variations.length > 0 && (
+          <div class="mt-7" style="font-family:var(--font-sans)">
+            <label for="variation" class="block text-[0.7rem] uppercase tracking-[0.14em] text-[var(--color-muted)] mb-2">Print Size</label>
+            <select id="variation" class="w-full border border-[var(--color-ink)] bg-white px-3.5 py-3 text-sm focus:outline-none">
+              <option value="" data-price="">Choose an option</option>
+              {variations.map((v) => (
+                <option value={v.slug} data-price={v.sale_price ?? v.price} data-label={v.label} data-image={v.image || ''}>
+                  {v.label} — {formatINR(v.sale_price ?? v.price!)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        <!-- Quantity + actions -->
+        <div class="mt-6 flex flex-wrap items-center gap-3">
+          <div class="inline-flex items-center border border-[var(--color-ink)]">
+            <button type="button" id="qty-dec" class="px-3.5 py-3 text-lg leading-none" aria-label="Decrease quantity">−</button>
+            <input id="qty" value="1" inputmode="numeric" class="w-12 text-center bg-transparent py-3" aria-label="Quantity" />
+            <button type="button" id="qty-inc" class="px-3.5 py-3 text-lg leading-none" aria-label="Increase quantity">+</button>
+          </div>
+          <button id="add-btn" class="btn btn-outline flex-1 min-w-[10rem]"
+            data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''} data-variable={variations.length > 0 ? '1' : '0'}>
+            Add to cart
+          </button>
+        </div>
+        <button id="buy-btn" class="btn btn-primary w-full mt-3"
+          data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''}>
+          Buy it now
+        </button>
+        <p id="variation-hint" class="mt-2 text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)" hidden>Please choose a print size first.</p>
+
+        <!-- Full description -->
+        {product.description_html && (
+          <div class="prose-paper mt-10 border-t border-[var(--color-line)] pt-8" set:html={product.description_html} />
+        )}
+
+        <!-- Assurances -->
+        <ul class="mt-10 grid sm:grid-cols-2 gap-3 text-sm text-[var(--color-ink-soft)] border-t border-[var(--color-line)] pt-8">
+          <li class="flex gap-2"><span aria-hidden="true">—</span> Personally signed by Paul Fernandes</li>
+          <li class="flex gap-2"><span aria-hidden="true">—</span> Archival giclée print</li>
+          <li class="flex gap-2"><span aria-hidden="true">—</span> Ships across India &amp; worldwide</li>
+          <li class="flex gap-2"><span aria-hidden="true">—</span> Secure Razorpay checkout</li>
+        </ul>
+      </div>
+    </div>
+
+    {related.length > 0 && (
+      <section class="mt-24">
+        <div class="flex items-end justify-between gap-4 mb-8">
+          <h2 class="text-3xl sm:text-4xl">Related pieces</h2>
+          {primaryCat && <a href={`/category/${primaryCat.slug}/`} class="hidden sm:inline text-sm link-underline" style="font-family:var(--font-sans)">More from {primaryCat.name}</a>}
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+          {related.map((p) => <ProductCard product={p} />)}
+        </div>
+      </section>
+    )}
+  </div>
+</BaseLayout>
+
+<script>
+  function initPDP() {
+    const hero = document.getElementById('hero-img') as HTMLImageElement | null;
+    // thumbnail swap
+    document.querySelectorAll('.thumb').forEach((t) => {
+      if ((t as HTMLElement).dataset.bound) return;
+      (t as HTMLElement).dataset.bound = '1';
+      t.addEventListener('click', () => {
+        const src = (t as HTMLElement).dataset.src;
+        if (hero && src) hero.src = src;
+      });
+    });
+
+    const qtyEl = document.getElementById('qty') as HTMLInputElement | null;
+    const getQty = () => Math.max(1, parseInt(qtyEl?.value || '1', 10) || 1);
+    document.getElementById('qty-dec')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(Math.max(1, getQty() - 1)); });
+    document.getElementById('qty-inc')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(getQty() + 1); });
+
+    const sel = document.getElementById('variation') as HTMLSelectElement | null;
+    const priceDisplay = document.getElementById('price-display');
+    const hint = document.getElementById('variation-hint');
+    const addBtn = document.getElementById('add-btn') as HTMLElement | null;
+    const isVariable = addBtn?.dataset.variable === '1';
+
+    function fmt(paise: number) {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(paise / 100);
+    }
+    function currentVariant() {
+      if (!sel || !sel.value) return null;
+      const opt = sel.selectedOptions[0];
+      return { slug: sel.value, label: opt.dataset.label || sel.value, price: parseInt(opt.dataset.price || '0', 10), image: opt.dataset.image || '' };
+    }
+    sel?.addEventListener('change', () => {
+      const v = currentVariant();
+      if (v && priceDisplay) priceDisplay.textContent = fmt(v.price);
+      if (v && hint) hint.hidden = true;
+      if (v && v.image && hero) hero.src = v.image;
+    });
+
+    function addToCart(): boolean {
+      const Cart = (window as any).Cart;
+      if (!Cart || !addBtn) return false;
+      let price = parseInt(addBtn.dataset.price || '0', 10);
+      let variant: string | undefined;
+      if (isVariable) {
+        const v = currentVariant();
+        if (!v) { if (hint) hint.hidden = false; return false; }
+        price = v.price; variant = v.label;
+      }
+      Cart.add({ slug: addBtn.dataset.slug!, name: addBtn.dataset.name!, price, image: addBtn.dataset.image || '', qty: getQty(), variant });
+      return true;
+    }
+
+    addBtn?.addEventListener('click', () => {
+      if (addToCart()) (window as any).cartToast?.('Added to cart');
+    });
+    document.getElementById('buy-btn')?.addEventListener('click', () => {
+      if (addToCart()) window.location.href = '/cart/';
+    });
+  }
+  initPDP();
+  document.addEventListener('astro:after-swap', initPDP);
+</script>

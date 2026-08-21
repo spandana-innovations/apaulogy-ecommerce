@@ -1,0 +1,63 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Contact Us" description="Get in touch with the aPaulogy gallery for orders, commissions, gifting and visits.">
+  <div class="container-page py-16 grid lg:grid-cols-2 gap-14">
+    <div class="prose-paper">
+      <p class="eyebrow">Say hello</p>
+      <h1 class="text-5xl sm:text-6xl mt-3 mb-6">Contact us</h1>
+      <p>We invite you to contact us for any queries or information you might require — orders, commissions, bulk gifting, or a visit to the gallery.</p>
+
+      <h4>Bangalore Gallery</h4>
+      <p>aPaulogy Gallery, 002 Edward House, 37 Pottery Road,<br />
+      Opp. East Railway Station back gate, Richards Town,<br />
+      Bengaluru, Karnataka, India — 560 005</p>
+
+      <h4>Gallery Timings</h4>
+      <p>Monday – Saturday, 10:00 am – 6:30 pm<br />Sunday closed</p>
+
+      <h4>Email</h4>
+      <p><a href="mailto:info@apaulogy.com">info@apaulogy.com</a></p>
+
+      <h4>Follow</h4>
+      <p><a href="https://www.facebook.com/aPaulogyGallery" rel="noopener">Facebook</a></p>
+    </div>
+
+    <form class="border border-[var(--color-line-strong)] p-6 h-fit" data-contact>
+      <div class="space-y-4">
+        <label class="block"><span class="lbl">Name</span><input name="name" required class="inp" /></label>
+        <label class="block"><span class="lbl">Email</span><input name="email" type="email" required class="inp" /></label>
+        <label class="block"><span class="lbl">Message</span><textarea name="message" rows="5" required class="inp"></textarea></label>
+        <button class="btn btn-primary w-full" type="submit">Send message</button>
+        <p data-contact-msg class="text-sm" hidden></p>
+      </div>
+    </form>
+  </div>
+
+  <style>
+    .lbl { display:block; font-family: var(--font-sans); font-size:.7rem; letter-spacing:.12em; text-transform:uppercase; color: var(--color-muted); margin-bottom:.35rem; }
+    .inp { width:100%; background:#fff; border:1px solid var(--color-ink); border-radius:2px; padding:.65rem .8rem; font-family: var(--font-serif); }
+    .inp:focus { outline:none; border-color: var(--color-ink); box-shadow: 0 0 0 1px var(--color-ink); }
+  </style>
+
+  <script>
+    function initContact() {
+      const form = document.querySelector('[data-contact]') as HTMLFormElement | null;
+      if (!form || form.dataset.bound) return;
+      form.dataset.bound = '1';
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const msg = form.querySelector('[data-contact-msg]') as HTMLElement;
+        const fd = Object.fromEntries(new FormData(form).entries());
+        try {
+          await fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fd) });
+          msg.textContent = 'Thank you — we’ll be in touch soon.'; msg.hidden = false; form.reset();
+        } catch {
+          msg.textContent = 'Something went wrong. Please email us directly.'; msg.hidden = false;
+        }
+      });
+    }
+    initContact();
+    document.addEventListener('astro:after-swap', initContact);
+  </script>
+</BaseLayout>

@@ -1,0 +1,122 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getFeaturedProducts, getCategory } from '../lib/catalog';
+import { organizationSchema, websiteSchema, SITE_DESCRIPTION } from '../lib/seo';
+
+const featured = getFeaturedProducts(8);
+
+const collectionSlugs = ['bangalore-in-the-70s', 'vintage-mumbai', 'a-goan-holiday', 'mumbai-heritage', 'plaques', 'merchandise'];
+const collections = collectionSlugs.map((s) => getCategory(s)).filter(Boolean);
+
+const heroA = '/uploads/2017/03/apaulogyBangPalace-WITHWatermark.jpg';
+const heroB = '/uploads/2017/02/ChorBazaarFramed1.jpg';
+const storyImg = '/uploads/2017/03/apaulogyCoffeeHouse-WITHWatermark.jpg';
+
+const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
+---
+
+<BaseLayout title="Watercolours of a city that was" description={SITE_DESCRIPTION} jsonld={jsonld}>
+  <!-- HERO -->
+  <section class="border-b border-[var(--color-line)]">
+    <div class="container-page grid lg:grid-cols-[1.05fr_1fr] gap-12 items-center py-16 lg:py-24">
+      <div class="max-w-xl">
+        <p class="eyebrow">The aPaulogy Gallery · Bengaluru</p>
+        <h1 class="mt-5 text-6xl sm:text-7xl lg:text-[5.2rem] leading-[0.98]">
+          Watercolours<br />of a city<br />that was
+        </h1>
+        <p class="mt-7 text-lg text-[var(--color-ink-soft)] max-w-md">
+          Signed reproductions of Paul Fernandes’ illustrations — the bars, bungalows and
+          back-lanes of 1970s Bangalore, vintage Mumbai and Goa. Each print personally signed
+          before it ships.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-3">
+          <a href="/store/" class="btn btn-primary">Explore the store</a>
+          <a href="/category/bangalore-in-the-70s/" class="btn btn-outline">Bangalore in the 70’s</a>
+        </div>
+      </div>
+
+      <div class="relative grid grid-cols-2 gap-5">
+        <div class="frame shadow-[var(--shadow-frame)] rotate-[-1.5deg]">
+          <img src={heroA} alt="Bangalore Palace" class="w-full h-auto object-contain" width="576" height="470" />
+        </div>
+        <div class="frame shadow-[var(--shadow-frame)] rotate-[1.5deg] mt-10">
+          <img src={heroB} alt="Chor Bazaar, Mumbai" class="w-full h-auto object-contain" width="576" height="470" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST STRIP -->
+  <section class="bg-black text-white">
+    <div class="container-page py-3.5 flex flex-wrap justify-center gap-x-10 gap-y-1.5 text-[0.68rem] tracking-[0.2em] uppercase" style="font-family:var(--font-sans)">
+      <span>Personally signed by the artist</span>
+      <span class="opacity-40" aria-hidden="true">/</span>
+      <span>Archival giclée prints</span>
+      <span class="opacity-40" aria-hidden="true">/</span>
+      <span>Shipped across India &amp; worldwide</span>
+    </div>
+  </section>
+
+  <!-- COLLECTIONS -->
+  <section class="container-page py-20">
+    <div class="flex items-end justify-between gap-4 mb-10">
+      <div>
+        <p class="eyebrow">Collections</p>
+        <h2 class="text-4xl sm:text-5xl mt-2">Choose your era</h2>
+      </div>
+      <a href="/store/" class="hidden sm:inline text-sm link-underline hover:text-[var(--color-muted)]" style="font-family:var(--font-sans)">View all</a>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+      {collections.map((c) => (
+        <a href={`/category/${c!.slug}/`} class="group block">
+          <div class="frame overflow-hidden">
+            <div class="overflow-hidden bg-white">
+              {c!.image && <img src={c!.image} alt={c!.name} class="w-full h-auto aspect-[5/4] object-contain transition-transform duration-500 group-hover:scale-[1.04]" loading="lazy" />}
+            </div>
+          </div>
+          <h3 class="text-2xl mt-4 link-hover">{c!.name}</h3>
+          {c!.description && <p class="text-[var(--color-ink-soft)] text-sm mt-1 line-clamp-2">{c!.description}</p>}
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- FEATURED -->
+  <section class="bg-[var(--color-paper-deep)] border-y border-[var(--color-line)]">
+    <div class="container-page py-20">
+      <div class="flex items-end justify-between gap-4 mb-10">
+        <div>
+          <p class="eyebrow">Best loved</p>
+          <h2 class="text-4xl sm:text-5xl mt-2">Featured prints</h2>
+        </div>
+        <a href="/store/" class="hidden sm:inline text-sm link-underline hover:text-[var(--color-muted)]" style="font-family:var(--font-sans)">Shop all</a>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        {featured.map((p) => <ProductCard product={p} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- STORY -->
+  <section class="container-page py-20 grid lg:grid-cols-2 gap-14 items-center">
+    <div class="frame shadow-[var(--shadow-frame)]">
+      <img src={storyImg} alt="Indian Coffee House" class="w-full h-auto object-contain" width="576" height="470" loading="lazy" />
+    </div>
+    <div class="max-w-lg">
+      <p class="eyebrow">The story</p>
+      <h2 class="text-4xl sm:text-5xl mt-2">An ‘ology on the life &amp; times of Bangalore</h2>
+      <p class="mt-6 text-[var(--color-ink-soft)]">
+        aPaulogy is the gallery of cartoonist and watercolourist Paul Fernandes. Sixty
+        illustrations trace a city of monkey-topped bungalows, shaded avenues, and the
+        cafes and characters that gave old Bangalore its charm — with detours through
+        vintage Mumbai and sunlit Goa.
+      </p>
+      <p class="mt-4 text-[var(--color-ink-soft)]">
+        Every reproduction is printed to archival standards and personally signed by the
+        artist before it makes its way to your wall.
+      </p>
+      <a href="/about-us/" class="btn btn-outline mt-8">Read our story</a>
+    </div>
+  </section>
+</BaseLayout>

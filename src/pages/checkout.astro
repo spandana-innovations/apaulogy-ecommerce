@@ -1,0 +1,166 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Checkout" description="Secure checkout for your aPaulogy order." noindex={true}>
+  <div class="container-page py-12 min-h-[60vh]">
+    <h1 class="text-5xl mb-8">Checkout</h1>
+
+    <div id="co-empty" class="hidden">
+      <p class="text-[var(--color-ink-soft)] text-lg">Your cart is empty.</p>
+      <a href="/store/" class="btn btn-primary mt-6">Browse the store</a>
+    </div>
+
+    <form id="co-form" class="hidden grid lg:grid-cols-[1.4fr_1fr] gap-10 items-start">
+      <div class="space-y-6">
+        <fieldset class="card p-6">
+          <legend class="text-2xl px-1">Contact</legend>
+          <div class="grid sm:grid-cols-2 gap-4 mt-3">
+            <label class="block sm:col-span-2">
+              <span class="lbl">Full name</span>
+              <input name="name" required class="inp" autocomplete="name" />
+            </label>
+            <label class="block">
+              <span class="lbl">Email</span>
+              <input name="email" type="email" required class="inp" autocomplete="email" />
+            </label>
+            <label class="block">
+              <span class="lbl">Phone</span>
+              <input name="phone" required class="inp" autocomplete="tel" inputmode="tel" />
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="card p-6">
+          <legend class="text-2xl px-1">Shipping address</legend>
+          <div class="grid sm:grid-cols-2 gap-4 mt-3">
+            <label class="block sm:col-span-2"><span class="lbl">Address line 1</span><input name="line1" required class="inp" autocomplete="address-line1" /></label>
+            <label class="block sm:col-span-2"><span class="lbl">Address line 2</span><input name="line2" class="inp" autocomplete="address-line2" /></label>
+            <label class="block"><span class="lbl">City</span><input name="city" required class="inp" autocomplete="address-level2" /></label>
+            <label class="block"><span class="lbl">State</span><input name="state" required class="inp" autocomplete="address-level1" /></label>
+            <label class="block"><span class="lbl">PIN code</span><input name="postcode" required class="inp" autocomplete="postal-code" inputmode="numeric" /></label>
+            <label class="block"><span class="lbl">Country</span><input name="country" value="India" required class="inp" autocomplete="country-name" /></label>
+          </div>
+        </fieldset>
+      </div>
+
+      <aside class="card p-6 lg:sticky lg:top-24">
+        <h2 class="text-2xl mb-4">Order summary</h2>
+        <ul id="co-items" class="space-y-3 text-sm mb-4"></ul>
+        <dl class="space-y-2 text-sm border-t border-[var(--color-line)] pt-4">
+          <div class="flex justify-between"><dt>Subtotal</dt><dd id="co-subtotal">—</dd></div>
+          <div class="flex justify-between"><dt>Shipping</dt><dd id="co-shipping">—</dd></div>
+        </dl>
+        <div class="flex justify-between text-lg font-medium mt-3 pt-3 border-t border-[var(--color-line)]">
+          <span>Total</span><span id="co-total">—</span>
+        </div>
+        <button type="submit" id="co-pay" class="btn btn-primary w-full mt-6">Pay securely</button>
+        <p id="co-error" class="text-[var(--color-terracotta)] text-sm mt-3" hidden></p>
+        <p class="text-xs text-[var(--color-muted)] mt-4 text-center">Payments processed securely by Razorpay. You’ll see UPI, cards, net-banking & wallets.</p>
+      </aside>
+    </form>
+  </div>
+
+  <style>
+    .lbl { display:block; font-family: var(--font-sans); font-size: .72rem; letter-spacing:.08em; text-transform:uppercase; color: var(--color-muted); margin-bottom:.3rem; }
+    .inp { width:100%; background: var(--color-paper); border:1px solid var(--color-line); border-radius:2px; padding:.6rem .75rem; font-family: var(--font-serif); }
+    .inp:focus { outline:none; border-color: var(--color-terracotta); }
+  </style>
+
+  <script>
+    const FREE_SHIPPING_OVER = 500000; // paise (₹5,000)
+    const SHIPPING_FLAT = 15000;       // paise (₹150)
+
+    function inr(paise: number) {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: paise % 100 ? 2 : 0 }).format(paise / 100);
+    }
+    function loadRazorpay(): Promise<boolean> {
+      return new Promise((resolve) => {
+        if ((window as any).Razorpay) return resolve(true);
+        const s = document.createElement('script');
+        s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        s.onload = () => resolve(true);
+        s.onerror = () => resolve(false);
+        document.body.appendChild(s);
+      });
+    }
+
+    function initCheckout() {
+      const Cart = (window as any).Cart;
+      const items = Cart.all();
+      const empty = document.getElementById('co-empty')!;
+      const form = document.getElementById('co-form') as HTMLFormElement;
+      if (!items.length) { empty.classList.remove('hidden'); form.classList.add('hidden'); return; }
+      empty.classList.add('hidden'); form.classList.remove('hidden'); form.classList.add('grid');
+
+      const subtotal = Cart.subtotal();
+      const shipping = subtotal >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
+      const total = subtotal + shipping;
+
+      const list = document.getElementById('co-items')!;
+      list.innerHTML = items.map((it: any) =>
+        `<li class="flex justify-between gap-3"><span>${it.name} × ${it.qty}</span><span>${inr(it.price * it.qty)}</span></li>`,
+      ).join('');
+      document.getElementById('co-subtotal')!.textContent = inr(subtotal);
+      document.getElementById('co-shipping')!.textContent = shipping === 0 ? 'Free' : inr(shipping);
+      document.getElementById('co-total')!.textContent = inr(total);
+
+      form.onsubmit = async (e) => {
+        e.preventDefault();
+        const err = document.getElementById('co-error') as HTMLElement;
+        const payBtn = document.getElementById('co-pay') as HTMLButtonElement;
+        err.hidden = true; payBtn.disabled = true; payBtn.textContent = 'Preparing…';
+
+        const fd = new FormData(form);
+        const customer = Object.fromEntries(fd.entries());
+
+        try {
+          const res = await fetch('/api/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              items: items.map((it: any) => ({ slug: it.slug, qty: it.qty, variant: it.variant })),
+              customer,
+            }),
+          });
+          if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Could not start payment');
+          const data = await res.json();
+
+          const ok = await loadRazorpay();
+          if (!ok) throw new Error('Could not reach Razorpay. Check your connection.');
+
+          const rzp = new (window as any).Razorpay({
+            key: data.key_id,
+            order_id: data.order_id,
+            amount: data.amount,
+            currency: 'INR',
+            name: 'aPaulogy',
+            description: 'Watercolours of a city that was',
+            prefill: { name: customer.name, email: customer.email, contact: customer.phone },
+            theme: { color: '#b8543c' },
+            handler: async (resp: any) => {
+              await fetch('/api/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(resp),
+              });
+              Cart.clear();
+              window.location.href = `/order-confirmed/?order=${encodeURIComponent(data.order_number)}`;
+            },
+            modal: { ondismiss: () => { payBtn.disabled = false; payBtn.textContent = 'Pay securely'; } },
+          });
+          rzp.on('payment.failed', () => {
+            err.textContent = 'Payment failed. Please try again.'; err.hidden = false;
+            payBtn.disabled = false; payBtn.textContent = 'Pay securely';
+          });
+          rzp.open();
+        } catch (e: any) {
+          err.textContent = e.message || 'Something went wrong.'; err.hidden = false;
+          payBtn.disabled = false; payBtn.textContent = 'Pay securely';
+        }
+      };
+    }
+    initCheckout();
+    document.addEventListener('astro:after-swap', initCheckout);
+  </script>
+</BaseLayout>

@@ -1,0 +1,86 @@
+---
+/**
+ * Deterministic watercolour-style placeholder rendered as inline SVG.
+ * Used when a product has no imported image yet, so the store still looks
+ * intentional and on-brand. Swap for real R2 images after import.
+ */
+export interface Props {
+  seed?: string;
+  label?: string;
+  class?: string;
+  ratio?: string; // e.g. "4 / 5"
+}
+
+const { seed = 'apaulogy', label = '', class: cls = '', ratio = '4 / 5' } = Astro.props;
+
+// Small deterministic PRNG from the seed string.
+function hash(str: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+let s = hash(seed);
+function rnd(): number {
+  s = (s * 1664525 + 1013904223) >>> 0;
+  return s / 4294967296;
+}
+const pick = <T,>(arr: T[]): T => arr[Math.floor(rnd() * arr.length)];
+
+const palettes = [
+  ['#b8543c', '#d29b3f', '#3d5443'],
+  ['#3d5443', '#7fa07a', '#d29b3f'],
+  ['#c77b4a', '#8a6d3b', '#b8543c'],
+  ['#4a6b7c', '#c77b4a', '#d29b3f'],
+];
+const colors = pick(palettes);
+
+const blobs = Array.from({ length: 5 }, () => ({
+  cx: 20 + rnd() * 60,
+  cy: 25 + rnd() * 55,
+  r: 14 + rnd() * 26,
+  fill: pick(colors),
+  o: 0.18 + rnd() * 0.28,
+}));
+
+const uid = 'wc' + hash(seed + label).toString(36);
+---
+
+<div class={`art-ph ${cls}`} style={`aspect-ratio:${ratio}`} aria-hidden={label ? undefined : 'true'} role="img" aria-label={label || undefined}>
+  <svg viewBox="0 0 100 118" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id={`b${uid}`}><feGaussianBlur stdDeviation="3.2" /></filter>
+      <linearGradient id={`g${uid}`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#faf5ea" />
+        <stop offset="1" stop-color="#f2e9d8" />
+      </linearGradient>
+    </defs>
+    <rect width="100" height="118" fill={`url(#g${uid})`} />
+    <g filter={`url(#b${uid})`}>
+      {blobs.map((b) => (
+        <circle cx={b.cx} cy={b.cy} r={b.r} fill={b.fill} opacity={b.o} />
+      ))}
+    </g>
+    <!-- horizon / ground wash to suggest a scene -->
+    <rect x="0" y="86" width="100" height="32" fill={colors[2]} opacity="0.14" filter={`url(#b${uid})`} />
+    <rect x="6" y="6" width="88" height="106" fill="none" stroke="#24211c" stroke-opacity="0.12" stroke-width="0.6" />
+  </svg>
+</div>
+
+<style>
+  .art-ph {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: var(--color-paper-deep);
+  }
+  .art-ph svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>

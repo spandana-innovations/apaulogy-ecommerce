@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Page not found" description="The page you were looking for could not be found." noindex={true}>
+  <div class="container-page py-28 text-center min-h-[60vh]">
+    <p class="font-display text-8xl text-[var(--color-terracotta)]">404</p>
+    <h1 class="text-4xl mt-4">This page has wandered off</h1>
+    <p class="mt-4 text-[var(--color-ink-soft)]">Perhaps it’s gone for a walk down a tree-lined avenue. Let’s get you back.</p>
+    <div class="mt-8 flex justify-center gap-3">
+      <a href="/" class="btn btn-primary">Back home</a>
+      <a href="/store/" class="btn btn-outline">Browse the store</a>
+    </div>
+  </div>
+</BaseLayout>

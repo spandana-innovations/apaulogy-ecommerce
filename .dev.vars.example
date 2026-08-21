@@ -1,0 +1,7 @@
+# Copy to `.dev.vars` for `wrangler pages dev` / astro dev with platformProxy.
+# These map to `locals.runtime.env` at the edge. Do not commit `.dev.vars`.
+RAZORPAY_KEY_ID = "rzp_test_xxxxxxxxxxxxxx"
+RAZORPAY_KEY_SECRET = "your_razorpay_key_secret"
+RAZORPAY_WEBHOOK_SECRET = "your_webhook_secret"
+MEDIA_BASE_URL = "https://cdn.apaulogy.com"
+CURRENCY = "INR"
