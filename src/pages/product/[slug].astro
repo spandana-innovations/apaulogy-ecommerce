@@ -38,7 +38,7 @@ function dims(label: string): { w: number; h: number } | null {
 }
 const sizeData = variations.map((v) => ({ slug: v.slug, label: v.label, price: v.sale_price ?? v.price, image: v.image || '', ...(dims(v.label) || { w: 0, h: 0 }) }));
 const hasDims = sizeData.some((s) => s.h > 0);
-const PX_PER_INCH = 1.7;            // man ≈ 69in → ~117px
+const PX_PER_INCH = 2.3;            // runner ≈ 69in → ~158px tall
 const MAN_INCHES = 69;
 ---
 
@@ -54,7 +54,7 @@ const MAN_INCHES = 69;
     <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
       <!-- Gallery -->
       <div class="lg:sticky lg:top-24">
-        <div class="frame art-guard zoomable relative">
+        <div id="zoom-box" class="frame art-guard zoom-wrap" role="button" tabindex="0" aria-label="Zoom image in place">
           <div class="art-pad">
             {heroImg ? (
               <img id="hero-img" src={heroImg} alt={product.images?.[0]?.alt || product.name} class="protected w-full h-auto object-contain" width="900" height="700" />
@@ -63,9 +63,7 @@ const MAN_INCHES = 69;
             )}
           </div>
           {heroImg && (
-            <button id="zoom-btn" class="absolute z-[3] bottom-3 right-3 bg-white border border-[var(--color-ink)] p-2 hover:bg-black hover:text-white transition-colors" aria-label="Zoom image">
-              <Icon name="zoom" size={18} />
-            </button>
+            <span class="zoom-hint"><Icon name="zoom" size={16} /></span>
           )}
         </div>
         {product.images && product.images.length > 1 && (
@@ -96,55 +94,46 @@ const MAN_INCHES = 69;
 
         {product.short_html && <div class="prose-paper mt-5 text-[var(--color-ink-soft)]" set:html={product.short_html} />}
 
-        <!-- Print size: custom themed selector + scale figure -->
+        <!-- Print size: pick a plaque to scale (desktop) / themed select (mobile) -->
         {variations.length > 0 && (
           <div class="mt-8" style="font-family:var(--font-sans)">
             <span class="field-label">Print size</span>
-            <div class="ps-select relative">
-              <button type="button" id="ps-button" class="field text-left flex items-center justify-between" aria-haspopup="listbox" aria-expanded="false">
-                <span id="ps-current" class="text-[var(--color-muted)]">Choose a print size</span>
-              </button>
-              <ul id="ps-list" class="hidden absolute z-20 left-0 right-0 mt-1 bg-white border border-[var(--color-ink)] shadow-[var(--shadow-frame)]" role="listbox">
+
+            <!-- Mobile: simple themed select -->
+            <select id="ps-mobile" class="field sm:hidden" aria-label="Choose a print size">
+              <option value="" selected disabled>Choose a print size</option>
+              {sizeData.map((s) => (
+                <option value={s.slug}>{s.label} — {formatINR(s.price!)}</option>
+              ))}
+            </select>
+
+            <!-- Desktop: the plaques are the picker -->
+            <div class="size-panel hidden sm:block">
+              <p class="size-intro">
+                <strong>Select a print below</strong> to see it against our runner — he's about 5′9″, fish included.
+              </p>
+              {hasDims && (
+                <div class="size-stage" id="size-stage">
+                  <img src="/brand/scale-man.png" alt="A runner from Paul's Colaba to Bandra artwork, standing in for a 5 foot 9 adult" class="size-man-img protected" width="183" height="239" draggable="false" />
+                  {sizeData.filter((s) => s.h > 0).map((s) => (
+                    <button type="button" class="size-opt" data-slug={s.slug} aria-pressed="false"
+                      aria-label={`${s.label} — ${formatINR(s.price!)}`}
+                      style={`width:${s.w * PX_PER_INCH}px;height:${s.h * PX_PER_INCH}px`}></button>
+                  ))}
+                </div>
+              )}
+              <div class="size-chips">
                 {sizeData.map((s) => (
-                  <li role="option" class="ps-option flex items-center gap-3 px-3 py-2.5 cursor-pointer hover:bg-[var(--color-paper-deep)] border-b border-[var(--color-line)] last:border-0"
-                    data-slug={s.slug} data-label={s.label} data-price={s.price} data-image={s.image}>
-                    {s.h > 0 && (
-                      <span class="flex-none border border-[var(--color-ink)] bg-[repeating-linear-gradient(45deg,transparent,transparent_4px,rgba(0,0,0,.06)_4px,rgba(0,0,0,.06)_5px)]"
-                        style={`width:${Math.max(12, s.w * 2.1)}px;height:${Math.max(12, s.h * 2.1)}px`}></span>
-                    )}
-                    <span class="flex-1 text-[0.85rem] text-[var(--color-ink)]">{s.label}</span>
-                    <span class="text-[0.85rem]">{formatINR(s.price!)}</span>
-                  </li>
+                  <button type="button" class="size-chip" data-slug={s.slug} aria-pressed="false">
+                    {s.h > 0 && <span class="chip-swatch" style={`width:${Math.max(8, s.w * 0.9)}px;height:${Math.max(8, s.h * 0.9)}px`}></span>}
+                    <span>{s.label}</span>
+                    <span class="opacity-70">{formatINR(s.price!)}</span>
+                  </button>
                 ))}
-              </ul>
+              </div>
             </div>
 
-            {hasDims && (
-              <div class="mt-6 border border-[var(--color-line)] p-4">
-                <p class="text-[0.62rem] uppercase tracking-[0.16em] text-[var(--color-muted)] mb-3">Size to scale</p>
-                <div class="size-figure" id="size-figure">
-                  <!-- man silhouette (~5'9") -->
-                  <svg class="size-man" viewBox="0 0 24 112" fill="var(--color-ink-soft)" aria-label="Average adult height, about 5 feet 9 inches">
-                    <circle cx="12" cy="9" r="7"/>
-                    <path d="M12 17c-4.2 0-6.6 2.3-6.6 5.8V40h1.9l-1 24h-1v3h3.4l1-27h.6l1 27h3.4v-3h-1l-1-24h1.9V22.8C18.6 19.3 16.2 17 12 17Z"/>
-                    <path d="M5.4 25 2.5 44l1.9.3 2.8-18Zm13.2 0 2.9 19-1.9.3-2.8-18Z"/>
-                  </svg>
-                  {sizeData.filter((s) => s.h > 0).map((s) => (
-                    <div class="size-rect" data-slug={s.slug}
-                      style={`width:${s.w * PX_PER_INCH}px;height:${s.h * PX_PER_INCH}px`}></div>
-                  ))}
-                </div>
-                <div class="flex flex-wrap gap-x-5 gap-y-1.5 mt-4 pt-3 border-t border-[var(--color-line)]" style="font-family:var(--font-sans)">
-                  {sizeData.filter((s) => s.h > 0).map((s) => (
-                    <span class="size-legend flex items-center gap-1.5 text-[0.72rem] text-[var(--color-ink-soft)]" data-slug={s.slug}>
-                      <span class="inline-block border border-[var(--color-ink)]" style={`width:${Math.max(9, s.w)}px;height:${Math.max(9, s.h)}px`}></span>
-                      {s.w}″ × {s.h}″
-                    </span>
-                  ))}
-                  <span class="flex items-center gap-1.5 text-[0.72rem] text-[var(--color-muted)]"><svg width="10" height="24" viewBox="0 0 24 112" fill="currentColor"><circle cx="12" cy="9" r="7"/><rect x="6" y="16" width="12" height="90" rx="4"/></svg> ≈ 5′9″ adult</span>
-                </div>
-              </div>
-            )}
+            <script type="application/json" id="ps-data" set:html={JSON.stringify(sizeData)}></script>
           </div>
         )}
 
@@ -193,11 +182,6 @@ const MAN_INCHES = 69;
     )}
   </div>
 
-  <!-- Zoom lightbox -->
-  <div id="zoom-lightbox" aria-hidden="true">
-    <button id="zoom-close" aria-label="Close zoom"><Icon name="close" size={28} /></button>
-    <img id="zoom-img" class="protected" src="" alt="" />
-  </div>
 </BaseLayout>
 
 <script>
@@ -214,52 +198,50 @@ const MAN_INCHES = 69;
     document.getElementById('qty-dec')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(Math.max(1, getQty()-1)); });
     document.getElementById('qty-inc')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(getQty()+1); });
 
-    // Custom print-size dropdown
-    const psBtn = document.getElementById('ps-button');
-    const psList = document.getElementById('ps-list');
-    const psCurrent = document.getElementById('ps-current');
+    // ---------------- Print-size selection (plaques / chips / mobile select) --
     const priceDisplay = document.getElementById('price-display');
     const hint = document.getElementById('variation-hint');
     const addBtn = document.getElementById('add-btn') as HTMLElement | null;
     const isVariable = addBtn?.dataset.variable === '1';
-    let chosen: { slug:string;label:string;price:number;image:string } | null = null;
+    const psData: {slug:string;label:string;price:number;image:string}[] =
+      JSON.parse(document.getElementById('ps-data')?.textContent || '[]');
+    const stage = document.getElementById('size-stage');
+    const mobileSel = document.getElementById('ps-mobile') as HTMLSelectElement | null;
+    let chosen: {slug:string;label:string;price:number;image:string} | null = null;
 
     const inr = (p:number) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100);
-    function closeList(){ psList?.classList.add('hidden'); psBtn?.setAttribute('aria-expanded','false'); }
-    psBtn?.addEventListener('click', () => {
-      const open = psList?.classList.toggle('hidden') === false;
-      psBtn.setAttribute('aria-expanded', String(open));
-    });
-    document.addEventListener('click', (e) => { if (psBtn && psList && !psBtn.contains(e.target as Node) && !psList.contains(e.target as Node)) closeList(); });
-    document.querySelectorAll('.ps-option').forEach((op) => {
-      op.addEventListener('click', () => {
-        const d = (op as HTMLElement).dataset;
-        chosen = { slug:d.slug!, label:d.label!, price:parseInt(d.price||'0',10), image:d.image||'' };
-        if (psCurrent) { psCurrent.textContent = chosen.label; psCurrent.classList.remove('text-[var(--color-muted)]'); }
-        if (priceDisplay) priceDisplay.textContent = inr(chosen.price);
-        if (chosen.image && hero) hero.src = chosen.image;
-        if (hint) hint.hidden = true;
-        // highlight the matching rectangle + legend in the size figure
-        document.querySelectorAll('.size-rect').forEach((r) => {
-          const on = (r as HTMLElement).dataset.slug === chosen!.slug;
-          (r as HTMLElement).style.background = on
-            ? 'rgba(0,0,0,.14)' : 'repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,.05) 5px,rgba(0,0,0,.05) 6px)';
-          (r as HTMLElement).style.borderColor = on ? '#000' : '';
-          (r as HTMLElement).style.borderWidth = on ? '2px' : '';
-        });
-        document.querySelectorAll('.size-legend').forEach((l) => {
-          const on = (l as HTMLElement).dataset.slug === chosen!.slug;
-          (l as HTMLElement).style.fontWeight = on ? '700' : '';
-          (l as HTMLElement).style.color = on ? '#000' : '';
-        });
-        closeList();
-      });
-    });
 
+    function choose(slug: string) {
+      const s = psData.find((d) => d.slug === slug);
+      if (!s) return;
+      chosen = s;
+      if (priceDisplay) priceDisplay.textContent = inr(s.price);
+      if (s.image && hero) hero.src = s.image;
+      if (hint) hint.hidden = true;
+      stage?.classList.add('chosen'); // stop the nudge animation
+      document.querySelectorAll('.size-opt').forEach((b) =>
+        b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.slug === slug)));
+      document.querySelectorAll('.size-chip').forEach((b) =>
+        b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.slug === slug)));
+      if (mobileSel && mobileSel.value !== slug) mobileSel.value = slug;
+    }
+    document.querySelectorAll('.size-opt, .size-chip').forEach((b) => {
+      b.addEventListener('click', () => choose((b as HTMLElement).dataset.slug!));
+    });
+    mobileSel?.addEventListener('change', () => choose(mobileSel.value));
+
+    // ---------------- Cart actions ------------------------------------------
     function add(): boolean {
       const Cart=(window as any).Cart; if(!Cart||!addBtn) return false;
       let price=parseInt(addBtn.dataset.price||'0',10); let variant:string|undefined;
-      if (isVariable){ if(!chosen){ if(hint) hint.hidden=false; psList?.classList.remove('hidden'); return false; } price=chosen.price; variant=chosen.label; }
+      if (isVariable){
+        if(!chosen){
+          if(hint) hint.hidden=false;
+          (stage || mobileSel)?.scrollIntoView({behavior:'smooth',block:'center'});
+          return false;
+        }
+        price=chosen.price; variant=chosen.label;
+      }
       Cart.add({ slug:addBtn.dataset.slug!, name:addBtn.dataset.name!, price, image:(chosen?.image||addBtn.dataset.image||''), qty:getQty(), variant });
       document.dispatchEvent(new CustomEvent('cart:added'));
       return true;
@@ -267,16 +249,30 @@ const MAN_INCHES = 69;
     addBtn?.addEventListener('click', add);
     document.getElementById('buy-btn')?.addEventListener('click', () => { if (add()) window.location.href='/checkout/'; });
 
-    // Zoom lightbox
-    const lb = document.getElementById('zoom-lightbox');
-    const lbImg = document.getElementById('zoom-img') as HTMLImageElement | null;
-    function openZoom(){ if(lb&&lbImg&&hero){ lbImg.src=hero.src; lb.classList.add('open'); lb.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; } }
-    function closeZoom(){ if(lb){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); document.body.style.overflow=''; } }
-    document.getElementById('zoom-btn')?.addEventListener('click', openZoom);
-    document.querySelector('.art-guard.zoomable')?.addEventListener('click', (e)=>{ if((e.target as HTMLElement).id!=='zoom-btn' && !(e.target as HTMLElement).closest('#zoom-btn')) openZoom(); });
-    document.getElementById('zoom-close')?.addEventListener('click', closeZoom);
-    lb?.addEventListener('click', (e)=>{ if(e.target===lb||(e.target as HTMLElement).id==='zoom-img') closeZoom(); });
-    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeZoom(); });
+    // ---------------- Inline zoom (magnify inside the frame) -----------------
+    const zoomBox = document.getElementById('zoom-box');
+    if (zoomBox && hero) {
+      const setOrigin = (clientX:number, clientY:number) => {
+        const r = zoomBox.getBoundingClientRect();
+        const x = Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100));
+        const y = Math.max(0, Math.min(100, ((clientY - r.top) / r.height) * 100));
+        hero.style.transformOrigin = `${x}% ${y}%`;
+      };
+      zoomBox.addEventListener('click', (e) => {
+        setOrigin((e as MouseEvent).clientX, (e as MouseEvent).clientY);
+        zoomBox.classList.toggle('zoomed');
+      });
+      zoomBox.addEventListener('mousemove', (e) => {
+        if (zoomBox.classList.contains('zoomed')) setOrigin((e as MouseEvent).clientX, (e as MouseEvent).clientY);
+      });
+      zoomBox.addEventListener('keydown', (e) => {
+        if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+          e.preventDefault(); zoomBox.classList.toggle('zoomed');
+        }
+        if ((e as KeyboardEvent).key === 'Escape') zoomBox.classList.remove('zoomed');
+      });
+      zoomBox.addEventListener('mouseleave', () => zoomBox.classList.remove('zoomed'));
+    }
   }
   initPDP();
   document.addEventListener('astro:after-swap', initPDP);

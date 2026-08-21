@@ -21,6 +21,10 @@ export const ICONS: Record<string, string> = {
   truck: '<path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.8"/><circle cx="17" cy="18" r="1.8"/>',
   shield: '<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" stroke-linejoin="round"/>',
   bank: '<path d="M4 10h16M5 10l7-5 7 5M6 10v7M10 10v7M14 10v7M18 10v7M4 20h16" stroke-linecap="round" stroke-linejoin="round"/>',
+  instagram: '<rect x="3.5" y="3.5" width="17" height="17" rx="4.5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/>',
+  youtube: '<rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M10.5 9.5v5l4.5-2.5z" fill="currentColor" stroke="none"/>',
+  whatsapp: '<path d="M12 3.5a8.5 8.5 0 0 0-7.3 12.8L3.5 20.5l4.3-1.1A8.5 8.5 0 1 0 12 3.5Z"/><path d="M8.8 8.6c.6-.5 1-.3 1.2.2l.5 1.1c.1.3 0 .6-.2.8l-.5.5c.5 1 1.5 2 2.6 2.5l.5-.5c.2-.2.5-.3.8-.2l1.1.5c.5.2.7.6.2 1.2-2.7 2.7-8.2-2.9-6.2-6.1Z" stroke-linejoin="round"/>',
+  brush: '<path d="M15 3l6 6-8.5 8.5c-1 1-2.5 1-3.5 0l-2.5-2.5c-1-1-1-2.5 0-3.5Z" stroke-linejoin="round"/><path d="M7 15c-2 .5-3 2-3.5 5 3-.5 4.5-1.5 5-3.5"/>',
   facebook: '<path d="M14 9h3V5h-3a4 4 0 0 0-4 4v2H8v4h2v6h4v-6h3l1-4h-4V9a1 1 0 0 1 1-1Z" stroke-linejoin="round"/>',
   // category / collection
   frame: '<rect x="3" y="3" width="18" height="18" rx="1"/><rect x="6.5" y="6.5" width="11" height="11" rx="0.5"/>',

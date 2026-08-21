@@ -55,7 +55,7 @@ import Icon from './Icon.astro';
       itemsEl.hidden = false; footer.hidden = false; emptyEl.hidden = true;
       itemsEl.innerHTML = items.map((it:any) => `
         <div class="flex gap-3 py-3 border-b border-[var(--color-line)]">
-          ${it.image ? `<img src="${it.image}" alt="" class="w-16 h-14 object-contain bg-white border border-[var(--color-ink)] flex-none"/>` : `<span class="w-16 h-14 bg-[var(--color-paper-deep)] flex-none"></span>`}
+          ${it.image ? `<img src="${it.image}" alt="" class="w-16 h-14 object-contain bg-white border border-[var(--color-frame)] flex-none"/>` : `<span class="w-16 h-14 bg-[var(--color-paper-deep)] flex-none"></span>`}
           <div class="flex-1 min-w-0">
             <p class="text-[0.98rem] leading-snug">${it.name}</p>
             ${it.variant ? `<p class="text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)">${it.variant}</p>` : ''}

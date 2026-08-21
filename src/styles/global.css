@@ -23,6 +23,7 @@
   --color-muted: #767676;        /* captions / meta */
   --color-line: #e3e3e3;         /* hairline borders */
   --color-line-strong: #111111;  /* frame lines */
+  --color-frame: #d9d9d9;        /* image frames — light gray, softer than #ccc */
 
   /* Legacy accent names remapped to monochrome so nothing renders in colour */
   --color-terracotta: #000000;
@@ -192,7 +193,7 @@
   .prose-paper ul { list-style: disc; padding-left: 1.4em; margin-block: 0.9em; }
   .prose-paper ol { list-style: decimal; padding-left: 1.4em; margin-block: 0.9em; }
   .prose-paper li { margin-block: 0.3em; }
-  .prose-paper img { margin-block: 1em; border: 1px solid var(--color-line-strong); padding: 0.4rem; background: #fff; max-width: 100%; height: auto; }
+  .prose-paper img { margin-block: 1em; border: 1px solid var(--color-frame); padding: 0.4rem; background: #fff; max-width: 100%; height: auto; }
   .prose-paper hr { border: 0; border-top: 1px solid var(--color-line); margin-block: 2em; }
 
   /* Underline-on-hover text link */
@@ -210,8 +211,8 @@
    Additions: thin frames, themed form controls, image protection, zoom, sliders
    -------------------------------------------------------------------------- */
 @layer components {
-  /* #3 — thin black border around art (replaces the thick mat) */
-  .frame { background:#fff; border:1px solid var(--color-ink); padding:0; }
+  /* #3 — light gray hairline around art (was black) */
+  .frame { background:#fff; border:1px solid var(--color-frame, #dcdcdc); padding:0; }
   .frame-tight { padding:0; }
   .art-pad { padding:0.5rem; background:#fff; }
 
@@ -252,12 +253,15 @@ img.protected, .protected img {
 }
 .art-guard.zoomable::after { cursor: zoom-in; }
 
-/* #4 — zoom lightbox */
-#zoom-lightbox { position: fixed; inset: 0; z-index: 80; display: none; background: rgba(0,0,0,.92); }
-#zoom-lightbox.open { display: grid; place-items: center; }
-#zoom-lightbox img { max-width: 92vw; max-height: 88vh; object-fit: contain; cursor: zoom-out;
-  -webkit-user-drag:none; user-drag:none; user-select:none; -webkit-touch-callout:none; }
-#zoom-close { position: fixed; top: 1rem; right: 1rem; z-index: 81; color:#fff; padding:.5rem; }
+/* #4 — inline zoom (no popup): image magnifies inside its own frame */
+.zoom-wrap { position: relative; overflow: hidden; cursor: zoom-in; }
+.zoom-wrap img { transition: transform .28s ease; transform-origin: 50% 50%; will-change: transform; }
+.zoom-wrap.zoomed { cursor: zoom-out; }
+.zoom-wrap.zoomed img { transform: scale(2.4); }
+.zoom-hint { position:absolute; z-index:3; bottom:.7rem; right:.7rem; pointer-events:none;
+  background:#fff; border:1px solid var(--color-frame); padding:.4rem; line-height:0;
+  opacity:.9; transition:opacity .2s; }
+.zoom-wrap.zoomed .zoom-hint { opacity:0; }
 
 /* #14 — horizontal collection sliders */
 .slider-track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(58%, 1fr);
@@ -271,7 +275,30 @@ img.protected, .protected img {
 .slider-btn:hover { background:#000; color:#fff; }
 .slider-btn:disabled { opacity:.3; cursor:default; background:#fff; color:var(--color-ink); }
 
-/* #22 — print-size scale visual */
-.size-figure { display:flex; align-items:flex-end; gap:1.5rem; height:120px; padding-left:.25rem; }
-.size-rect { border:1.5px solid var(--color-ink); background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,.05) 5px,rgba(0,0,0,.05) 6px); flex:none; }
-.size-man { width:26px; height:112px; flex:none; }
+/* #22 — print-size scale selector (the plaques ARE the picker) */
+.size-panel { border:1px solid var(--color-line-strong); padding:1.1rem 1.25rem 1rem; background:#fff; }
+.size-intro { font-family:var(--font-sans); font-size:.8rem; color:var(--color-ink-soft); }
+.size-stage { display:flex; align-items:flex-end; gap:2rem; min-height:178px; padding:.9rem .3rem .5rem; }
+.size-man-img { height:158px; width:auto; flex:none; -webkit-user-drag:none; user-select:none; }
+.size-opt { appearance:none; -webkit-appearance:none; flex:none; cursor:pointer; position:relative;
+  background-color:#fff; border:1.5px solid var(--color-ink);
+  background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,.05) 5px,rgba(0,0,0,.05) 6px);
+  transition:background-color .2s,border-color .2s,box-shadow .2s; }
+.size-opt:hover { background-color:#efefef; box-shadow:0 3px 0 -1px rgba(0,0,0,.25); }
+.size-opt:focus-visible { outline:2px solid #000; outline-offset:2px; }
+.size-opt[aria-pressed="true"] { background-color:rgba(0,0,0,.14); border-color:#000; border-width:2.5px; }
+/* eye-catching nudge until a size is chosen */
+@keyframes sizeNudge { 0%,72%,100% { transform:translateY(0); } 82% { transform:translateY(-7px); } 90% { transform:translateY(1px); } }
+.size-stage:not(.chosen) .size-opt { animation:sizeNudge 2.6s ease-in-out infinite; }
+.size-stage:not(.chosen) .size-opt:nth-of-type(2) { animation-delay:.18s; }
+.size-stage:not(.chosen) .size-opt:nth-of-type(3) { animation-delay:.36s; }
+@media (prefers-reduced-motion: reduce) { .size-opt { animation:none !important; } }
+/* caption chips (labels + prices, mirror the plaques) */
+.size-chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.9rem; padding-top:.9rem; border-top:1px solid var(--color-line); }
+.size-chip { display:inline-flex; align-items:center; gap:.55rem; padding:.5rem .8rem; cursor:pointer;
+  border:1px solid var(--color-ink); background:#fff; font-family:var(--font-sans); font-size:.78rem; letter-spacing:.02em;
+  transition:background .15s,color .15s; }
+.size-chip:hover { background:var(--color-paper-deep); }
+.size-chip[aria-pressed="true"] { background:#000; color:#fff; }
+.size-chip[aria-pressed="true"] .chip-swatch { border-color:#fff; }
+.chip-swatch { display:inline-block; border:1px solid var(--color-ink); background:transparent; flex:none; }

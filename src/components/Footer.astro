@@ -3,6 +3,8 @@ import { SITE_TAGLINE } from '../lib/seo';
 import Icon from './Icon.astro';
 const year = new Date().getFullYear();
 
+import { SOCIALS } from '../lib/socials';
+
 const cols = [
   {
     title: 'Art & Books',
@@ -40,6 +42,22 @@ const cols = [
 ---
 
 <footer class="mt-28 bg-black text-white">
+  <!-- Prominent social bar -->
+  <div class="border-b border-white/15">
+    <div class="container-page py-7 flex flex-col sm:flex-row items-center justify-between gap-5">
+      <p class="text-xl sm:text-2xl text-center sm:text-left" style="font-family:var(--font-display)">Follow the gallery</p>
+      <div class="flex items-center gap-3">
+        {SOCIALS.map((s) => (
+          <a href={s.href} rel="noopener" target="_blank" aria-label={`aPaulogy on ${s.name}`}
+            class="group flex items-center gap-2.5 border border-white/30 px-4 py-2.5 hover:bg-white hover:text-black transition-colors">
+            <Icon name={s.icon} size={20} stroke={1.5} />
+            <span class="text-[0.72rem] uppercase tracking-[0.16em] font-semibold" style="font-family:var(--font-sans)">{s.name}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+
   <div class="container-page py-16">
     <div class="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr_1.2fr]">
       <div>
@@ -48,15 +66,8 @@ const cols = [
         <address class="mt-5 not-italic space-y-2 text-sm text-white/80">
           <p class="flex items-start gap-2.5"><Icon name="pin" size={16} class="mt-0.5 flex-none opacity-70" /> aPaulogy Gallery, 002 Edward House, 37 Pottery Road, Richards Town, Bengaluru 560 005</p>
           <p class="flex items-center gap-2.5"><Icon name="mail" size={16} class="flex-none opacity-70" /> <a href="mailto:info@apaulogy.com" class="hover:text-white">info@apaulogy.com</a></p>
-          <p class="flex items-center gap-2.5"><Icon name="facebook" size={16} class="flex-none opacity-70" /> <a href="https://www.facebook.com/aPaulogyGallery" class="hover:text-white" rel="noopener">aPaulogy Gallery</a></p>
           <p><a href="/contact-us/" class="inline-flex items-center gap-1.5 mt-1 link-underline text-white/90 hover:text-white">Contact us <Icon name="arrowRight" size={14} /></a></p>
         </address>
-        <form class="mt-6 flex max-w-sm" data-newsletter>
-          <input type="email" name="email" required placeholder="Your email" aria-label="Email for newsletter"
-            class="flex-1 bg-white/5 border border-white/25 px-3 py-2.5 text-sm placeholder:text-white/40 focus:outline-none focus:border-white" />
-          <button class="btn btn-primary !rounded-none !bg-white !text-black !border-white hover:!bg-transparent hover:!text-white !px-5 !py-2.5" type="submit">Join</button>
-        </form>
-        <p data-newsletter-msg class="mt-2 text-xs text-white/80" hidden></p>
       </div>
 
       {cols.map((col) => (
@@ -71,11 +82,23 @@ const cols = [
       ))}
     </div>
 
-    <div class="mt-14 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60" style="font-family:var(--font-sans)">
+    <!-- Payments -->
+    <div class="mt-14 pt-8 border-t border-white/15">
+      <p class="text-[0.62rem] uppercase tracking-[0.2em] text-white/50 mb-4" style="font-family:var(--font-sans)">We accept</p>
+      <div class="flex flex-wrap items-center gap-2.5 pay-badges" aria-label="Accepted payment methods">
+        <!-- Monochrome payment marks, drawn to match the theme -->
+        <span class="pay" title="Visa"><svg viewBox="0 0 48 28" aria-label="Visa"><text x="24" y="19" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-weight="700" font-size="13" fill="currentColor">VISA</text></svg></span>
+        <span class="pay" title="Mastercard"><svg viewBox="0 0 48 28" aria-label="Mastercard"><circle cx="19" cy="14" r="8" fill="currentColor" opacity=".85"/><circle cx="29" cy="14" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        <span class="pay" title="RuPay"><svg viewBox="0 0 48 28" aria-label="RuPay"><text x="22" y="18.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="11" fill="currentColor">RuPay</text><path d="M40 8l4 6-4 6z" fill="currentColor"/></svg></span>
+        <span class="pay" title="UPI"><svg viewBox="0 0 48 28" aria-label="UPI"><text x="20" y="18.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="12" fill="currentColor">UPI</text><path d="M34 8l5 6-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+        <span class="pay" title="Net Banking"><svg viewBox="0 0 48 28" aria-label="Net banking"><path d="M14 12h20M15.5 12l8.5-5 8.5 5M17 12v7M21.5 12v7M26.5 12v7M31 12v7M14 21h20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <span class="pay" title="Bank transfer — NEFT / IMPS"><svg viewBox="0 0 48 28" aria-label="NEFT and IMPS bank transfer"><text x="24" y="17.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="7.5" fill="currentColor">NEFT/IMPS</text></svg></span>
+      </div>
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/60" style="font-family:var(--font-sans)">
       <p>© {year} aPaulogy. All artwork © Paul Fernandes.</p>
       <p class="flex items-center gap-2">
-        <a href="https://www.facebook.com/aPaulogyGallery" class="hover:text-white" rel="noopener">Facebook</a>
-        <span aria-hidden="true">·</span>
         <span>Secure payments by Razorpay</span>
         <span aria-hidden="true">·</span>
         <span>Made in Bengaluru</span>
@@ -84,25 +107,8 @@ const cols = [
   </div>
 </footer>
 
-<script>
-  function initNewsletter() {
-    document.querySelectorAll<HTMLFormElement>('[data-newsletter]').forEach((form) => {
-      if (form.dataset.bound) return;
-      form.dataset.bound = '1';
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = (form.querySelector('input[name=email]') as HTMLInputElement).value;
-        const msg = form.parentElement?.querySelector('[data-newsletter-msg]') as HTMLElement | null;
-        try {
-          await fetch('/api/subscribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
-          if (msg) { msg.textContent = 'Thank you — you’re on the list.'; msg.hidden = false; }
-          form.reset();
-        } catch {
-          if (msg) { msg.textContent = 'Something went wrong. Please try again.'; msg.hidden = false; }
-        }
-      });
-    });
-  }
-  initNewsletter();
-  document.addEventListener('astro:after-swap', initNewsletter);
-</script>
+<style>
+  .pay { display:inline-flex; align-items:center; justify-content:center; width:58px; height:34px;
+    border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.05); color:rgba(255,255,255,.9); }
+  .pay svg { width:48px; height:28px; }
+</style>
