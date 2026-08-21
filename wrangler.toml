@@ -1,32 +1,28 @@
-# Cloudflare Pages configuration for aPaulogy.
-# Deploy target: Cloudflare Pages (connect this repo in the Pages dashboard).
-#   Build command:      npm run build
-#   Build output dir:   dist
-#
-# The bindings below are also configured in the Pages dashboard
-# (Settings -> Functions -> Bindings). This file lets `wrangler pages dev`
-# and the D1 CLI commands work locally with the same names.
-
 name = "apaulogy"
+main = "./dist/_worker.js/index.js"
 compatibility_date = "2025-08-01"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "./dist"
 
-# --- D1: relational database for orders, customers, catalogue & inventory ---
-[[d1_databases]]
-binding = "DB"
-database_name = "apaulogy"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"   # `wrangler d1 create apaulogy`
+[build]
+command = "npm run build"
 
-# --- R2: object storage for product images / media ---
-[[r2_buckets]]
-binding = "MEDIA"
-bucket_name = "apaulogy-media"
+[assets]
+directory = "./dist"
+binding = "ASSETS"
 
-# --- Non-secret vars. Secrets (Razorpay keys) go in the dashboard or
-#     `wrangler pages secret put`. Never commit real keys. ---
+[observability]
+enabled = true
+
 [vars]
 SITE_URL = "https://apaulogy.com"
-RAZORPAY_KEY_ID = ""          # public key id is safe client-side; set in dashboard
 MEDIA_BASE_URL = "https://cdn.apaulogy.com"
 CURRENCY = "INR"
+
+# Enable later for checkout/Razorpay (create resources first, then uncomment):
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "apaulogy"
+# database_id = "REPLACE_WITH_D1_DATABASE_ID"
+# [[r2_buckets]]
+# binding = "MEDIA"
+# bucket_name = "apaulogy-media"
