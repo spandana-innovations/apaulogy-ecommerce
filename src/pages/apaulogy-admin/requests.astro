@@ -1,0 +1,23 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getStats, listRequests } from '../../lib/admin-data';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const rows = await listRequests(env, 200);
+const scopeLabel: Record<string,string> = { 'delete-all':'Delete all', access:'Export data', unsubscribe:'Unsubscribe' };
+---
+<AdminLayout title="Data requests" active="requests" dbBound={stats.dbBound}>
+  <div class="card" style="overflow:hidden">
+    {rows.length ? (
+      <table>
+        <thead><tr><th>Ref</th><th>Name</th><th>Email</th><th>Request</th><th>Notes</th><th>Date</th></tr></thead>
+        <tbody>{rows.map((r:any)=>(<tr>
+          <td><strong>{r.reference}</strong></td><td>{r.name||'—'}</td><td>{r.email}</td>
+          <td><span class="pill" style="background:#eee;color:#333">{scopeLabel[r.scope]||r.scope}</span></td>
+          <td class="muted" style="max-width:260px">{r.details||'—'}</td><td class="muted">{(r.created||'').slice(0,10)}</td>
+        </tr>))}</tbody>
+      </table>
+    ) : (<div class="empty">No data requests. Submissions from the Data Deletion page appear here.</div>)}
+  </div>
+</AdminLayout>

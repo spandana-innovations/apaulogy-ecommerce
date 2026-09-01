@@ -1,5 +1,4 @@
-# Cloudflare Pages headers.
-# Long-cache immutable build assets; sensible security headers everywhere.
+# Cloudflare Pages headers — caching + security.
 
 /*
   X-Content-Type-Options: nosniff
@@ -7,12 +6,25 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=()
 
-# Hashed, immutable Astro assets
+# Hashed, immutable Astro build assets
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
 
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
 
+# Artwork & brand images (stable filenames, rarely change)
+/uploads/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=86400
+
+/brand/*
+  Cache-Control: public, max-age=2592000
+
+/data/*
+  Cache-Control: public, max-age=3600
+
 /*.svg
   Cache-Control: public, max-age=86400
+
+/*.webp
+  Cache-Control: public, max-age=2592000

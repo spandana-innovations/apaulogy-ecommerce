@@ -1,73 +1,166 @@
 ---
-import { getTopCategories } from '../lib/catalog';
+import { getMenu } from '../lib/catalog';
+import { categoryIcon, ICONS } from '../lib/icons';
+import Icon from './Icon.astro';
 import { SITE_NAME } from '../lib/seo';
 
-const nav = [
-  { label: 'Store', href: '/store/' },
-  { label: 'Bangalore in the 70s', href: '/category/bangalore-70s/' },
-  { label: 'Vintage Mumbai', href: '/category/vintage-mumbai/' },
-  { label: 'Goa', href: '/category/goa/' },
-  { label: 'Merchandise', href: '/category/merchandise/' },
-  { label: 'About', href: '/about-us/' },
-];
+const fullMenu = getMenu();
+// Contact now lives in the footer; keep the shopping menus up top.
+const menu = fullMenu.filter((m) => m.label.toLowerCase() !== 'contact');
+
+function slugFromHref(href?: string | null): string {
+  if (!href) return '';
+  const m = href.match(/\/category\/([^/]+)\//);
+  return m ? m[1] : '';
+}
+const topIcon: Record<string, string> = {
+  'Art & Books': 'frame', 'Carriables': 'bag', 'Merchandise': 'box', 'Gifting': 'gift',
+};
+function iconFor(label: string, href?: string | null): string {
+  const s = slugFromHref(href);
+  if (s) return categoryIcon(s);
+  return topIcon[label] || 'chevronRight';
+}
+// Split a dropdown's children into "branch" columns (have leaves) and loose leaves.
+function organise(children: typeof menu) {
+  const branches = children.filter((c) => c.children.length > 0);
+  const loose = children.filter((c) => c.children.length === 0);
+  return { branches, loose };
+}
 ---
 
-<header class="sticky top-0 z-40 bg-[var(--color-paper)]/95 backdrop-blur-sm border-b border-[var(--color-line)]">
+<header class="sticky top-0 z-40 bg-white/95 backdrop-blur-sm">
   <div class="container-page flex items-center justify-between h-[var(--header-h)] gap-4">
     <!-- Mobile menu toggle -->
-    <button
-      id="menu-toggle"
-      class="md:hidden -ml-1 p-2"
-      aria-label="Open menu"
-      aria-expanded="false"
-      aria-controls="mobile-nav"
-    >
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-        <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round" />
-      </svg>
+    <button id="menu-toggle" class="lg:hidden -ml-1 p-2" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+      <Icon name="menu" size={24} />
     </button>
 
-    <a href="/" class="font-display text-3xl md:text-4xl leading-none tracking-tight shrink-0" aria-label={`${SITE_NAME} home`}>
-      aPaulogy
+    <a href="/" class="shrink-0 flex items-center" aria-label={`${SITE_NAME} home`}>
+      <img src="/brand/logo.jpeg" alt="aPaulogy — Curious Illustration" class="h-[4.4rem] md:h-20 w-auto" width="360" height="139" />
     </a>
 
-    <nav class="hidden md:flex items-center gap-6 text-[0.8rem] tracking-wide" style="font-family:var(--font-sans)" aria-label="Primary">
-      {nav.map((item) => (
-        <a href={item.href} class="uppercase text-[var(--color-ink-soft)] hover:text-[var(--color-terracotta)] transition-colors">
-          {item.label}
+    <!-- Desktop nav -->
+    <nav class="hidden lg:flex items-stretch gap-8 h-full" style="font-family:var(--font-sans)" aria-label="Primary">
+      {menu.map((item) => {
+        const { branches, loose } = organise(item.children);
+        return (
+        <div class="group relative flex items-center">
+          <a href={item.href || '#'}
+            class="inline-flex items-center gap-1.5 h-full text-[0.76rem] font-medium uppercase tracking-[0.14em] text-[var(--color-ink)] hover:text-[var(--color-muted)] transition-colors"
+            aria-haspopup={item.children.length ? 'true' : undefined}>
+            <Icon name={iconFor(item.label, item.href)} size={16} stroke={1.5} />
+            {item.label}
+            {item.children.length > 0 && <Icon name="chevron" size={12} class="mt-0.5 opacity-50" />}
+          </a>
+
+          {item.children.length > 0 && (
+            <div class="invisible opacity-0 translate-y-1 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 focus-within:visible focus-within:opacity-100 transition-all duration-150 absolute top-full left-1/2 -translate-x-1/2">
+              <div class="mt-0 bg-white border border-[var(--color-line-strong)] shadow-[var(--shadow-frame)] p-6">
+                <div class="grid gap-x-10 gap-y-2" style={`grid-template-columns: repeat(${branches.length + (loose.length ? 1 : 0)}, minmax(11rem, auto))`}>
+                  {branches.map((child) => (
+                    <div>
+                      <a href={child.href || '#'} class="flex items-center gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-[var(--color-ink)] mb-3 pb-2 border-b border-[var(--color-line)] hover:text-[var(--color-muted)]">
+                        <Icon name={iconFor(child.label, child.href)} size={15} stroke={1.5} />
+                        {child.label}
+                      </a>
+                      <ul class="space-y-2">
+                        {child.children.map((leaf) => (
+                          <li>
+                            <a href={leaf.href || '#'} class="group/leaf flex items-center gap-2.5 text-[0.82rem] tracking-wide text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
+                              <Icon name={iconFor(leaf.label, leaf.href)} size={15} stroke={1.4} class="opacity-45 group-hover/leaf:opacity-100 transition-opacity" />
+                              <span class="group-hover/leaf:underline underline-offset-4">{leaf.label}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                  {loose.length > 0 && (
+                    <div>
+                      <p class="flex items-center gap-2 text-[0.64rem] font-semibold uppercase tracking-[0.16em] text-[var(--color-ink)] mb-3 pb-2 border-b border-[var(--color-line)]">
+                        <Icon name="scroll" size={15} stroke={1.5} /> More
+                      </p>
+                      <ul class="space-y-2">
+                        {loose.map((leaf) => (
+                          <li>
+                            <a href={leaf.href || '#'} class="group/leaf flex items-center gap-2.5 text-[0.82rem] tracking-wide text-[var(--color-ink-soft)] hover:text-[var(--color-ink)]">
+                              <Icon name={iconFor(leaf.label, leaf.href)} size={15} stroke={1.4} class="opacity-45 group-hover/leaf:opacity-100 transition-opacity" />
+                              <span class="group-hover/leaf:underline underline-offset-4">{leaf.label}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )})}
+
+      <!-- Map — a standalone destination -->
+      <div class="flex items-center">
+        <a href="/map/" class="inline-flex items-center gap-1.5 h-full text-[0.76rem] font-medium uppercase tracking-[0.14em] text-[var(--color-ink)] hover:text-[var(--color-muted)] transition-colors">
+          <Icon name="pin" size={16} stroke={1.5} />
+          Map
         </a>
-      ))}
+      </div>
     </nav>
 
-    <a href="/cart/" class="relative p-2 shrink-0" aria-label="Cart">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" stroke-linejoin="round"/>
-        <path d="M3 6h18M16 10a4 4 0 0 1-8 0" stroke-linecap="round"/>
-      </svg>
-      <span
-        data-cart-count
-        hidden
-        class="absolute -top-0.5 -right-0.5 min-w-[1.1rem] h-[1.1rem] px-1 rounded-full bg-[var(--color-terracotta)] text-white text-[0.65rem] font-bold grid place-items-center"
-        style="font-family:var(--font-sans)"
-      >0</span>
-    </a>
+    <!-- Actions -->
+    <div class="flex items-center gap-1 shrink-0">
+      <button id="search-toggle" class="p-2 hover:text-[var(--color-muted)] transition-colors" aria-label="Search" aria-controls="search-overlay">
+        <Icon name="search" size={22} />
+      </button>
+      <a id="account-link" href="/account/" class="p-2 hover:text-[var(--color-muted)] transition-colors" aria-label="Account">
+        <Icon name="user" size={22} />
+        <span id="account-dot" hidden class="block w-1.5 h-1.5 rounded-full bg-black mx-auto mt-0.5"></span>
+      </a>
+      <button id="cart-toggle" class="relative p-2 hover:text-[var(--color-muted)] transition-colors" aria-label="Open cart" aria-controls="cart-drawer">
+        <Icon name="cart" size={22} />
+        <span data-cart-count hidden class="absolute -top-0.5 -right-0.5 min-w-[1.05rem] h-[1.05rem] px-1 rounded-full bg-black text-white text-[0.62rem] font-bold grid place-items-center" style="font-family:var(--font-sans)">0</span>
+      </button>
+    </div>
   </div>
+  <div class="h-px bg-[var(--color-line)] opacity-0"></div>
 
-  <!-- Mobile nav -->
-  <nav
-    id="mobile-nav"
-    class="md:hidden hidden border-t border-[var(--color-line)] bg-[var(--color-paper)]"
-    aria-label="Mobile"
-  >
-    <ul class="container-page py-3">
-      {nav.map((item) => (
-        <li>
-          <a href={item.href} class="block py-2.5 text-[0.9rem] uppercase tracking-wide text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">
-            {item.label}
-          </a>
+  <!-- Mobile nav (accordion) -->
+  <nav id="mobile-nav" class="lg:hidden hidden border-t border-[var(--color-line)] bg-white max-h-[80vh] overflow-y-auto" aria-label="Mobile" style="font-family:var(--font-sans)">
+    <ul class="container-page py-2">
+      {menu.map((item) => (
+        <li class="border-b border-[var(--color-line)]">
+          <div class="flex items-center justify-between">
+            <a href={item.href || '#'} class="flex items-center gap-2.5 py-3 text-[0.8rem] uppercase tracking-[0.12em] font-semibold flex-1">
+              <Icon name={iconFor(item.label, item.href)} size={17} stroke={1.5} />{item.label}
+            </a>
+            {item.children.length > 0 && (
+              <button class="m-submenu-toggle p-3" aria-label={`Toggle ${item.label}`} aria-expanded="false"><Icon name="chevron" size={14} /></button>
+            )}
+          </div>
+          {item.children.length > 0 && (
+            <ul class="m-submenu hidden pb-3 pl-2">
+              {item.children.map((child) => (
+                <li>
+                  {child.href
+                    ? <a href={child.href} class="flex items-center gap-2.5 py-2 text-[0.85rem] text-[var(--color-ink-soft)]"><Icon name={iconFor(child.label, child.href)} size={15} class="opacity-60" />{child.label}</a>
+                    : <p class="flex items-center gap-2 pt-3 pb-1 text-[0.62rem] uppercase tracking-[0.16em] text-[var(--color-muted)]"><Icon name={iconFor(child.label, child.href)} size={14} />{child.label}</p>}
+                  {child.children.length > 0 && (
+                    <ul class="pl-4">
+                      {child.children.map((leaf) => (
+                        <li><a href={leaf.href || '#'} class="flex items-center gap-2.5 py-1.5 text-[0.85rem] text-[var(--color-ink-soft)]"><Icon name={iconFor(leaf.label, leaf.href)} size={14} class="opacity-45" />{leaf.label}</a></li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </li>
       ))}
-      <li><a href="/faq/" class="block py-2.5 text-[0.9rem] uppercase tracking-wide text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">FAQ</a></li>
+      <li class="border-b border-[var(--color-line)]"><a href="/map/" class="flex items-center gap-2.5 py-3 text-[0.8rem] uppercase tracking-[0.12em] font-semibold"><Icon name="pin" size={17} stroke={1.5} />Map</a></li>
+      <li class="border-b border-[var(--color-line)]"><a href="/contact-us/" class="flex items-center gap-2.5 py-3 text-[0.8rem] uppercase tracking-[0.12em] font-semibold"><Icon name="mail" size={17} stroke={1.5} />Contact</a></li>
     </ul>
   </nav>
 </header>
@@ -76,11 +169,32 @@ const nav = [
   function initMenu() {
     const btn = document.getElementById('menu-toggle');
     const nav = document.getElementById('mobile-nav');
-    if (!btn || !nav) return;
-    btn.addEventListener('click', () => {
-      const open = nav.classList.toggle('hidden') === false;
-      btn.setAttribute('aria-expanded', String(open));
+    if (btn && nav && !btn.dataset.bound) {
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => {
+        const open = nav.classList.toggle('hidden') === false;
+        btn.setAttribute('aria-expanded', String(open));
+      });
+    }
+    document.querySelectorAll('.m-submenu-toggle').forEach((b) => {
+      if ((b as HTMLElement).dataset.bound) return;
+      (b as HTMLElement).dataset.bound = '1';
+      b.addEventListener('click', () => {
+        const sub = (b.closest('li') as HTMLElement)?.querySelector('.m-submenu');
+        if (sub) {
+          const open = sub.classList.toggle('hidden') === false;
+          b.setAttribute('aria-expanded', String(open));
+          (b as HTMLElement).style.transform = open ? 'rotate(180deg)' : '';
+        }
+      });
     });
+    // account state (set by cart/account scripts)
+    try {
+      const u = JSON.parse(localStorage.getItem('apaulogy_user') || 'null');
+      const dot = document.getElementById('account-dot');
+      const link = document.getElementById('account-link');
+      if (u && dot) { dot.hidden = false; link?.setAttribute('aria-label', `Account — ${u.name || 'signed in'}`); }
+    } catch {}
   }
   initMenu();
   document.addEventListener('astro:after-swap', initMenu);

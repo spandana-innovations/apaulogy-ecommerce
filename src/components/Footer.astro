@@ -1,103 +1,122 @@
 ---
 import { SITE_TAGLINE } from '../lib/seo';
+import Icon from './Icon.astro';
 const year = new Date().getFullYear();
 
+import { SOCIALS } from '../lib/socials';
+
 const cols = [
+  {
+    title: 'Art & Books',
+    links: [
+      { label: 'Bangalore in the 70’s', href: '/category/bangalore-in-the-70s/' },
+      { label: 'Vintage Mumbai', href: '/category/vintage-mumbai/' },
+      { label: 'A Goan Holiday', href: '/category/a-goan-holiday/' },
+      { label: 'Plaques', href: '/category/plaques/' },
+      { label: 'Posters', href: '/category/posters/' },
+      { label: 'Coffee Table Books', href: '/category/coffee-table-books/' },
+    ],
+  },
   {
     title: 'Shop',
     links: [
       { label: 'All Products', href: '/store/' },
-      { label: 'Bangalore in the 70s', href: '/category/bangalore-70s/' },
-      { label: 'Vintage Mumbai', href: '/category/vintage-mumbai/' },
-      { label: 'Goa', href: '/category/goa/' },
+      { label: 'Laptop Bags', href: '/category/laptop-bags/' },
+      { label: 'Sling Bags', href: '/category/sling-bags/' },
       { label: 'Merchandise', href: '/category/merchandise/' },
+      { label: 'Gift Cards', href: '/category/gift-cards/' },
     ],
   },
   {
-    title: 'Gallery',
+    title: 'Information',
     links: [
-      { label: 'About Us', href: '/about-us/' },
+      { label: 'About', href: '/about-us/' },
       { label: 'FAQ', href: '/faq/' },
-      { label: 'Contact', href: '/contact/' },
-    ],
-  },
-  {
-    title: 'Help',
-    links: [
-      { label: 'Shipping & Returns', href: '/faq/#shipping' },
+      { label: 'Shipping Policy', href: '/shipping-policy/' },
+      { label: 'Returns & Refunds', href: '/return-and-refund-policy/' },
       { label: 'Terms & Conditions', href: '/terms-conditions/' },
       { label: 'Privacy Policy', href: '/privacy-policy/' },
+      { label: 'Data Deletion', href: '/data-deletion/' },
     ],
   },
 ];
 ---
 
-<footer class="mt-24 bg-[var(--color-heritage)] text-[#f2e9d8]">
-  <div class="container-page py-14">
-    <div class="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+<footer class="mt-28 bg-black text-white">
+  <!-- Prominent social bar -->
+  <div class="border-b border-white/15">
+    <div class="container-page py-7 flex flex-col sm:flex-row items-center justify-between gap-5">
+      <p class="text-xl sm:text-2xl text-center sm:text-left" style="font-family:var(--font-display)">Follow the gallery</p>
+      <div class="flex items-center gap-3">
+        {SOCIALS.map((s) => (
+          <a href={s.href} rel="noopener" target="_blank" aria-label={`aPaulogy on ${s.name}`}
+            class="group flex items-center gap-2.5 border border-white/30 px-4 py-2.5 hover:bg-white hover:text-black transition-colors">
+            <Icon name={s.icon} size={20} stroke={1.5} />
+            <span class="text-[0.72rem] uppercase tracking-[0.16em] font-semibold" style="font-family:var(--font-sans)">{s.name}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="container-page py-16">
+    <div class="grid gap-12 md:grid-cols-[1.5fr_1fr_1fr_1.2fr]">
       <div>
-        <p class="font-display text-4xl leading-none">aPaulogy</p>
-        <p class="mt-3 text-sm text-[#f2e9d8]/80 max-w-xs">{SITE_TAGLINE}. Signed watercolour prints & merchandise by Paul Fernandes, from Bengaluru.</p>
-        <form class="mt-5 flex max-w-sm" data-newsletter>
-          <input
-            type="email"
-            name="email"
-            required
-            placeholder="Your email"
-            aria-label="Email for newsletter"
-            class="flex-1 bg-[#f2e9d8]/10 border border-[#f2e9d8]/25 px-3 py-2 text-sm placeholder:text-[#f2e9d8]/50 focus:outline-none focus:border-[var(--color-mustard)]"
-          />
-          <button class="btn btn-primary !rounded-none !px-4 !py-2" type="submit">Join</button>
-        </form>
-        <p data-newsletter-msg class="mt-2 text-xs text-[var(--color-mustard)]" hidden></p>
+        <img src="/brand/logo-white.png" alt="aPaulogy" class="h-9 w-auto" width="360" height="139" />
+        <p class="mt-4 text-sm text-white/70 max-w-xs">{SITE_TAGLINE}. Watercolour prints & merchandise by Paul Fernandes, from Bengaluru.</p>
+        <address class="mt-5 not-italic space-y-2 text-sm text-white/80">
+          <p class="flex items-start gap-2.5"><Icon name="pin" size={16} class="mt-0.5 flex-none opacity-70" /> aPaulogy Gallery, 002 Edward House, 37 Pottery Road, Richards Town, Bengaluru 560 005</p>
+          <p class="flex items-center gap-2.5"><Icon name="mail" size={16} class="flex-none opacity-70" /> <a href="mailto:info@apaulogy.com" class="hover:text-white">info@apaulogy.com</a></p>
+          <p><a href="/contact-us/" class="inline-flex items-center gap-1.5 mt-1 link-underline text-white/90 hover:text-white">Contact us <Icon name="arrowRight" size={14} /></a></p>
+        </address>
       </div>
 
       {cols.map((col) => (
         <nav aria-label={col.title}>
-          <h2 class="text-[0.72rem] font-semibold tracking-[0.2em] uppercase text-[var(--color-mustard)]" style="font-family:var(--font-sans)">{col.title}</h2>
-          <ul class="mt-4 space-y-2.5 text-sm text-[#f2e9d8]/85">
+          <h2 class="text-[0.66rem] font-semibold tracking-[0.22em] uppercase text-white/60" style="font-family:var(--font-sans)">{col.title}</h2>
+          <ul class="mt-4 space-y-2.5 text-sm text-white/85">
             {col.links.map((l) => (
-              <li><a href={l.href} class="hover:text-white transition-colors">{l.label}</a></li>
+              <li><a href={l.href} class="hover:text-white hover:underline underline-offset-4 transition-colors">{l.label}</a></li>
             ))}
           </ul>
         </nav>
       ))}
     </div>
 
-    <div class="mt-12 pt-6 border-t border-[#f2e9d8]/15 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#f2e9d8]/70" style="font-family:var(--font-sans)">
-      <p>© {year} aPaulogy. All artwork © Paul Fernandes.</p>
-      <p class="flex items-center gap-2">
-        <span>Secure payments by Razorpay</span>
-        <span aria-hidden="true">·</span>
-        <span>Made in Bengaluru</span>
-      </p>
+    <!-- Payments -->
+    <div class="mt-14 pt-8 border-t border-white/15">
+      <p class="text-[0.62rem] uppercase tracking-[0.2em] text-white/50 mb-4" style="font-family:var(--font-sans)">We accept</p>
+      <div class="flex flex-wrap items-center gap-2.5 pay-badges" aria-label="Accepted payment methods">
+        <!-- Monochrome payment marks, drawn to match the theme -->
+        <span class="pay" title="Visa"><svg viewBox="0 0 48 28" aria-label="Visa"><text x="24" y="19" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-weight="700" font-size="13" fill="currentColor">VISA</text></svg></span>
+        <span class="pay" title="Mastercard"><svg viewBox="0 0 48 28" aria-label="Mastercard"><circle cx="19" cy="14" r="8" fill="currentColor" opacity=".85"/><circle cx="29" cy="14" r="8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span>
+        <span class="pay" title="RuPay"><svg viewBox="0 0 48 28" aria-label="RuPay"><text x="22" y="18.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="11" fill="currentColor">RuPay</text><path d="M40 8l4 6-4 6z" fill="currentColor"/></svg></span>
+        <span class="pay" title="UPI"><svg viewBox="0 0 48 28" aria-label="UPI"><text x="20" y="18.5" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="12" fill="currentColor">UPI</text><path d="M34 8l5 6-5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></span>
+
+        <span class="mx-1 text-white/25" aria-hidden="true">|</span>
+
+        <!-- Payment gateway credit -->
+        <span class="flex items-center gap-2 text-xs text-white/70" style="font-family:var(--font-sans)">
+          <span class="inline-flex items-center gap-1.5 bg-white rounded-[3px] px-2.5 py-1.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 3 8.6 21h3.1l1.5-4h-2l4-11z" fill="#3395FF"/><path d="M8.6 3 5.5 12l6.3-2.4L13 6z" fill="#072654"/></svg>
+            <span class="text-[0.82rem] font-semibold tracking-tight" style="color:#072654">Razorpay</span>
+          </span>
+          Secure payments by Razorpay
+        </span>
+      </div>
+    </div>
+
+    <div class="mt-8 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/60" style="font-family:var(--font-sans)">
+      <p>© {year} aPaulogy Gallery <span class="text-white/30">|</span> All artwork © Paul Fernandes</p>
+      <a href="https://quantump2x.com" rel="noopener" target="_blank" class="opacity-70 hover:opacity-100 transition-opacity" aria-label="Quantum P2X">
+        <img src="/brand/quantump2x.svg" alt="Quantum P2X" width="30" height="30" class="w-[30px] h-[30px]" />
+      </a>
     </div>
   </div>
 </footer>
 
-<script>
-  function initNewsletter() {
-    document.querySelectorAll<HTMLFormElement>('[data-newsletter]').forEach((form) => {
-      if (form.dataset.bound) return;
-      form.dataset.bound = '1';
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = (form.querySelector('input[name=email]') as HTMLInputElement).value;
-        const msg = form.parentElement?.querySelector('[data-newsletter-msg]') as HTMLElement | null;
-        try {
-          await fetch('/api/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
-          });
-          if (msg) { msg.textContent = 'Thank you — you’re on the list.'; msg.hidden = false; }
-          form.reset();
-        } catch {
-          if (msg) { msg.textContent = 'Something went wrong. Please try again.'; msg.hidden = false; }
-        }
-      });
-    });
-  }
-  initNewsletter();
-  document.addEventListener('astro:after-swap', initNewsletter);
-</script>
+<style>
+  .pay { display:inline-flex; align-items:center; justify-content:center; width:58px; height:34px;
+    border:1px solid rgba(255,255,255,.28); background:rgba(255,255,255,.05); color:rgba(255,255,255,.9); }
+  .pay svg { width:48px; height:28px; }
+</style>

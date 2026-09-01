@@ -1,9 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import ArtPlaceholder from '../../components/ArtPlaceholder.astro';
-import { getProducts, getProduct, getRelatedProducts, effectivePrice } from '../../lib/catalog';
-import { formatINR } from '../../lib/format';
+import Icon from '../../components/Icon.astro';
+import { getProducts, getProduct, getCategory, getRelatedProducts, effectivePrice, isOnSale, hasPriceRange } from '../../lib/catalog';
+import { formatINR, formatINRRange } from '../../lib/format';
 import { productSchema, breadcrumbSchema, abs } from '../../lib/seo';
 
 export function getStaticPaths() {
@@ -15,52 +15,71 @@ const product = getProduct(slug!);
 if (!product) return Astro.redirect('/404');
 
 const price = effectivePrice(product);
-const onSale = product.sale_price != null && product.sale_price < product.price;
+const onSale = isOnSale(product);
+const range = hasPriceRange(product);
 const related = getRelatedProducts(product);
 const heroImg = product.images?.[0]?.url;
 const ogImage = heroImg || '/og-default.svg';
+const primaryCat = product.primary_category ? getCategory(product.primary_category) : null;
+const parentCat = primaryCat?.parent_slug ? getCategory(primaryCat.parent_slug) : null;
 
-const jsonld = [
-  productSchema(product, Astro.site, abs(ogImage, Astro.site)),
-  breadcrumbSchema(
-    [
-      { name: 'Home', url: '/' },
-      { name: 'Store', url: '/store/' },
-      { name: product.name, url: `/product/${product.slug}/` },
-    ],
-    Astro.site,
-  ),
-];
+const crumbs = [{ name: 'Home', url: '/' }, { name: 'Store', url: '/store/' }];
+if (parentCat) crumbs.push({ name: parentCat.name, url: `/category/${parentCat.slug}/` });
+if (primaryCat) crumbs.push({ name: primaryCat.name, url: `/category/${primaryCat.slug}/` });
+crumbs.push({ name: product.name, url: `/product/${product.slug}/` });
+
+const jsonld = [productSchema(product, Astro.site, abs(ogImage, Astro.site)), breadcrumbSchema(crumbs, Astro.site)];
+
+const plain = (product.short_html || product.description_html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const metaDesc = (plain ? plain.slice(0, 155) : `${product.name} — a watercolour illustration by Paul Fernandes${primaryCat ? `, from the ${primaryCat.name} collection` : ''}.`).replace(/\s+\S*$/, plain.length > 155 ? '…' : '');
+
+const variations = product.variations.filter((v) => v.price != null);
+// Parse inch dimensions (w" x h") from each variation label for the scale figure.
+function dims(label: string): { w: number; h: number } | null {
+  let m = label.match(/(\d+(?:\.\d+)?)\s*["″”]\s*[×x]\s*(\d+(?:\.\d+)?)/i);
+  if (m) return { w: parseFloat(m[1]), h: parseFloat(m[2]) };
+  m = label.match(/(\d+(?:\.\d+)?)\s*ft\s*[×x]\s*(\d+(?:\.\d+)?)\s*ft/i);
+  if (m) return { w: parseFloat(m[1]) * 12, h: parseFloat(m[2]) * 12 };
+  return null;
+}
+const sizeData = variations.map((v) => ({ slug: v.slug, label: v.label, price: v.sale_price ?? v.price, image: v.image || '', ...(dims(v.label) || { w: 0, h: 0 }) }));
+const hasDims = sizeData.some((s) => s.h > 0);
+const isCanvas = variations.some((v) => /canvas/i.test(v.label));
+const optionLabel = isCanvas ? 'Format' : 'Print size';
+const PX_PER_INCH = 2.3;            // runner ≈ 69in → ~158px tall
+const MAN_INCHES = 69;
 ---
 
-<BaseLayout
-  title={product.name}
-  description={product.short_desc || product.name}
-  image={ogImage}
-  type="product"
-  jsonld={jsonld}
->
+<BaseLayout title={product.name} description={metaDesc} image={ogImage} imageAlt={`${product.name} — aPaulogy`} type="product" jsonld={jsonld}>
   <div class="container-page py-10">
-    <nav class="text-xs text-[var(--color-muted)] mb-6" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
-      <a href="/" class="hover:text-[var(--color-terracotta)]">Home</a> <span aria-hidden="true">/</span>
-      <a href="/store/" class="hover:text-[var(--color-terracotta)]">Store</a> <span aria-hidden="true">/</span>
+    <nav class="text-xs text-[var(--color-muted)] mb-6 flex items-center gap-1.5 flex-wrap" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+      <a href="/" class="link-hover">Home</a> <Icon name="chevronRight" size={12} class="opacity-40" />
+      <a href="/store/" class="link-hover">Store</a> <Icon name="chevronRight" size={12} class="opacity-40" />
+      {primaryCat && (<><a href={`/category/${primaryCat.slug}/`} class="link-hover">{primaryCat.name}</a> <Icon name="chevronRight" size={12} class="opacity-40" /></>)}
       <span class="text-[var(--color-ink-soft)]">{product.name}</span>
     </nav>
 
     <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
       <!-- Gallery -->
       <div class="lg:sticky lg:top-24">
-        <div class="rounded-sm overflow-hidden shadow-[var(--shadow-frame)]">
-          {heroImg ? (
-            <img src={heroImg} alt={product.images?.[0]?.alt || product.name} width="900" height="1125" class="w-full h-auto object-cover" />
-          ) : (
-            <ArtPlaceholder seed={product.art_seed || product.slug} label={product.name} ratio="4 / 5" />
+        <div id="zoom-box" class="frame art-guard zoom-wrap" role="button" tabindex="0" aria-label="Zoom image in place">
+          <div class="art-pad">
+            {heroImg ? (
+              <img id="hero-img" src={heroImg} alt={product.images?.[0]?.alt || product.name} class="protected w-full h-auto object-contain" width="900" height="700" />
+            ) : (
+              <div class="w-full aspect-[4/3] grid place-items-center text-[var(--color-muted)]" style="font-family:var(--font-sans)">aPaulogy</div>
+            )}
+          </div>
+          {heroImg && (
+            <span class="zoom-hint"><Icon name="zoom" size={16} /></span>
           )}
         </div>
         {product.images && product.images.length > 1 && (
-          <div class="grid grid-cols-4 gap-3 mt-3">
-            {product.images.slice(0, 4).map((im) => (
-              <img src={im.url} alt={im.alt || product.name} class="w-full aspect-square object-cover rounded-sm border border-[var(--color-line)]" loading="lazy" />
+          <div class="grid grid-cols-5 gap-3 mt-3">
+            {product.images.slice(0, 5).map((im, i) => (
+              <button type="button" class="thumb frame art-guard art-pad bg-white" data-src={im.url} aria-label={`View image ${i + 1}`}>
+                <img src={im.url} alt={im.alt || product.name} class="protected w-full aspect-square object-contain" loading="lazy" />
+              </button>
             ))}
           </div>
         )}
@@ -68,58 +87,104 @@ const jsonld = [
 
       <!-- Details -->
       <div>
-        {product.collection && <p class="eyebrow">{product.collection}</p>}
-        <h1 class="text-4xl sm:text-5xl mt-2">{product.name}</h1>
-        {product.subtitle && <p class="text-[var(--color-muted)] mt-1 italic">{product.subtitle}</p>}
+        {primaryCat && (
+          <p class="eyebrow flex items-center gap-2"><Icon name="frame" size={14} /> {primaryCat.name}</p>
+        )}
+        <h1 class="text-4xl sm:text-5xl mt-3">{product.name}</h1>
 
-        <div class="flex items-baseline gap-3 mt-5">
-          <span class="text-2xl font-medium">{formatINR(price)}</span>
-          {onSale && <span class="text-[var(--color-muted)] line-through">{formatINR(product.price)}</span>}
-          {onSale && <span class="text-[var(--color-terracotta)] text-sm font-semibold" style="font-family:var(--font-sans)">Save {formatINR(product.price - price)}</span>}
+        <div class="flex items-baseline gap-3 mt-5" style="font-family:var(--font-sans)">
+          <span id="price-display" class="text-2xl font-medium" style="font-family:var(--font-serif)">
+            {range ? formatINRRange(price, product.price_max!) : formatINR(price)}
+          </span>
+          {onSale && !range && <span class="text-[var(--color-muted)] line-through">{formatINR(product.price)}</span>}
         </div>
+        {product.sku && <p class="mt-2 text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)">SKU: {product.sku}</p>}
 
-        {product.short_desc && <p class="mt-5 text-[var(--color-ink-soft)] text-lg">{product.short_desc}</p>}
+        {product.short_html && <div class="prose-paper mt-5 text-[var(--color-ink-soft)]" set:html={product.short_html} />}
 
-        <!-- Quantity + actions -->
-        <div class="mt-7 flex flex-wrap items-center gap-3" data-buybox>
-          <div class="inline-flex items-center border border-[var(--color-ink)] rounded-sm">
-            <button type="button" data-qty-dec class="px-3.5 py-2.5 text-lg leading-none" aria-label="Decrease quantity">−</button>
-            <input data-qty value="1" inputmode="numeric" class="w-12 text-center bg-transparent py-2.5" aria-label="Quantity" />
-            <button type="button" data-qty-inc class="px-3.5 py-2.5 text-lg leading-none" aria-label="Increase quantity">+</button>
+        <!-- Format / size: pick to scale against the runner (desktop) / themed select (mobile) -->
+        {variations.length > 0 && (
+          <div class="mt-8" style="font-family:var(--font-sans)">
+            <span class="field-label">{optionLabel}</span>
+
+            <!-- Mobile: simple themed select -->
+            <select id="ps-mobile" class="field sm:hidden" aria-label={`Choose ${isCanvas ? 'a format' : 'a print size'}`}>
+              <option value="" selected disabled>{isCanvas ? 'Choose a format' : 'Choose a print size'}</option>
+              {sizeData.map((s) => (
+                <option value={s.slug}>{s.label} — {formatINR(s.price!)}</option>
+              ))}
+            </select>
+
+            <!-- Desktop: pick to see it to scale -->
+            <div class="size-panel hidden sm:block">
+              <p class="size-intro">
+                {hasDims
+                  ? <><strong>Select an option below</strong> to see it against our runner — he's about 5′9″{isCanvas ? '' : ', fish included'}.</>
+                  : <><strong>Choose a format</strong> for this piece.</>}
+              </p>
+              {hasDims && (
+                <div class="size-stage" id="size-stage">
+                  <img src="/brand/scale-man.png" alt="A runner from Paul's Colaba to Bandra artwork, standing in for a 5 foot 9 adult" class="size-man-img protected" width="183" height="239" draggable="false" />
+                  {sizeData.filter((s) => s.h > 0).map((s) => (
+                    <button type="button" class="size-opt" data-slug={s.slug} aria-pressed="false"
+                      aria-label={`${s.label} — ${formatINR(s.price!)}`}
+                      style={`width:${s.w * PX_PER_INCH}px;height:${s.h * PX_PER_INCH}px`}></button>
+                  ))}
+                </div>
+              )}
+              <div class="size-chips">
+                {sizeData.map((s) => (
+                  <button type="button" class="size-chip" data-slug={s.slug} aria-pressed="false">
+                    {s.h > 0 && <span class="chip-swatch" style={`width:${Math.max(8, s.w * 0.9)}px;height:${Math.max(8, s.h * 0.9)}px`}></span>}
+                    <span>{s.label}</span>
+                    <span class="opacity-70">{formatINR(s.price!)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <script type="application/json" id="ps-data" set:html={JSON.stringify(sizeData)}></script>
           </div>
-          <button
-            class="btn btn-outline flex-1 min-w-[10rem]"
-            data-add
-            data-slug={product.slug}
-            data-name={product.name}
-            data-price={price}
-            data-image={heroImg || ''}
-          >Add to cart</button>
-        </div>
-        <a href="/cart/" class="btn btn-primary w-full mt-3" data-buynow
-           data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''}>
-          Buy it now
-        </a>
-
-        <!-- Description -->
-        {product.description && (
-          <div class="prose-paper mt-10 border-t border-[var(--color-line)] pt-8" set:html={product.description} />
         )}
 
-        <!-- Assurances -->
-        <ul class="mt-8 grid sm:grid-cols-2 gap-3 text-sm text-[var(--color-ink-soft)]">
-          <li class="flex gap-2"><span aria-hidden="true">✦</span> Personally signed by Paul Fernandes</li>
-          <li class="flex gap-2"><span aria-hidden="true">✦</span> Archival giclée print</li>
-          <li class="flex gap-2"><span aria-hidden="true">✦</span> Ships across India & worldwide</li>
-          <li class="flex gap-2"><span aria-hidden="true">✦</span> Secure Razorpay checkout</li>
+        <!-- Quantity + actions -->
+        <div class="mt-7 flex flex-wrap items-center gap-3">
+          <div class="inline-flex items-center border border-[var(--color-ink)]">
+            <button type="button" id="qty-dec" class="px-3.5 py-3 leading-none" aria-label="Decrease quantity"><Icon name="minus" size={16} /></button>
+            <input id="qty" value="1" inputmode="numeric" class="w-12 text-center bg-transparent py-3" aria-label="Quantity" />
+            <button type="button" id="qty-inc" class="px-3.5 py-3 leading-none" aria-label="Increase quantity"><Icon name="plus" size={16} /></button>
+          </div>
+          <button id="add-btn" class="btn btn-outline flex-1 min-w-[10rem] gap-2"
+            data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''} data-variable={variations.length > 0 ? '1' : '0'}>
+            <Icon name="cart" size={16} /> Add to cart
+          </button>
+        </div>
+        <button id="buy-btn" class="btn btn-primary w-full mt-3"
+          data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''}>
+          Buy it now
+        </button>
+        <p id="variation-hint" class="mt-2 text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)" hidden>Please choose a print size first.</p>
+
+        {product.description_html && (
+          <div class="prose-paper mt-10 border-t border-[var(--color-line)] pt-8" set:html={product.description_html} />
+        )}
+
+        <!-- Assurances (claims removed per brief) -->
+        <ul class="mt-10 grid sm:grid-cols-2 gap-3 text-sm text-[var(--color-ink-soft)] border-t border-[var(--color-line)] pt-8" style="font-family:var(--font-sans)">
+          <li class="flex items-center gap-2.5"><Icon name="truck" size={18} class="flex-none" /> Shipped across India &amp; worldwide</li>
+          <li class="flex items-center gap-2.5"><Icon name="shield" size={18} class="flex-none" /> Secure checkout</li>
+          <li class="flex items-center gap-2.5"><Icon name="frame" size={18} class="flex-none" /> Made at the aPaulogy gallery</li>
+          <li class="flex items-center gap-2.5"><Icon name="mail" size={18} class="flex-none" /> Help with framing &amp; gifting</li>
         </ul>
       </div>
     </div>
 
-    <!-- Related -->
     {related.length > 0 && (
       <section class="mt-24">
-        <h2 class="text-3xl mb-8">You may also like</h2>
+        <div class="flex items-end justify-between gap-4 mb-8">
+          <h2 class="text-3xl sm:text-4xl">Related pieces</h2>
+          {primaryCat && <a href={`/category/${primaryCat.slug}/`} class="hidden sm:flex items-center gap-1.5 text-sm link-underline" style="font-family:var(--font-sans)">More from {primaryCat.name} <Icon name="arrowRight" size={15} /></a>}
+        </div>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {related.map((p) => <ProductCard product={p} />)}
         </div>
@@ -127,29 +192,98 @@ const jsonld = [
     )}
   </div>
 
-  <script>
-    function initBuybox() {
-      const box = document.querySelector('[data-buybox]');
-      if (!box) return;
-      const input = box.querySelector('[data-qty]') as HTMLInputElement;
-      const qty = () => Math.max(1, parseInt(input.value || '1', 10) || 1);
-      box.querySelector('[data-qty-dec]')?.addEventListener('click', () => { input.value = String(Math.max(1, qty() - 1)); });
-      box.querySelector('[data-qty-inc]')?.addEventListener('click', () => { input.value = String(qty() + 1); });
-
-      const Cart = (window as any).Cart;
-      const btn = box.querySelector('[data-add]') as HTMLElement;
-      btn?.addEventListener('click', () => {
-        Cart.add({ slug: btn.dataset.slug, name: btn.dataset.name, price: Number(btn.dataset.price), image: btn.dataset.image || undefined, qty: qty() });
-        (window as any).cartToast?.(`Added “${btn.dataset.name}” to your cart`);
-      });
-      const buy = document.querySelector('[data-buynow]') as HTMLElement;
-      buy?.addEventListener('click', (e) => {
-        e.preventDefault();
-        Cart.add({ slug: buy.dataset.slug, name: buy.dataset.name, price: Number(buy.dataset.price), image: buy.dataset.image || undefined, qty: qty() });
-        window.location.href = '/cart/';
-      });
-    }
-    initBuybox();
-    document.addEventListener('astro:after-swap', initBuybox);
-  </script>
 </BaseLayout>
+
+<script>
+  function initPDP() {
+    const hero = document.getElementById('hero-img') as HTMLImageElement | null;
+    document.querySelectorAll('.thumb').forEach((t) => {
+      if ((t as HTMLElement).dataset.bound) return;
+      (t as HTMLElement).dataset.bound = '1';
+      t.addEventListener('click', () => { const src=(t as HTMLElement).dataset.src; if(hero&&src) hero.src=src; });
+    });
+
+    const qtyEl = document.getElementById('qty') as HTMLInputElement | null;
+    const getQty = () => Math.max(1, parseInt(qtyEl?.value || '1', 10) || 1);
+    document.getElementById('qty-dec')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(Math.max(1, getQty()-1)); });
+    document.getElementById('qty-inc')?.addEventListener('click', () => { if (qtyEl) qtyEl.value = String(getQty()+1); });
+
+    // ---------------- Print-size selection (plaques / chips / mobile select) --
+    const priceDisplay = document.getElementById('price-display');
+    const hint = document.getElementById('variation-hint');
+    const addBtn = document.getElementById('add-btn') as HTMLElement | null;
+    const isVariable = addBtn?.dataset.variable === '1';
+    const psData: {slug:string;label:string;price:number;image:string}[] =
+      JSON.parse(document.getElementById('ps-data')?.textContent || '[]');
+    const stage = document.getElementById('size-stage');
+    const mobileSel = document.getElementById('ps-mobile') as HTMLSelectElement | null;
+    let chosen: {slug:string;label:string;price:number;image:string} | null = null;
+
+    const inr = (p:number) => new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100);
+
+    function choose(slug: string) {
+      const s = psData.find((d) => d.slug === slug);
+      if (!s) return;
+      chosen = s;
+      if (priceDisplay) priceDisplay.textContent = inr(s.price);
+      if (s.image && hero) hero.src = s.image;
+      if (hint) hint.hidden = true;
+      stage?.classList.add('chosen'); // stop the nudge animation
+      document.querySelectorAll('.size-opt').forEach((b) =>
+        b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.slug === slug)));
+      document.querySelectorAll('.size-chip').forEach((b) =>
+        b.setAttribute('aria-pressed', String((b as HTMLElement).dataset.slug === slug)));
+      if (mobileSel && mobileSel.value !== slug) mobileSel.value = slug;
+    }
+    document.querySelectorAll('.size-opt, .size-chip').forEach((b) => {
+      b.addEventListener('click', () => choose((b as HTMLElement).dataset.slug!));
+    });
+    mobileSel?.addEventListener('change', () => choose(mobileSel.value));
+
+    // ---------------- Cart actions ------------------------------------------
+    function add(): boolean {
+      const Cart=(window as any).Cart; if(!Cart||!addBtn) return false;
+      let price=parseInt(addBtn.dataset.price||'0',10); let variant:string|undefined;
+      if (isVariable){
+        if(!chosen){
+          if(hint) hint.hidden=false;
+          (stage || mobileSel)?.scrollIntoView({behavior:'smooth',block:'center'});
+          return false;
+        }
+        price=chosen.price; variant=chosen.label;
+      }
+      Cart.add({ slug:addBtn.dataset.slug!, name:addBtn.dataset.name!, price, image:(chosen?.image||addBtn.dataset.image||''), qty:getQty(), variant });
+      document.dispatchEvent(new CustomEvent('cart:added'));
+      return true;
+    }
+    addBtn?.addEventListener('click', add);
+    document.getElementById('buy-btn')?.addEventListener('click', () => { if (add()) window.location.href='/checkout/'; });
+
+    // ---------------- Inline zoom (magnify inside the frame) -----------------
+    const zoomBox = document.getElementById('zoom-box');
+    if (zoomBox && hero) {
+      const setOrigin = (clientX:number, clientY:number) => {
+        const r = zoomBox.getBoundingClientRect();
+        const x = Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100));
+        const y = Math.max(0, Math.min(100, ((clientY - r.top) / r.height) * 100));
+        hero.style.transformOrigin = `${x}% ${y}%`;
+      };
+      zoomBox.addEventListener('click', (e) => {
+        setOrigin((e as MouseEvent).clientX, (e as MouseEvent).clientY);
+        zoomBox.classList.toggle('zoomed');
+      });
+      zoomBox.addEventListener('mousemove', (e) => {
+        if (zoomBox.classList.contains('zoomed')) setOrigin((e as MouseEvent).clientX, (e as MouseEvent).clientY);
+      });
+      zoomBox.addEventListener('keydown', (e) => {
+        if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') {
+          e.preventDefault(); zoomBox.classList.toggle('zoomed');
+        }
+        if ((e as KeyboardEvent).key === 'Escape') zoomBox.classList.remove('zoomed');
+      });
+      zoomBox.addEventListener('mouseleave', () => zoomBox.classList.remove('zoomed'));
+    }
+  }
+  initPDP();
+  document.addEventListener('astro:after-swap', initPDP);
+</script>

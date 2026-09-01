@@ -1,0 +1,54 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import catalog from '../../data/catalog.json';
+import { formatINR } from '../../lib/format';
+
+const cat = catalog as any;
+const catName: Record<string,string> = Object.fromEntries(cat.categories.map((c:any)=>[c.slug,c.name]));
+const products = cat.products.map((p:any) => ({
+  slug: p.slug, name: p.name, type: p.type,
+  price: p.sale_price ?? p.price, priceMax: p.price_max,
+  cat: catName[p.primary_category] || p.primary_category || '—',
+  img: p.images?.[0]?.url || '', variants: p.variations?.length || 0,
+})).sort((a:any,b:any)=>a.name.localeCompare(b.name));
+---
+<AdminLayout title="Products" active="products">
+  <div style="display:flex;gap:.8rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap">
+    <input id="q" placeholder="Search products…" style="flex:1;min-width:220px" />
+    <span class="muted" style="font-size:.82rem" id="count">{products.length} products</span>
+  </div>
+  <div class="card" style="overflow:hidden">
+    <table id="tbl">
+      <thead><tr><th></th><th>Name</th><th>Category</th><th>Type</th><th style="text-align:right">Price</th><th style="text-align:center">Variants</th><th></th></tr></thead>
+      <tbody>
+        {products.map((p:any) => (
+          <tr data-name={p.name.toLowerCase()} data-cat={p.cat.toLowerCase()}>
+            <td style="width:52px">{p.img ? <img src={p.img} alt="" style="width:40px;height:32px;object-fit:contain;background:#fff;border:1px solid #eee" /> : ''}</td>
+            <td><strong style="font-weight:600">{p.name}</strong></td>
+            <td class="muted">{p.cat}</td>
+            <td><span class="pill" style="background:#eee;color:#444">{p.type}</span></td>
+            <td style="text-align:right">{p.priceMax ? `${formatINR(p.price)} – ${formatINR(p.priceMax)}` : formatINR(p.price)}</td>
+            <td style="text-align:center" class="muted">{p.variants || '—'}</td>
+            <td style="text-align:right"><a href={`/apaulogy-admin/products/${p.slug}/`} style="text-decoration:underline;font-size:.8rem">Edit</a> · <a href={`/product/${p.slug}/`} target="_blank" style="text-decoration:underline;font-size:.8rem">View ↗</a></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="muted" style="font-size:.78rem;margin-top:.8rem">Catalogue is read from the site data. Price / stock / feature overrides save to the database once D1 is connected.</p>
+  <script>
+    const q = document.getElementById('q');
+    const rows = Array.from(document.querySelectorAll('#tbl tbody tr'));
+    const count = document.getElementById('count');
+    q.addEventListener('input', () => {
+      const v = q.value.trim().toLowerCase();
+      let n = 0;
+      rows.forEach((r) => {
+        const hit = !v || r.dataset.name.includes(v) || r.dataset.cat.includes(v);
+        r.style.display = hit ? '' : 'none'; if (hit) n++;
+      });
+      count.textContent = `${n} products`;
+    });
+  </script>
+</AdminLayout>

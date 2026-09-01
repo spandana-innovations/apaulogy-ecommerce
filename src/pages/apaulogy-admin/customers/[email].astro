@@ -1,0 +1,55 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getStats } from '../../../lib/admin-data';
+import { formatINR } from '../../../lib/format';
+const { email } = Astro.params;
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+let cust:any=null, orders:any[]=[];
+if (env.DB) {
+  try {
+    cust = await env.DB.prepare(`SELECT email,name,phone,created_at FROM customers WHERE email=?`).bind(email).first();
+    orders = ((await env.DB.prepare(`SELECT order_number,status,total,created_at FROM orders WHERE email=? ORDER BY created_at DESC LIMIT 50`).bind(email).all()).results)||[];
+  } catch {}
+}
+if (!cust) cust = { email, name:'', phone:'' };
+const spent = orders.filter((o:any)=>['completed','processing','shipped'].includes(o.status)).reduce((s:number,o:any)=>s+(o.total||0),0);
+---
+<AdminLayout title="Customer" active="customers" dbBound={stats.dbBound}>
+  <a href="/apaulogy-admin/customers/" style="font-family:var(--font-sans);font-size:.8rem;text-decoration:underline">← All customers</a>
+  <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:2rem;margin-top:1rem;max-width:1000px;font-family:var(--font-sans);font-size:.86rem">
+    <div class="card" style="padding:1.3rem;align-self:start">
+      <h3 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 1rem">Edit customer</h3>
+      <label class="fld">Name<input id="c-name" value={cust.name||''}/></label>
+      <label class="fld">Email<input value={cust.email} disabled style="opacity:.6"/></label>
+      <label class="fld">Phone<input id="c-phone" value={cust.phone||''}/></label>
+      <button class="btn" id="c-save" style="background:#000;color:#fff;width:100%;justify-content:center;margin-top:.5rem">Save</button>
+      <p class="muted" id="c-msg" style="font-size:.75rem;text-align:center;margin-top:.5rem"></p>
+      <div style="margin-top:1rem;border-top:1px solid var(--line);padding-top:1rem">
+        <div style="display:flex;justify-content:space-between"><span class="muted">Orders</span><span>{orders.length}</span></div>
+        <div style="display:flex;justify-content:space-between"><span class="muted">Lifetime spend</span><span>{formatINR(spent)}</span></div>
+      </div>
+    </div>
+    <div class="card" style="padding:1.3rem">
+      <h3 style="font-family:var(--font-display);font-size:1.3rem;margin:0 0 .8rem">Orders</h3>
+      {orders.length ? (
+        <table><thead><tr><th>Order</th><th>Status</th><th style="text-align:right">Total</th><th>Date</th></tr></thead>
+          <tbody>{orders.map((o:any)=>(<tr>
+            <td><a href={`/apaulogy-admin/orders/${o.order_number}/`} style="text-decoration:underline"><strong>{o.order_number}</strong></a></td>
+            <td><span class={`pill s-${o.status}`}>{o.status}</span></td>
+            <td style="text-align:right">{formatINR(o.total)}</td><td class="muted">{(o.created_at||'').slice(0,10)}</td>
+          </tr>))}</tbody></table>
+      ) : (<p class="muted">No orders on record.</p>)}
+    </div>
+  </div>
+  <style is:global>.fld{display:block;margin-bottom:.6rem}.fld input{width:100%;margin-top:.25rem;padding:.45rem .6rem;border:1px solid var(--line);font:inherit}</style>
+  <script is:inline define:vars={{ email: cust.email }}>window.__email=email;</script>
+  <script>
+    document.getElementById('c-save').addEventListener('click', async()=>{
+      const msg=document.getElementById('c-msg'); msg.textContent='Saving…';
+      const r=await fetch('/api/admin/customer',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:(window).__email,name:document.getElementById('c-name').value,phone:document.getElementById('c-phone').value})});
+      msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
+    });
+  </script>
+</AdminLayout>

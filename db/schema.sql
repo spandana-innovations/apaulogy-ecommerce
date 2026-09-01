@@ -138,3 +138,12 @@ CREATE TABLE IF NOT EXISTS messages (
   message    TEXT,
   created_at TEXT DEFAULT (datetime('now'))
 );
+
+-- Data deletion / access requests (from /data-deletion and admin)
+CREATE TABLE IF NOT EXISTS data_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  reference TEXT UNIQUE,
+  name TEXT, email TEXT, phone TEXT,
+  scope TEXT, details TEXT,
+  created TEXT DEFAULT (datetime('now'))
+);

@@ -1,0 +1,202 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import catalog from '../../../data/catalog.json';
+import { getStats, getProductOverride } from '../../../lib/admin-data';
+
+const { slug } = Astro.params;
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const base = (catalog as any).products.find((p:any)=>p.slug===slug);
+if (!base) return Astro.redirect('/apaulogy-admin/products/');
+const ov = (await getProductOverride(env, slug!)) || {};
+
+const p = {
+  slug: base.slug,
+  title: ov.title ?? base.name,
+  short_html: ov.short_html ?? base.short_html ?? '',
+  description_html: ov.description_html ?? base.description_html ?? '',
+  price: ov.price ?? base.price,
+  sale_price: ov.sale_price ?? base.sale_price ?? '',
+  meta_title: ov.meta_title ?? '',
+  meta_description: ov.meta_description ?? '',
+  featured: ov.featured ?? (base.featured ? 1 : 0),
+  active: ov.active ?? 1,
+  images: ov.images_json ? JSON.parse(ov.images_json) : (base.images||[]).map((i:any)=>i.url),
+  variations: ov.variations_json ? JSON.parse(ov.variations_json) : (base.variations||[]).map((v:any)=>({slug:v.slug,label:v.label,price:v.price})),
+  type: base.type,
+  weight: (ov.weight ?? base.weight ?? ''),
+  ship_flat: (ov.ship_flat != null ? ov.ship_flat/100 : ''),
+};
+const varWeights = (() => { try { return ov.variations_json ? Object.fromEntries(JSON.parse(ov.variations_json).map((v:any)=>[v.slug||v.label, v])) : {}; } catch { return {}; } })();
+---
+<AdminLayout title="Edit product" active="products" dbBound={stats.dbBound}>
+  <a href="/apaulogy-admin/products/" style="font-family:var(--font-sans);font-size:.8rem;text-decoration:underline">← All products</a>
+  <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:2rem;margin-top:1rem;max-width:1100px" id="editor">
+    <!-- main -->
+    <div style="display:grid;gap:1.2rem;font-family:var(--font-sans);font-size:.85rem">
+      <div class="card" style="padding:1.2rem">
+        <h3 style="font-family:var(--font-display);font-size:1.3rem;margin:0 0 .8rem">{p.title}</h3>
+        <label class="fld">Title<input id="f-title" value={p.title}/></label>
+        <label class="fld">Short description (HTML)<textarea id="f-short" rows="2" set:html={p.short_html}></textarea></label>
+        <label class="fld">Full description (HTML)<textarea id="f-desc" rows="6" set:html={p.description_html}></textarea></label>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <h4 style="margin:0 0 .8rem;font-family:var(--font-display);font-size:1.1rem">Pricing {p.type==='variable' && '· variations'}</h4>
+        {p.type!=='variable' ? (
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem">
+            <label class="fld">Price (₹)<input id="f-price" type="number" value={(p.price/100)}/></label>
+            <label class="fld">Sale price (₹, optional)<input id="f-sale" type="number" value={p.sale_price?Number(p.sale_price)/100:''}/></label>
+          </div>
+        ) : (
+          <div id="vars">
+            {p.variations.map((v:any,i:number)=>(
+              <div class="vrow" data-i={i} style="display:grid;grid-template-columns:1fr 120px;gap:.6rem;margin-bottom:.5rem">
+                <input class="v-label" value={v.label}/>
+                <input class="v-price" type="number" value={(v.price/100)}/>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <h4 style="margin:0 0 .8rem;font-family:var(--font-display);font-size:1.1rem">SEO &amp; meta</h4>
+        <label class="fld">Meta title <span class="muted">(≤ 60 chars)</span><input id="f-mt" maxlength="70" value={p.meta_title} placeholder={p.title}/></label>
+        <label class="fld">Meta description <span class="muted">(≤ 155 chars)</span><textarea id="f-md" rows="2" maxlength="165" placeholder="Auto-generated from the description if left blank">{p.meta_description}</textarea></label>
+      </div>
+    </div>
+
+    <!-- side -->
+    <div style="display:grid;gap:1.2rem;font-family:var(--font-sans);font-size:.85rem;align-content:start">
+      <div class="card" style="padding:1.2rem">
+        <h4 style="margin:0 0 .8rem;font-family:var(--font-display);font-size:1.1rem">Status</h4>
+        <label style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem"><input type="checkbox" id="f-active" checked={!!p.active}/> Active (visible in store)</label>
+        <label style="display:flex;gap:.5rem;align-items:center"><input type="checkbox" id="f-featured" checked={!!p.featured}/> Featured on homepage</label>
+      </div>
+
+      <div class="card" style="padding:1.2rem">
+        <h4 style="margin:0 0 .8rem;font-family:var(--font-display);font-size:1.1rem">Shipping</h4>
+        {type!=='variable' ? (
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+            <label class="fld">Weight (kg)<input id="f-weight" type="number" step="0.05" value={p.weight}/></label>
+            <label class="fld">Flat fee (₹)<input id="f-shipflat" type="number" value={p.ship_flat} placeholder="auto"/></label>
+          </div>
+        ) : (
+          <div>
+            <p class="muted" style="font-size:.72rem;margin:0 0 .5rem">Set a weight (kg) or a flat fee (₹) per variation. Flat fee wins if set.</p>
+            <div id="var-ship" style="display:grid;gap:.4rem">
+              {p.variations.map((v:any)=>(
+                <div class="vsrow" data-key={v.slug||v.label} style="display:grid;grid-template-columns:1.4fr 70px 70px;gap:.4rem;align-items:center">
+                  <span style="font-size:.76rem">{v.label}</span>
+                  <input class="vs-weight" type="number" step="0.05" placeholder="kg" value={(varWeights[v.slug||v.label]?.weight)||''}/>
+                  <input class="vs-flat" type="number" placeholder="₹" value={(varWeights[v.slug||v.label]?.ship_flat!=null?varWeights[v.slug||v.label].ship_flat/100:'')}/>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+      <div class="card" style="padding:1.2rem">
+        <h4 style="margin:0 0 .8rem;font-family:var(--font-display);font-size:1.1rem">Images</h4>
+        <div id="imgs" style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.8rem">
+          {p.images.map((u:string)=>(<div class="imgcell" style="position:relative;border:1px solid var(--line)"><img src={u} data-url={u} style="width:100%;height:80px;object-fit:contain;background:#fff"/><button class="rm-img" style="position:absolute;top:2px;right:2px;background:#000;color:#fff;border:0;width:18px;height:18px;cursor:pointer;line-height:1">×</button></div>))}
+        </div>
+        <input type="file" id="f-file" accept="image/*" style="font-size:.78rem"/>
+        <p class="muted" id="up-msg" style="font-size:.72rem;margin-top:.5rem">New images are auto-resized to 1600px and converted to WebP before upload.</p>
+      </div>
+
+      <button class="btn" id="save" style="background:#000;color:#fff;justify-content:center;padding:.8rem">Save changes</button>
+      <a href={`/product/${p.slug}/`} target="_blank" class="btn" style="justify-content:center">View in store ↗</a>
+      <p class="muted" id="save-msg" style="font-size:.75rem;text-align:center"></p>
+    </div>
+  </div>
+
+  <style is:global>
+    .fld{ display:block; margin-bottom:.7rem } .fld input,.fld textarea{ width:100%; margin-top:.25rem }
+    #editor input,#editor textarea,#editor select{ font:inherit; padding:.45rem .6rem; border:1px solid var(--line); border-radius:0; background:#fff }
+    @media(max-width:900px){ #editor{ grid-template-columns:1fr !important } }
+  </style>
+
+  <script is:inline define:vars={{ slug: p.slug, type: p.type }}>
+    window.__slug=slug; window.__type=type;
+  </script>
+  <script>
+    const slug=(window).__slug; const type=(window).__type;
+    let images = Array.from(document.querySelectorAll('#imgs img')).map((i)=>i.dataset.url);
+
+    // remove image
+    function bindRm(){ document.querySelectorAll('.rm-img').forEach(b=>b.onclick=()=>{ const cell=b.closest('.imgcell'); const url=cell.querySelector('img').dataset.url; images=images.filter(u=>u!==url); cell.remove(); }); }
+    bindRm();
+
+    // client-side process (resize -> webp) then upload to R2
+    const fileInput=document.getElementById('f-file'); const upMsg=document.getElementById('up-msg');
+    fileInput.addEventListener('change', async ()=>{
+      const file=fileInput.files[0]; if(!file) return;
+      upMsg.textContent='Processing…';
+      try{
+        const blob=await toWebp(file, 1600, 0.82);
+        const fd=new FormData(); fd.append('file', blob, 'upload.webp');
+        upMsg.textContent='Uploading…';
+        const r=await fetch('/api/admin/upload',{method:'POST',body:fd});
+        const d=await r.json();
+        if(d.ok){ images.push(d.url); addThumb(d.url); upMsg.textContent='Uploaded ✓ (WebP, ≤1600px)'; }
+        else upMsg.textContent=d.error||'Upload failed (R2 not connected?)';
+      }catch(e){ upMsg.textContent='Could not process image.'; }
+      fileInput.value='';
+    });
+    function addThumb(url){
+      const wrap=document.getElementById('imgs');
+      const div=document.createElement('div'); div.className='imgcell'; div.style.cssText='position:relative;border:1px solid var(--line)';
+      div.innerHTML=`<img src="${url}" data-url="${url}" style="width:100%;height:80px;object-fit:contain;background:#fff"/><button class="rm-img" style="position:absolute;top:2px;right:2px;background:#000;color:#fff;border:0;width:18px;height:18px;cursor:pointer;line-height:1">×</button>`;
+      wrap.appendChild(div); bindRm();
+    }
+    function toWebp(file, maxW, q){
+      return new Promise((resolve,reject)=>{
+        const img=new Image(); const url=URL.createObjectURL(file);
+        img.onload=()=>{
+          let {width,height}=img;
+          if(width>maxW){ height=Math.round(height*maxW/width); width=maxW; }
+          const canvas=document.createElement('canvas'); canvas.width=width; canvas.height=height;
+          canvas.getContext('2d').drawImage(img,0,0,width,height);
+          canvas.toBlob(b=> b?resolve(b):reject(new Error('encode')), 'image/webp', q);
+          URL.revokeObjectURL(url);
+        };
+        img.onerror=reject; img.src=url;
+      });
+    }
+
+    // save
+    document.getElementById('save').addEventListener('click', async ()=>{
+      const g=(id)=>{ const el=document.getElementById(id); return el?el.value:''; };
+      const body={ slug,
+        title:g('f-title'), short_html:g('f-short'), description_html:g('f-desc'),
+        meta_title:g('f-mt'), meta_description:g('f-md'),
+        featured:document.getElementById('f-featured').checked?1:0,
+        active:document.getElementById('f-active').checked?1:0,
+        images_json:JSON.stringify(images),
+      };
+      if(type!=='variable'){
+        body.price=Math.round(Number(g('f-price'))*100)||null;
+        body.sale_price=g('f-sale')?Math.round(Number(g('f-sale'))*100):null;
+        const w=g('f-weight'); body.weight=w?Number(w):null;
+        const sf=g('f-shipflat'); body.ship_flat=sf?Math.round(Number(sf)*100):null;
+      } else {
+        const shipRows=Array.from(document.querySelectorAll('#var-ship .vsrow'));
+        const shipBy={}; shipRows.forEach(r=>{ shipBy[r.dataset.key]={ weight:r.querySelector('.vs-weight').value?Number(r.querySelector('.vs-weight').value):null, ship_flat:r.querySelector('.vs-flat').value?Math.round(Number(r.querySelector('.vs-flat').value)*100):null }; });
+        const vars=Array.from(document.querySelectorAll('#vars .vrow')).map(r=>{
+          const label=r.querySelector('.v-label').value;
+          const extra=shipBy[label]||{};
+          return { label, price:Math.round(Number(r.querySelector('.v-price').value)*100)||0, weight:extra.weight??null, ship_flat:extra.ship_flat??null };
+        });
+        body.variations_json=JSON.stringify(vars);
+        body.price=Math.min(...vars.map(v=>v.price));
+        body.price_max=Math.max(...vars.map(v=>v.price));
+      }
+      const msg=document.getElementById('save-msg'); msg.textContent='Saving…';
+      const r=await fetch('/api/admin/product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      msg.textContent=r.ok?'Saved ✓':'Save failed — is the database connected?';
+    });
+  </script>
+</AdminLayout>

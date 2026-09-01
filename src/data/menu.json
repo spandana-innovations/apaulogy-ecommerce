@@ -1,0 +1,211 @@
+[
+ {
+  "label": "Art & Books",
+  "href": null,
+  "children": [
+   {
+    "label": "Wall Art",
+    "href": null,
+    "children": [
+     {
+      "label": "Bangalore, Swinging 70’s",
+      "href": "/category/bangalore-in-the-70s/",
+      "children": []
+     },
+     {
+      "label": "Illustrations on Tile",
+      "href": "/category/illustrations-on-tile/",
+      "children": []
+     },
+     {
+      "label": "Vintage Mumbai",
+      "href": "/category/vintage-mumbai/",
+      "children": []
+     },
+     {
+      "label": "A Goan Holiday",
+      "href": "/category/a-goan-holiday/",
+      "children": []
+     },
+     {
+      "label": "Mangalore Series",
+      "href": "/category/mangalore-series/",
+      "children": []
+     },
+     {
+      "label": "Mumbai Heritage",
+      "href": "/category/mumbai-heritage/",
+      "children": []
+     },
+     {
+      "label": "God’s Own Kerala",
+      "href": "/category/gods-own-kerala/",
+      "children": []
+     }
+    ]
+   },
+   {
+    "label": "Posters",
+    "href": "/category/posters/",
+    "children": []
+   },
+   {
+    "label": "Coffee Table Books",
+    "href": "/category/coffee-table-books/",
+    "children": []
+   },
+   {
+    "label": "Plaques",
+    "href": null,
+    "children": [
+     {
+      "label": "Bangalore Morphed",
+      "href": "/category/bangalore-morphed/",
+      "children": []
+     },
+     {
+      "label": "Street Wise",
+      "href": "/category/street-wise/",
+      "children": []
+     },
+     {
+      "label": "Ambassador of India",
+      "href": "/category/ambassador-of-india/",
+      "children": []
+     },
+     {
+      "label": "Inside the Old House",
+      "href": "/category/inside-the-old-house/",
+      "children": []
+     },
+     {
+      "label": "Jungle Series",
+      "href": "/category/jungle-series/",
+      "children": []
+     },
+     {
+      "label": "Try Cycling for the Love of It",
+      "href": "/category/try-cycling-for-the-love-of-it/",
+      "children": []
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "label": "Carriables",
+  "href": null,
+  "children": [
+   {
+    "label": "Laptop Bags",
+    "href": "/category/laptop-bags/",
+    "children": []
+   },
+   {
+    "label": "Sling Bags",
+    "href": "/category/sling-bags/",
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Merchandise",
+  "href": null,
+  "children": [
+   {
+    "label": "Coaster Sets",
+    "href": "/category/coaster-sets/",
+    "children": []
+   },
+   {
+    "label": "Paperweights",
+    "href": "/category/paperweights/",
+    "children": []
+   },
+   {
+    "label": "Spectacle Cases",
+    "href": "/category/spectacle-cases/",
+    "children": []
+   },
+   {
+    "label": "Bookmarks",
+    "href": "/category/bookmarks/",
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Gifting",
+  "href": null,
+  "children": [
+   {
+    "label": "Gift Cards",
+    "href": "/category/gift-cards/",
+    "children": []
+   },
+   {
+    "label": "E-Gift Vouchers",
+    "href": "/category/e-gift-vouchers/",
+    "children": []
+   }
+  ]
+ },
+ {
+  "label": "Contact",
+  "href": "/contact-us/",
+  "children": [
+   {
+    "label": "About",
+    "href": "/about-us/",
+    "children": [
+     {
+      "label": "Media",
+      "href": "/media-room/",
+      "children": []
+     }
+    ]
+   },
+   {
+    "label": "Information",
+    "href": null,
+    "children": [
+     {
+      "label": "Disclaimer",
+      "href": "/disclaimer/",
+      "children": []
+     },
+     {
+      "label": "FAQ",
+      "href": "/faq/",
+      "children": []
+     },
+     {
+      "label": "Shipping Policy",
+      "href": "/shipping-policy/",
+      "children": []
+     },
+     {
+      "label": "Terms & Conditions",
+      "href": "/terms-conditions/",
+      "children": []
+     },
+     {
+      "label": "Privacy Policy",
+      "href": "/privacy-policy/",
+      "children": []
+     },
+     {
+      "label": "Return and Refund Policy",
+      "href": "/return-and-refund-policy/",
+      "children": []
+     },
+     {
+      "label": "Cancellation Policy",
+      "href": "/cancellation-policy/",
+      "children": []
+     }
+    ]
+   }
+  ]
+ }
+]

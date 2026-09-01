@@ -1,0 +1,72 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import catalog from '../../data/catalog.json';
+import { getStats, listCategoryOverrides } from '../../lib/admin-data';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const overrides = await listCategoryOverrides(env);
+const cat = catalog as any;
+const counts: Record<string, number> = {};
+for (const p of cat.products) for (const c of p.categories) counts[c] = (counts[c]||0)+1;
+const cats = cat.categories.map((c:any) => {
+  const o = overrides[c.slug] || {};
+  return { slug:c.slug, name:o.name||c.name, description:o.description||c.description||'', meta_title:o.meta_title||'', meta_description:o.meta_description||'', hidden:!!o.hidden, count: counts[c.slug]||0 };
+}).sort((a:any,b:any)=>a.name.localeCompare(b.name));
+---
+<AdminLayout title="Categories" active="categories" dbBound={stats.dbBound}>
+  <div class="card" style="overflow:hidden;max-width:960px">
+    <table>
+      <thead><tr><th>Category</th><th>Products</th><th>Meta title</th><th>Visible</th><th></th></tr></thead>
+      <tbody>
+        {cats.map((c:any)=>(
+          <tr>
+            <td><strong>{c.name}</strong><br/><span class="muted" style="font-size:.72rem">/{c.slug}</span></td>
+            <td class="muted">{c.count}</td>
+            <td class="muted" style="max-width:240px">{c.meta_title||'—'}</td>
+            <td>{c.hidden?'Hidden':'✓'}</td>
+            <td style="text-align:right"><button class="edit-cat btn" data-cat={JSON.stringify(c)}>Edit</button></td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;place-items:center">
+    <div class="card" style="width:520px;max-width:94vw;padding:1.4rem;max-height:90vh;overflow:auto">
+      <h3 id="m-title" style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 1rem"></h3>
+      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
+        <label>Name<input id="c-name"/></label>
+        <label>Description<textarea id="c-desc" rows="3"></textarea></label>
+        <label>Meta title (SEO)<input id="c-mt" maxlength="70"/></label>
+        <label>Meta description (SEO)<textarea id="c-md" rows="2" maxlength="165"></textarea></label>
+        <label style="display:flex;gap:.5rem;align-items:center"><input type="checkbox" id="c-hidden"/> Hide this category from the store</label>
+      </div>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem">
+        <button class="btn" id="m-cancel" style="background:#fff;color:#000">Cancel</button>
+        <button class="btn" id="m-save" style="background:#000;color:#fff">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const modal=document.getElementById('modal'); let slug='';
+    document.querySelectorAll('.edit-cat').forEach(b=>b.addEventListener('click',()=>{
+      const c=JSON.parse(b.dataset.cat); slug=c.slug;
+      document.getElementById('m-title').textContent='Edit — '+c.name;
+      document.getElementById('c-name').value=c.name||'';
+      document.getElementById('c-desc').value=c.description||'';
+      document.getElementById('c-mt').value=c.meta_title||'';
+      document.getElementById('c-md').value=c.meta_description||'';
+      document.getElementById('c-hidden').checked=!!c.hidden;
+      modal.style.display='grid';
+    }));
+    document.getElementById('m-cancel').addEventListener('click',()=>modal.style.display='none');
+    document.getElementById('m-save').addEventListener('click',async()=>{
+      const body={ slug, name:val('c-name'), description:val('c-desc'), meta_title:val('c-mt'), meta_description:val('c-md'), hidden:document.getElementById('c-hidden').checked?1:0 };
+      const r=await fetch('/api/admin/category',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      if(r.ok) location.reload(); else alert('Save failed — is the database connected?');
+    });
+    function val(id){ return document.getElementById(id).value; }
+  </script>
+</AdminLayout>

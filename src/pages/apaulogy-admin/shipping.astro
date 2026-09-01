@@ -1,0 +1,71 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getStats } from '../../lib/admin-data';
+import { getRates } from '../../lib/shipping';
+import { formatINR } from '../../lib/format';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const domestic = await getRates(env, 'domestic');
+const intl = await getRates(env, 'international');
+---
+<AdminLayout title="Shipping" active="shipping" dbBound={stats.dbBound}>
+  <p class="muted" style="font-family:var(--font-sans);font-size:.85rem;max-width:640px;margin-bottom:1.4rem">
+    Weight-based shipping. An order's total weight (from each product's weight) is matched to the first bracket
+    it fits under; the last bracket (no upper limit) can add a per-kg surcharge. Imported from your WooCommerce
+    APG weight rules.
+  </p>
+  {['domestic','international'].map((zone) => {
+    const rows = zone==='domestic'?domestic:intl;
+    return (
+    <section style="max-width:720px;margin-bottom:2rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .7rem;text-transform:capitalize">{zone}</h2>
+      <div class="card" style="overflow:hidden">
+        <table class={`rate-tbl`} data-zone={zone}>
+          <thead><tr><th>Up to (kg)</th><th>Price (₹)</th><th>Extra ₹/kg over</th><th></th></tr></thead>
+          <tbody>
+            {rows.map((r:any)=>(
+              <tr>
+                <td><input class="r-upto" type="number" step="0.1" value={r.up_to_kg==null?'':r.up_to_kg} placeholder="∞"/></td>
+                <td><input class="r-price" type="number" value={(r.price/100)}/></td>
+                <td><input class="r-over" type="number" value={((r.per_kg_over||0)/100)}/></td>
+                <td style="text-align:right"><button class="r-del" style="border:0;background:none;color:#b00020;cursor:pointer">✕</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:.6rem;margin-top:.6rem">
+        <button class="btn r-add" data-zone={zone}>+ Add bracket</button>
+        <button class="btn r-save" data-zone={zone} style="background:#000;color:#fff">Save {zone} rates</button>
+        <span class="muted r-msg" style="font-size:.78rem;align-self:center"></span>
+      </div>
+    </section>
+    );
+  })}
+  <style is:global>
+    .rate-tbl input{ width:100%; padding:.4rem .5rem; border:1px solid var(--line); font:inherit }
+    .rate-tbl td{ padding:.5rem .6rem }
+  </style>
+  <script>
+    function collect(tbl){ return Array.from(tbl.querySelectorAll('tbody tr')).map((tr,i)=>({
+      up_to_kg: tr.querySelector('.r-upto').value===''?null:parseFloat(tr.querySelector('.r-upto').value),
+      price: Math.round(parseFloat(tr.querySelector('.r-price').value||'0')*100),
+      per_kg_over: Math.round(parseFloat(tr.querySelector('.r-over').value||'0')*100),
+      sort: i+1,
+    })); }
+    document.querySelectorAll('.r-add').forEach(b=>b.addEventListener('click',()=>{
+      const tbody=document.querySelector(`.rate-tbl[data-zone="${b.dataset.zone}"] tbody`);
+      const tr=document.createElement('tr');
+      tr.innerHTML='<td><input class="r-upto" type="number" step="0.1" placeholder="∞"/></td><td><input class="r-price" type="number" value="0"/></td><td><input class="r-over" type="number" value="0"/></td><td style="text-align:right"><button class="r-del" style="border:0;background:none;color:#b00020;cursor:pointer">✕</button></td>';
+      tbody.appendChild(tr); tr.querySelector('.r-del').onclick=()=>tr.remove();
+    }));
+    document.querySelectorAll('.r-del').forEach(b=>b.onclick=()=>b.closest('tr').remove());
+    document.querySelectorAll('.r-save').forEach(b=>b.addEventListener('click',async()=>{
+      const zone=b.dataset.zone; const tbl=document.querySelector(`.rate-tbl[data-zone="${zone}"]`);
+      const msg=b.parentElement.querySelector('.r-msg'); msg.textContent='Saving…';
+      const r=await fetch('/api/admin/shipping',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zone,rates:collect(tbl)})});
+      msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
+    }));
+  </script>
+</AdminLayout>

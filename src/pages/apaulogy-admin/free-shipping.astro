@@ -1,0 +1,40 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import catalog from '../../data/catalog.json';
+import { getStats } from '../../lib/admin-data';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+let free: string[] = [];
+if (env.DB) { try { free = ((await env.DB.prepare(`SELECT slug FROM free_shipping_products`).all()).results || []).map((r:any)=>r.slug); } catch {} }
+const cat = catalog as any;
+const bySlug = Object.fromEntries(cat.products.map((p:any)=>[p.slug,p.name]));
+const prods = cat.products.map((p:any)=>({slug:p.slug,name:p.name})).sort((a:any,b:any)=>a.name.localeCompare(b.name));
+---
+<AdminLayout title="Free shipping" active="free-shipping" dbBound={stats.dbBound}>
+  <p class="muted" style="font-family:var(--font-sans);font-size:.85rem;max-width:620px;margin-bottom:1.2rem">
+    Any order containing one of these products ships free. Useful for large canvases or promotions.
+  </p>
+  <div style="display:flex;gap:.6rem;max-width:620px;margin-bottom:1.2rem;font-family:var(--font-sans)">
+    <select id="fs-pick" style="flex:1;padding:.5rem .6rem;border:1px solid var(--line)">
+      <option value="">Choose a product to add…</option>
+      {prods.map((p:any)=>(<option value={p.slug}>{p.name}</option>))}
+    </select>
+    <button class="btn" id="fs-add" style="background:#000;color:#fff">Add</button>
+  </div>
+  <div class="card" style="overflow:hidden;max-width:620px">
+    <table id="fs-tbl">
+      <thead><tr><th>Product</th><th></th></tr></thead>
+      <tbody>
+        {free.map((slug:string)=>(<tr data-slug={slug}><td><strong style="font-weight:600">{bySlug[slug]||slug}</strong></td>
+          <td style="text-align:right"><button class="fs-del btn" data-slug={slug}>Remove</button></td></tr>))}
+        {!free.length && <tr><td colspan="2" class="empty">No free-shipping products yet.</td></tr>}
+      </tbody>
+    </table>
+  </div>
+  <script>
+    async function post(body){ const r=await fetch('/api/admin/free-shipping',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); if(r.ok) location.reload(); else alert('Failed — database connected?'); }
+    document.getElementById('fs-add').addEventListener('click',()=>{ const s=document.getElementById('fs-pick').value; if(s) post({add:s}); });
+    document.querySelectorAll('.fs-del').forEach(b=>b.addEventListener('click',()=>post({remove:b.dataset.slug})));
+  </script>
+</AdminLayout>

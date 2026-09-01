@@ -2,11 +2,14 @@ import type { APIRoute } from 'astro';
 import { getProduct, effectivePrice } from '../../lib/catalog';
 import { createRazorpayOrder } from '../../lib/razorpay';
 import { createPendingOrder, type CartLine } from '../../lib/db';
+import { activeDiscounts, getCoupon, computeDiscount } from '../../lib/discounts';
+import { cartWeight, getRates, shippingFor, freeShippingSlugs } from '../../lib/shipping';
+import { getSetting } from '../../lib/admin-data';
 
 export const prerender = false;
 
-const FREE_SHIPPING_OVER = 500000; // paise
-const SHIPPING_FLAT = 15000;
+const FREE_SHIPPING_OVER = 500000; // paise (₹5,000)
+const SHIPPING_FLAT = 15000;       // paise (₹150)
 
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -15,13 +18,19 @@ function json(data: unknown, status = 200) {
   });
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
-  const env = locals.runtime.env;
-  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET) {
-    return json({ error: 'Payments are not configured yet.' }, 503);
-  }
+// Fallback human reference when the database isn't wired up yet.
+function fallbackRef(): string {
+  return `APG-${Math.floor(Date.now() / 1000) % 1000000}`;
+}
 
-  let body: { items?: { slug: string; qty: number; variant?: string }[]; customer?: Record<string, string> };
+export const POST: APIRoute = async ({ request, locals }) => {
+  const env = locals?.runtime?.env ?? ({} as Record<string, any>);
+
+  let body: {
+    items?: { slug: string; qty: number; variant?: string }[];
+    customer?: Record<string, string>;
+    coupon?: string;
+      };
   try {
     body = await request.json();
   } catch {
@@ -46,8 +55,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     lines.push({ slug: p.slug, name: p.name, variant: it.variant, quantity: qty, price: unit });
   }
 
-  const shipping = subtotal >= FREE_SHIPPING_OVER ? 0 : SHIPPING_FLAT;
-  const total = subtotal + shipping;
+  // Apply active discounts + optional coupon (server-side, from D1).
+  const discountLines = lines.map((l, i) => ({
+    slug: l.slug, price: l.price, quantity: l.quantity,
+    category: getProduct(rawItems[i].slug)?.primary_category,
+  }));
+  const discs = await activeDiscounts(env);
+  const coupon = body.coupon ? await getCoupon(env, body.coupon) : null;
+  const { discount, freeShipping } = computeDiscount(discountLines, subtotal, discs, coupon);
+
+  const zone = (customer.country && !/india/i.test(customer.country)) ? 'international' : 'domestic';
+  const weight = cartWeight(rawItems.map((it) => ({ slug: it.slug, qty: it.qty })));
+  const rates = await getRates(env, zone);
+  const freeSlugs = await freeShippingSlugs(env);
+  const hasFreeItem = rawItems.some((it) => freeSlugs.has(it.slug));
+  const shipping = (freeShipping || hasFreeItem) ? 0 : shippingFor(weight, rates);
+  const total = Math.max(0, subtotal - discount) + shipping;
 
   const address = {
     name: customer.name,
@@ -61,27 +84,46 @@ export const POST: APIRoute = async ({ request, locals }) => {
     country: customer.country || 'India',
   };
 
+
+  // ---- Online payment via Razorpay. ----------------------------------------
+  // Keys come from env (most secure) or fall back to admin Settings in D1.
+  const keyId = env.RAZORPAY_KEY_ID || (await getSetting(env, 'razorpay_key_id')) || '';
+  const keySecret = env.RAZORPAY_KEY_SECRET || (await getSetting(env, 'razorpay_key_secret')) || '';
+  if (!keyId || !keySecret) {
+    return json({ error: 'Online payments are not configured yet. Please try again later.' }, 503);
+  }
+  const rzpEnv = { ...env, RAZORPAY_KEY_ID: keyId, RAZORPAY_KEY_SECRET: keySecret };
+
   try {
     const receipt = `apg_${Date.now()}`;
-    const rzpOrder = await createRazorpayOrder(env, total, receipt, {
+    const rzpOrder = await createRazorpayOrder(rzpEnv, total, receipt, {
       email: customer.email,
       name: customer.name,
     });
 
-    const { orderNumber } = await createPendingOrder(env.DB, {
-      email: customer.email,
-      phone: customer.phone,
-      items: lines,
-      subtotal,
-      shipping,
-      total,
-      billing: address,
-      shipping_address: address,
-      razorpay_order_id: rzpOrder.id,
-    });
+    let orderNumber = fallbackRef();
+    if (env.DB) {
+      try {
+        const rec = await createPendingOrder(env.DB, {
+          email: customer.email,
+          phone: customer.phone,
+          items: lines,
+          subtotal,
+          shipping,
+          total,
+          billing: address,
+          shipping_address: address,
+          razorpay_order_id: rzpOrder.id,
+          payment_method: 'razorpay',
+        });
+        orderNumber = rec.orderNumber;
+      } catch (err) {
+        console.error('order record failed', err);
+      }
+    }
 
     return json({
-      key_id: env.RAZORPAY_KEY_ID,
+      key_id: keyId,
       order_id: rzpOrder.id,
       amount: total,
       currency: 'INR',

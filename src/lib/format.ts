@@ -14,3 +14,8 @@ export function formatINR(paise: number): string {
 export function toPaise(rupees: number | string): number {
   return Math.round(parseFloat(String(rupees)) * 100);
 }
+
+/** Format a paise range, e.g. (135000, 210000) -> "₹1,350 – ₹2,100". */
+export function formatINRRange(minPaise: number, maxPaise: number): string {
+  return `${formatINR(minPaise)} – ${formatINR(maxPaise)}`;
+}

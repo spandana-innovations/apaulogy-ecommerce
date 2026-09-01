@@ -1,0 +1,65 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+---
+<BaseLayout title="Account" description="Your aPaulogy account." noindex={true}>
+  <div class="container-page py-16 min-h-[60vh] max-w-md mx-auto">
+    <!-- Signed out -->
+    <div id="acc-signedout">
+      <div class="flex justify-center mb-4 opacity-70"><Icon name="user" size={44} stroke={1.2} /></div>
+      <h1 class="text-4xl text-center">Your account</h1>
+      <p class="text-center text-[var(--color-ink-soft)] mt-3" style="font-family:var(--font-sans)">Sign in to see your saved details and last order. No password needed for now — this keeps your details on this device.</p>
+      <div class="mt-8 space-y-4" style="font-family:var(--font-sans)">
+        <label class="block"><span class="field-label">Name</span><input id="acc-name" class="input" autocomplete="name" /></label>
+        <label class="block"><span class="field-label">Email</span><input id="acc-email" type="email" class="input" autocomplete="email" /></label>
+        <button id="acc-signin" class="btn btn-primary w-full gap-2"><Icon name="user" size={16} /> Save &amp; sign in</button>
+      </div>
+    </div>
+
+    <!-- Signed in -->
+    <div id="acc-signedin" class="hidden">
+      <div class="flex justify-center mb-4"><span class="w-14 h-14 grid place-items-center border-2 border-black rounded-full"><Icon name="user" size={26} /></span></div>
+      <h1 class="text-4xl text-center">Hello, <span id="acc-hello"></span></h1>
+      <p id="acc-email-show" class="text-center text-[var(--color-muted)] mt-2" style="font-family:var(--font-sans)"></p>
+
+      <div id="acc-order" class="mt-8 border border-[var(--color-line-strong)] p-5 hidden" style="font-family:var(--font-sans)">
+        <h2 class="text-lg mb-2" style="font-family:var(--font-display)">Your last order</h2>
+        <p class="text-sm"><span class="text-[var(--color-muted)]">Reference:</span> <span id="acc-order-ref" class="font-medium"></span></p>
+        <p class="text-sm"><span class="text-[var(--color-muted)]">Total:</span> <span id="acc-order-total"></span></p>
+        <p class="text-sm"><span class="text-[var(--color-muted)]">Payment:</span> <span id="acc-order-method"></span></p>
+      </div>
+
+      <button id="acc-signout" class="btn btn-outline w-full mt-8">Sign out</button>
+    </div>
+  </div>
+
+  <script>
+    function inr(p:number){ return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100); }
+    function get<T>(k:string):T|null{ try{ return JSON.parse(localStorage.getItem(k)||'null'); }catch{ return null; } }
+    function render(){
+      const u=get<any>('apaulogy_user');
+      const out=document.getElementById('acc-signedout')!, inn=document.getElementById('acc-signedin')!;
+      if(u){
+        out.classList.add('hidden'); inn.classList.remove('hidden');
+        document.getElementById('acc-hello')!.textContent=u.name||'friend';
+        document.getElementById('acc-email-show')!.textContent=u.email||'';
+        const o=get<any>('apaulogy_last_order');
+        if(o){ document.getElementById('acc-order')!.classList.remove('hidden');
+          document.getElementById('acc-order-ref')!.textContent=o.reference||'—';
+          document.getElementById('acc-order-total')!.textContent=o.total!=null?inr(o.total):'—';
+          document.getElementById('acc-order-method')!.textContent=o.method==='bank'?'Bank transfer':'Paid online';
+        }
+      } else { out.classList.remove('hidden'); inn.classList.add('hidden'); }
+    }
+    document.getElementById('acc-signin')?.addEventListener('click',()=>{
+      const name=(document.getElementById('acc-name') as HTMLInputElement).value.trim();
+      const email=(document.getElementById('acc-email') as HTMLInputElement).value.trim();
+      if(!name||!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ alert('Please enter your name and a valid email.'); return; }
+      localStorage.setItem('apaulogy_user', JSON.stringify({name,email}));
+      render();
+    });
+    document.getElementById('acc-signout')?.addEventListener('click',()=>{ localStorage.removeItem('apaulogy_user'); render(); });
+    render();
+    document.addEventListener('astro:after-swap', render);
+  </script>
+</BaseLayout>

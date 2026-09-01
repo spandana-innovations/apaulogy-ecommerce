@@ -1,0 +1,109 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import catalog from '../../data/catalog.json';
+import { getStats, statsSummary, newOrders, revenueByMonth } from '../../lib/admin-data';
+import { formatINR } from '../../lib/format';
+
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const base = await getStats(env);
+const s = await statsSummary(env);
+const queue = await newOrders(env, 10);
+const rev = await revenueByMonth(env, 12);
+const productCount = (catalog as any).products.length;
+
+const vals = rev.map((r: any) => Number(r.total) || 0);
+const maxV = Math.max(1, ...vals);
+const W = 560, H = 90;
+const pts = vals.length ? vals.map((v, i) => `${(i / Math.max(1, vals.length - 1)) * W},${H - (v / maxV) * (H - 12) - 6}`).join(' ') : '';
+const needsAction = (s.pending || 0) + (s.onhold || 0);
+---
+<AdminLayout title="Dashboard" active="dashboard" dbBound={base.dbBound}>
+  <!-- Action row: what needs the shopkeeper's attention -->
+  <div class="action-grid">
+    <a href="/apaulogy-admin/orders/?status=pending" class="action a-hot">
+      <span class="a-k">Pending payment</span><span class="a-v">{s.pending || 0}</span>
+      <span class="a-cta">Review →</span>
+    </a>
+    <a href="/apaulogy-admin/orders/?status=processing" class="action a-warm">
+      <span class="a-k">To fulfil</span><span class="a-v">{s.processing || 0}</span>
+      <span class="a-cta">Pack &amp; ship →</span>
+    </a>
+    <a href="/apaulogy-admin/orders/?status=on-hold" class="action">
+      <span class="a-k">On hold</span><span class="a-v">{s.onhold || 0}</span>
+      <span class="a-cta">Resolve →</span>
+    </a>
+    <a href="/apaulogy-admin/stats/" class="action a-rev">
+      <span class="a-k">Revenue</span><span class="a-v">{formatINR(s.revenue || 0)}</span>
+      <span class="a-cta">See stats →</span>
+    </a>
+  </div>
+
+  <div class="dash-cols">
+    <!-- The order queue (primary flow) -->
+    <section>
+      <div class="sec-head">
+        <h2>Needs attention <span class="badge">{needsAction}</span></h2>
+        <a href="/apaulogy-admin/orders/" class="lnk">All orders →</a>
+      </div>
+      <div class="card">
+        {queue.length ? (
+          <table>
+            <thead><tr><th>Order</th><th>Customer</th><th>Status</th><th style="text-align:right">Total</th><th>Date</th></tr></thead>
+            <tbody>
+              {queue.map((o: any) => (
+                <tr>
+                  <td><a href={`/apaulogy-admin/orders/${o.order_number}/`} class="u"><strong>{o.order_number}</strong></a></td>
+                  <td class="muted">{o.email}</td>
+                  <td><span class={`pill s-${o.status}`}>{o.status}</span></td>
+                  <td style="text-align:right">{formatINR(o.total)}</td>
+                  <td class="muted">{(o.created_at || '').slice(0, 10)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (<div class="empty">Nothing waiting — you're all caught up. ✦</div>)}
+      </div>
+    </section>
+
+    <!-- Side: pulse -->
+    <aside>
+      <div class="card pad">
+        <div class="sec-head sm"><strong>Revenue · 12 months</strong><span class="muted">{formatINR(s.revenue || 0)}</span></div>
+        {pts ? (
+          <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="96" preserveAspectRatio="none" style="margin-top:.6rem;overflow:visible">
+            <polyline points={`0,${H} ${pts} ${W},${H}`} fill="rgba(0,0,0,.06)" stroke="none" />
+            <polyline points={pts} fill="none" stroke="#000" stroke-width="2" stroke-linejoin="round" />
+          </svg>
+        ) : (<p class="muted sm">No paid orders in range yet.</p>)}
+      </div>
+      <div class="card pad">
+        <span class="mini-k">Catalogue</span><span class="mini-v">{productCount}</span>
+        <span class="mini-k">Paid orders</span><span class="mini-v">{s.paid_orders || 0}</span>
+        <span class="mini-k">Customers</span><span class="mini-v">{base.customers}</span>
+      </div>
+    </aside>
+  </div>
+
+  <style is:global>
+    .action-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1rem; margin-bottom:1.6rem }
+    .action{ display:flex; flex-direction:column; gap:.15rem; padding:1.1rem 1.2rem; background:#fff; border:1px solid var(--line);
+      position:relative; transition:transform .12s, box-shadow .12s; }
+    .action:hover{ transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.08) }
+    .action .a-k{ font-family:var(--font-sans); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted) }
+    .action .a-v{ font-family:var(--font-display); font-size:2.2rem; line-height:1.05 }
+    .action .a-cta{ font-family:var(--font-sans); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; margin-top:.3rem; opacity:.6 }
+    .a-hot{ border-color:#000; box-shadow:inset 3px 0 0 #000 } .a-hot .a-v{ color:#000 }
+    .a-warm{ box-shadow:inset 3px 0 0 #8a6100 } .a-rev .a-v{ font-size:1.7rem }
+    .dash-cols{ display:grid; grid-template-columns:1fr 300px; gap:1.6rem; align-items:start }
+    .sec-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.7rem }
+    .sec-head.sm{ margin-bottom:0 } .sec-head h2{ font-family:var(--font-display); font-size:1.35rem; margin:0 }
+    .badge{ font-family:var(--font-sans); font-size:.7rem; background:#000; color:#fff; border-radius:20px; padding:.05rem .5rem; vertical-align:middle }
+    .lnk,.u{ font-family:var(--font-sans); font-size:.8rem; text-decoration:underline }
+    .card.pad{ padding:1.1rem 1.2rem; margin-bottom:1rem }
+    .mini-k{ display:block; font-family:var(--font-sans); font-size:.66rem; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin-top:.6rem }
+    .mini-v{ display:block; font-family:var(--font-display); font-size:1.5rem; line-height:1 }
+    .mini-k:first-child{ margin-top:0 }
+    @media(max-width:900px){ .dash-cols{ grid-template-columns:1fr } }
+  </style>
+</AdminLayout>

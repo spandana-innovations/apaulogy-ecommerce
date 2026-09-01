@@ -70,6 +70,7 @@ export const Cart = {
 // Expose for inline handlers / other scripts.
 (window as unknown as { Cart: typeof Cart }).Cart = Cart;
 (window as unknown as { cartToast: (m: string) => void }).cartToast = toast;
+document.dispatchEvent(new Event('cart:ready'));
 
 // Global "add to cart" delegation + toast feedback.
 document.addEventListener('click', (e) => {
@@ -84,6 +85,7 @@ document.addEventListener('click', (e) => {
     variant: btn.dataset.variant || undefined,
   });
   toast(`Added “${btn.dataset.name}” to your cart`);
+  document.dispatchEvent(new CustomEvent('cart:added'));
 });
 
 function toast(message: string) {
@@ -93,7 +95,7 @@ function toast(message: string) {
     el.id = 'cart-toast';
     el.style.cssText =
       'position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);z-index:60;' +
-      'background:#24211c;color:#faf5ea;padding:.75rem 1.25rem;border-radius:3px;' +
+      'background:#000;color:#fff;padding:.75rem 1.25rem;border-radius:2px;' +
       'font-family:ui-sans-serif,system-ui,sans-serif;font-size:.85rem;letter-spacing:.02em;' +
       'box-shadow:0 10px 30px -10px rgba(0,0,0,.5);opacity:0;transition:opacity .2s,transform .2s;';
     document.body.appendChild(el);

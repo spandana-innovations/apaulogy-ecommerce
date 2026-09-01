@@ -1,0 +1,67 @@
+---
+export const prerender = false;
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import { getStats, getOrder } from '../../../lib/admin-data';
+import { formatINR } from '../../../lib/format';
+const { order } = Astro.params;
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const o = await getOrder(env, order!);
+if (!o) return Astro.redirect('/apaulogy-admin/orders/');
+const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { return {}; } })();
+---
+<AdminLayout title={`Order ${o.order_number}`} active="orders" dbBound={stats.dbBound}>
+  <a href="/apaulogy-admin/orders/" style="font-family:var(--font-sans);font-size:.8rem;text-decoration:underline">← All orders</a>
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:2rem;margin-top:1rem;max-width:1000px;font-family:var(--font-sans);font-size:.86rem">
+    <div class="card" style="padding:1.3rem">
+      <h3 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">{o.order_number}</h3>
+      <p class="muted" style="margin:0 0 1rem">{(o.created_at||'').replace('T',' ').slice(0,16)}</p>
+      <table>
+        <thead><tr><th>Item</th><th>Variant</th><th style="text-align:center">Qty</th><th style="text-align:right">Price</th></tr></thead>
+        <tbody>
+          {(o.items||[]).map((it:any)=>(<tr><td><strong>{it.name}</strong></td><td class="muted">{it.variant||'—'}</td><td style="text-align:center">{it.quantity}</td><td style="text-align:right">{formatINR(it.price)}</td></tr>))}
+        </tbody>
+      </table>
+      <div style="margin-top:1rem;display:grid;gap:.3rem;max-width:260px;margin-left:auto">
+        <div style="display:flex;justify-content:space-between"><span class="muted">Subtotal</span><span>{formatINR(o.subtotal||0)}</span></div>
+        {o.discount>0 && <div style="display:flex;justify-content:space-between"><span class="muted">Discount</span><span>– {formatINR(o.discount)}</span></div>}
+        <div style="display:flex;justify-content:space-between"><span class="muted">Shipping</span><span>{o.shipping?formatINR(o.shipping):'Free'}</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:600;border-top:1px solid var(--line);padding-top:.3rem"><span>Total</span><span>{formatINR(o.total||0)}</span></div>
+      </div>
+    </div>
+
+    <div style="display:grid;gap:1.2rem;align-content:start">
+      <div class="card" style="padding:1.2rem">
+        <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Customer</h4>
+        <p style="margin:.2rem 0"><strong>{bill.name||o.email}</strong></p>
+        <p class="muted" style="margin:.2rem 0">{o.email}</p>
+        <p class="muted" style="margin:.2rem 0">{o.phone||''}</p>
+        {bill.city && <p class="muted" style="margin:.2rem 0">{bill.city}</p>}
+      </div>
+      <div class="card" style="padding:1.2rem">
+        <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Fulfilment</h4>
+        <label class="fld">Status
+          <select id="o-status">
+            {['pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'].map((s)=>(<option value={s} selected={s===o.status}>{s}</option>))}
+          </select></label>
+        <label class="fld">Tracking number<input id="o-track" value={o.tracking_number||''} placeholder="e.g. EX123456789IN"/></label>
+        <label class="fld">Carrier<input id="o-carrier" value={o.tracking_carrier||''} placeholder="e.g. DTDC, India Post"/></label>
+        <button class="btn" id="o-save" style="background:#000;color:#fff;justify-content:center;width:100%;margin-top:.5rem">Update order</button>
+        <p class="muted" id="o-msg" style="font-size:.75rem;text-align:center;margin-top:.5rem"></p>
+      </div>
+    </div>
+  </div>
+  <style is:global>
+    .fld{ display:block; margin-bottom:.6rem } .fld input,.fld select{ width:100%; margin-top:.25rem; padding:.45rem .6rem; border:1px solid var(--line); font:inherit }
+  </style>
+  <script is:inline define:vars={{ orderNum: o.order_number }}>window.__order=orderNum;</script>
+  <script>
+    document.getElementById('o-save').addEventListener('click', async ()=>{
+      const msg=document.getElementById('o-msg'); msg.textContent='Saving…';
+      const body={ order:(window).__order, status:document.getElementById('o-status').value,
+        tracking_number:document.getElementById('o-track').value, tracking_carrier:document.getElementById('o-carrier').value };
+      const r=await fetch('/api/admin/order-update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      msg.textContent=r.ok?'Updated ✓':'Failed — database connected?';
+    });
+  </script>
+</AdminLayout>

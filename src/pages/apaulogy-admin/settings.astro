@@ -1,0 +1,71 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getStats, getSetting } from '../../lib/admin-data';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const rzpIdEnv = !!env.RAZORPAY_KEY_ID;
+const rzpId = (await getSetting(env, 'razorpay_key_id')) || '';
+const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razorpay_key_secret'));
+---
+<AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
+  <div style="max-width:680px;display:grid;gap:1.6rem">
+    <!-- Razorpay -->
+    <section class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Razorpay payment keys</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">
+        Enter your live or test keys from the Razorpay dashboard. Stored in your database and used at checkout.
+        {rzpIdEnv && ' Environment keys are set and take priority over these.'}
+      </p>
+      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
+        <label class="fld">Key ID<input id="rzp-id" value={rzpId} placeholder="rzp_live_… or rzp_test_…"/></label>
+        <label class="fld">Key Secret<input id="rzp-secret" type="password" placeholder={hasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter key secret'}/></label>
+        <label class="fld">Webhook Secret <span class="muted">(optional)</span><input id="rzp-webhook" type="password" placeholder="Leave blank to keep"/></label>
+        <div><button class="btn" id="rzp-save" style="background:#000;color:#fff">Save keys</button> <span class="muted" id="rzp-msg" style="font-size:.78rem"></span></div>
+      </div>
+    </section>
+
+    <!-- Shortcuts -->
+    <section class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">Store configuration</h2>
+      <div style="display:grid;gap:.6rem;font-family:var(--font-sans);font-size:.9rem">
+        <a href="/apaulogy-admin/shipping/" class="cfg">Weight-based shipping rates <span>→</span></a>
+        <a href="/apaulogy-admin/discounts/" class="cfg">Discounts &amp; coupons <span>→</span></a>
+        <a href="/apaulogy-admin/free-shipping/" class="cfg">Free-shipping products <span>→</span></a>
+        <a href="/apaulogy-admin/stats/" class="cfg">Sales statistics <span>→</span></a>
+      </div>
+    </section>
+
+    <!-- System -->
+    <section class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">System</h2>
+      <table>
+        <tbody>
+          <tr><th style="width:180px">Store</th><td>aPaulogy Gallery — Bengaluru</td></tr>
+          <tr><th>Currency</th><td>INR (₹)</td></tr>
+          <tr><th>Database (D1)</th><td>{stats.dbBound ? <span class="pill s-completed">Connected</span> : <span class="pill s-pending">Not connected</span>}</td></tr>
+          <tr><th>Razorpay</th><td>{(rzpIdEnv||rzpId) ? <span class="pill s-completed">Configured</span> : <span class="pill s-pending">Add keys above</span>}</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.8rem;margin-top:1rem">
+        Admin credentials come from <code>ADMIN_USER</code> / <code>ADMIN_PASS</code> / <code>ADMIN_SECRET</code>.
+        For maximum security, set the Razorpay secret as a Cloudflare Pages secret instead of storing it here.
+      </p>
+    </section>
+  </div>
+  <style is:global>
+    .fld{display:block}.fld input{width:100%;margin-top:.25rem;padding:.5rem .6rem;border:1px solid var(--line);font:inherit}
+    .cfg{display:flex;justify-content:space-between;padding:.7rem .9rem;border:1px solid var(--line);text-decoration:none;color:var(--ink)}
+    .cfg:hover{background:var(--paper-deep)}
+  </style>
+  <script>
+    document.getElementById('rzp-save').addEventListener('click', async()=>{
+      const msg=document.getElementById('rzp-msg'); msg.textContent='Saving…';
+      const body={ razorpay_key_id:document.getElementById('rzp-id').value.trim(),
+        razorpay_key_secret:document.getElementById('rzp-secret').value,
+        razorpay_webhook_secret:document.getElementById('rzp-webhook').value };
+      const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
+    });
+  </script>
+</AdminLayout>

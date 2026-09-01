@@ -2,14 +2,19 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import SearchOverlay from '../components/SearchOverlay.astro';
+import CartDrawer from '../components/CartDrawer.astro';
 import { SITE_NAME, SITE_DESCRIPTION } from '../lib/seo';
 
 export interface Props {
   title?: string;
   description?: string;
   image?: string;
+  imageAlt?: string;
   type?: 'website' | 'article' | 'product';
   noindex?: boolean;
+  /** URL of the LCP image to preload (e.g. homepage hero) */
+  preloadImage?: string;
   /** JSON-LD objects to embed */
   jsonld?: Record<string, unknown>[];
 }
@@ -17,9 +22,11 @@ export interface Props {
 const {
   title,
   description = SITE_DESCRIPTION,
-  image = '/og-default.svg',
+  image = '/og-default.png',
+  imageAlt,
   type = 'website',
   noindex = false,
+  preloadImage,
   jsonld = [],
 } = Astro.props;
 
@@ -38,7 +45,11 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex,nofollow" />}
+    <meta name="author" content="Paul Fernandes" />
+    <meta name="publisher" content={SITE_NAME} />
+    {noindex
+      ? <meta name="robots" content="noindex,nofollow" />
+      : <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1" />}
 
     <!-- Open Graph -->
     <meta property="og:site_name" content={SITE_NAME} />
@@ -47,6 +58,9 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:alt" content={imageAlt || fullTitle} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_IN" />
 
     <!-- Twitter -->
@@ -54,24 +68,29 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={imageAlt || fullTitle} />
 
-    <meta name="theme-color" content="#faf5ea" />
+    <!-- Icons & manifest -->
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content={SITE_NAME} />
+    <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap-index.xml" />
 
-    <!-- Preload the display font for a snappy first paint of titles.
-         Uncomment once /public/fonts/brandywine.woff2 is added (see README > Fonts),
-         so we don't ship a 404 preload before the file exists.
-    <link rel="preload" href="/fonts/brandywine.woff2" as="font" type="font/woff2" crossorigin />
-    -->
-    <link rel="preconnect" href="https://checkout.razorpay.com" />
+    {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
+    <link rel="preconnect" href="https://checkout.razorpay.com" crossorigin />
+    <link rel="dns-prefetch" href="https://checkout.razorpay.com" />
 
     {jsonld.map((obj) => (
       <script type="application/ld+json" set:html={JSON.stringify(obj)} />
     ))}
   </head>
   <body>
-    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-[var(--color-terracotta)] focus:text-white focus:px-4 focus:py-2">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-black focus:text-white focus:px-4 focus:py-2">
       Skip to content
     </a>
     <Header />
@@ -80,6 +99,31 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
     </main>
     <Footer />
 
+    <SearchOverlay />
+    <CartDrawer />
+
     <script src="../scripts/cart.ts"></script>
+    <script>
+      // #20 — deter casual image copying (right-click, drag, long-press save).
+      // Note: no client protection is absolute, but this removes the easy paths.
+      function guardImages() {
+        document.querySelectorAll('img.protected, .art-guard img, .frame img').forEach((img) => {
+          const el = img as HTMLElement;
+          if (el.dataset.guarded) return;
+          el.dataset.guarded = '1';
+          el.setAttribute('draggable', 'false');
+          el.addEventListener('dragstart', (e) => e.preventDefault());
+          el.addEventListener('contextmenu', (e) => e.preventDefault());
+        });
+      }
+      // Block right-click specifically over artwork containers
+      document.addEventListener('contextmenu', (e) => {
+        const t = e.target as HTMLElement;
+        if (t.closest('.art-guard, .frame, #zoom-lightbox')) e.preventDefault();
+      });
+      guardImages();
+      document.addEventListener('astro:after-swap', guardImages);
+      document.addEventListener('astro:page-load', guardImages);
+    </script>
   </body>
 </html>

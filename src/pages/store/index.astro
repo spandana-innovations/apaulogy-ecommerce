@@ -1,39 +1,121 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { getProducts, getTopCategories } from '../../lib/catalog';
+import { getProducts, getTopCategories, getCategories, getChildCategories, hasMixedKinds } from '../../lib/catalog';
 import { breadcrumbSchema } from '../../lib/seo';
 
 const products = getProducts();
-const cats = getTopCategories();
+const mixedKinds = hasMixedKinds(products);
+const topCats = getTopCategories().filter((c) => (c.count ?? 0) > 0 || getChildCategories(c.slug).length);
+const allCats = getCategories();
+
+// For each product, compute the set of top-level ancestor slugs (for filtering).
+const parentOf = new Map(allCats.map((c) => [c.slug, c.parent_slug]));
+function topAncestors(catSlug: string): string[] {
+  const chain: string[] = [];
+  let cur: string | null | undefined = catSlug;
+  let guard = 0;
+  while (cur && guard++ < 5) { chain.push(cur); cur = parentOf.get(cur); }
+  return chain;
+}
+const productMeta = products.map((p) => {
+  const tops = new Set<string>();
+  for (const c of p.categories) for (const a of topAncestors(c)) tops.add(a);
+  return { tops: Array.from(tops).join(' '), name: p.name.toLowerCase() };
+});
+
 const jsonld = [breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'Store', url: '/store/' }], Astro.site)];
 ---
 
-<BaseLayout
-  title="Store"
-  description="Browse every signed watercolour print and piece of merchandise in the aPaulogy collection."
-  jsonld={jsonld}
->
+<BaseLayout title="Store" description="Browse every signed watercolour print and piece of merchandise in the aPaulogy collection." jsonld={jsonld}>
   <div class="container-page py-12">
     <nav class="text-xs text-[var(--color-muted)] mb-4" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
-      <a href="/" class="hover:text-[var(--color-terracotta)]">Home</a> <span aria-hidden="true">/</span> Store
+      <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span> Store
     </nav>
-    <header class="mb-10">
+    <header class="mb-8">
       <p class="eyebrow">The Store</p>
-      <h1 class="text-5xl mt-2">All prints & pieces</h1>
-      <p class="mt-3 text-[var(--color-ink-soft)] max-w-xl">{products.length} works and objects, each carrying a little of the city that was.</p>
+      <h1 class="text-5xl sm:text-6xl mt-3">All prints &amp; pieces</h1>
+      <p class="mt-4 text-[var(--color-ink-soft)] max-w-xl">{products.length} works and objects, each carrying a little of the city that was.</p>
     </header>
 
+    <!-- Search -->
+    <div class="mb-6" style="font-family:var(--font-sans)">
+      <input id="store-search" type="search" placeholder="Search the collection…" aria-label="Search products"
+        class="w-full sm:max-w-md border border-[var(--color-ink)] bg-white px-4 py-3 text-sm focus:outline-none" />
+    </div>
+
     <!-- Category chips -->
-    <div class="flex flex-wrap gap-2 mb-10" style="font-family:var(--font-sans)">
-      <a href="/store/" class="px-4 py-1.5 text-xs uppercase tracking-wide rounded-full border border-[var(--color-ink)] bg-[var(--color-ink)] text-[var(--color-paper)]">All</a>
-      {cats.map((c) => (
-        <a href={`/category/${c.slug}/`} class="px-4 py-1.5 text-xs uppercase tracking-wide rounded-full border border-[var(--color-line)] hover:border-[var(--color-ink)] transition-colors">{c.name}</a>
+    <div id="store-filters" class="flex flex-wrap gap-2 mb-10" style="font-family:var(--font-sans)">
+      <button class="filter-chip is-active" data-filter="all">All</button>
+      {topCats.map((c) => (
+        <button class="filter-chip" data-filter={c.slug}>{c.name}</button>
       ))}
     </div>
 
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-      {products.map((p) => <ProductCard product={p} />)}
+    <p id="store-count" class="sr-only" aria-live="polite"></p>
+
+    <div id="store-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+      {products.map((p, i) => (
+        <div class="store-item" data-cats={productMeta[i].tops} data-name={productMeta[i].name}>
+          <ProductCard product={p} showKind={mixedKinds} />
+        </div>
+      ))}
     </div>
+    <p id="store-empty" class="text-[var(--color-ink-soft)] mt-8" hidden>No pieces match your search. <button id="store-reset" class="link-underline">Clear filters</button>.</p>
   </div>
+
+  <style>
+    .filter-chip { padding: .4rem 1rem; font-size: .72rem; text-transform: uppercase; letter-spacing: .12em; border: 1px solid var(--color-line); background: #fff; cursor: pointer; transition: all .15s ease; }
+    .filter-chip:hover { border-color: var(--color-ink); }
+    .filter-chip.is-active { background: var(--color-ink); color: #fff; border-color: var(--color-ink); }
+  </style>
+
+  <script>
+    function initStore() {
+      const grid = document.getElementById('store-grid');
+      if (!grid || (grid as HTMLElement).dataset.bound) return;
+      (grid as HTMLElement).dataset.bound = '1';
+      const items = Array.from(grid.querySelectorAll<HTMLElement>('.store-item'));
+      const chips = Array.from(document.querySelectorAll<HTMLElement>('.filter-chip'));
+      const search = document.getElementById('store-search') as HTMLInputElement | null;
+      const empty = document.getElementById('store-empty');
+      const count = document.getElementById('store-count');
+      let filter = 'all';
+      let query = '';
+
+      function apply() {
+        let shown = 0;
+        for (const it of items) {
+          const cats = it.dataset.cats || '';
+          const name = it.dataset.name || '';
+          const okCat = filter === 'all' || cats.split(' ').includes(filter);
+          const okQ = !query || name.includes(query);
+          const show = okCat && okQ;
+          it.hidden = !show;
+          if (show) shown++;
+        }
+        if (empty) empty.hidden = shown !== 0;
+        if (count) count.textContent = `${shown} pieces shown`;
+      }
+      chips.forEach((c) => c.addEventListener('click', () => {
+        chips.forEach((x) => x.classList.remove('is-active'));
+        c.classList.add('is-active');
+        filter = c.dataset.filter || 'all';
+        apply();
+      }));
+      search?.addEventListener('input', () => { query = search.value.trim().toLowerCase(); apply(); });
+
+      // honour ?q= from URL (search action)
+      const q = new URLSearchParams(location.search).get('q');
+      if (q && search) { search.value = q; query = q.toLowerCase(); }
+      document.getElementById('store-reset')?.addEventListener('click', () => {
+        filter = 'all'; query = ''; if (search) search.value = '';
+        chips.forEach((x) => x.classList.toggle('is-active', x.dataset.filter === 'all'));
+        apply();
+      });
+      apply();
+    }
+    initStore();
+    document.addEventListener('astro:after-swap', initStore);
+  </script>
 </BaseLayout>

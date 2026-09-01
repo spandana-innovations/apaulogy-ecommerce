@@ -1,0 +1,141 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import catalog from '../../data/catalog.json';
+import { getStats, listDiscounts, listCoupons } from '../../lib/admin-data';
+import { formatINR } from '../../lib/format';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const discounts = await listDiscounts(env);
+const coupons = await listCoupons(env);
+const cat = catalog as any;
+const cats = cat.categories.filter((c:any)=>!c.parent_slug || c.parent_slug).map((c:any)=>({slug:c.slug,name:c.name}));
+const prods = cat.products.map((p:any)=>({slug:p.slug,name:p.name})).sort((a:any,b:any)=>a.name.localeCompare(b.name));
+---
+<AdminLayout title="Discounts" active="discounts" dbBound={stats.dbBound}>
+  <div style="display:grid;gap:2rem;grid-template-columns:1fr;max-width:960px">
+    <!-- Discounts -->
+    <section>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+        <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0">Automatic discounts</h2>
+        <button class="btn" id="add-disc">+ New discount</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table id="disc-tbl">
+          <thead><tr><th>Label</th><th>Applies to</th><th>Type</th><th>Value</th><th>Active</th><th></th></tr></thead>
+          <tbody>
+            {discounts.map((d:any)=>(
+              <tr>
+                <td><strong>{d.label}</strong></td>
+                <td class="muted">{d.scope==='all'?'Whole store':`${d.scope}: ${d.target}`}</td>
+                <td>{d.kind.replace('_',' ')}</td>
+                <td>{d.kind==='percent'?`${d.value}%`:d.kind==='fixed'?formatINR(d.value*100):'—'}</td>
+                <td>{d.active?'✓':'—'}</td>
+                <td style="text-align:right"><button class="del-disc" data-id={d.id} style="border:0;background:none;cursor:pointer;color:#b00020">Delete</button></td>
+              </tr>
+            ))}
+            {!discounts.length && <tr><td colspan="6" class="empty">No discounts yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Coupons -->
+    <section>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem">
+        <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0">Coupon codes</h2>
+        <button class="btn" id="add-coupon">+ New coupon</button>
+      </div>
+      <div class="card" style="overflow:hidden">
+        <table id="coup-tbl">
+          <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min order</th><th>Active</th><th></th></tr></thead>
+          <tbody>
+            {coupons.map((c:any)=>(
+              <tr>
+                <td><strong>{c.code}</strong></td>
+                <td>{c.kind.replace('_',' ')}</td>
+                <td>{c.kind==='percent'?`${c.value}%`:c.kind==='fixed'?formatINR(c.value*100):'—'}</td>
+                <td class="muted">{c.min_order?formatINR(c.min_order*100):'—'}</td>
+                <td>{c.active?'✓':'—'}</td>
+                <td style="text-align:right"><button class="del-coup" data-code={c.code} style="border:0;background:none;cursor:pointer;color:#b00020">Delete</button></td>
+              </tr>
+            ))}
+            {!coupons.length && <tr><td colspan="6" class="empty">No coupons yet.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- modal -->
+  <div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;place-items:center">
+    <div class="card" style="width:440px;max-width:92vw;padding:1.4rem;display:grid;place-items:stretch">
+      <h3 id="m-title" style="font-family:var(--font-display);font-size:1.3rem;margin:0 0 1rem"></h3>
+      <div id="m-body" style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem"></div>
+      <div style="display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem">
+        <button class="btn" id="m-cancel" style="background:#fff;color:#000">Cancel</button>
+        <button class="btn" id="m-save" style="background:#000;color:#fff">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script is:inline set:html={`window.__cats=${JSON.stringify(cats)};window.__prods=${JSON.stringify(prods.slice(0,400))};`}></script>
+  <script>
+    const modal = document.getElementById('modal');
+    const mTitle = document.getElementById('m-title'); const mBody = document.getElementById('m-body');
+    let saver = async()=>{};
+    function open(title, html, onSave){ mTitle.textContent=title; mBody.innerHTML=html; saver=onSave; modal.style.display='grid'; }
+    function close(){ modal.style.display='none'; }
+    document.getElementById('m-cancel').addEventListener('click', close);
+    document.getElementById('m-save').addEventListener('click', async()=>{ await saver(); });
+
+    const catsOpt = (window.__cats||[]).map((c)=>`<option value="${c.slug}">${c.name}</option>`).join('');
+    const prodsOpt = (window.__prods||[]).map((p)=>`<option value="${p.slug}">${p.name}</option>`).join('');
+
+    document.getElementById('add-disc').addEventListener('click', ()=>{
+      open('New discount', `
+        <label>Label<input id="d-label" placeholder="e.g. Festive sale"/></label>
+        <label>Applies to
+          <select id="d-scope">
+            <option value="all">Whole store</option>
+            <option value="category">A category</option>
+            <option value="product">A single product</option>
+            <option value="products">A group of products</option>
+          </select></label>
+        <label id="d-target-wrap" style="display:none">Target
+          <select id="d-target"></select></label>
+        <label id="d-multi-wrap" style="display:none">Products <span class="muted">(⌘/Ctrl-click to pick several)</span>
+          <select id="d-multi" multiple size="6" style="width:100%"></select></label>
+        <label>Type<select id="d-kind"><option value="percent">Percent off</option><option value="fixed">Amount off (₹)</option><option value="free_shipping">Free shipping</option></select></label>
+        <label>Value<input id="d-value" type="number" placeholder="15"/></label>
+      `, async()=>{
+        const scope=v('d-scope'); 
+        await post('/api/admin/discounts',{type:'discount',label:v('d-label'),scope,target:v('d-target'),kind:v('d-kind'),value:Number(v('d-value'))||0,active:1});
+      });
+      const scope=document.getElementById('d-scope'); const tw=document.getElementById('d-target-wrap'); const tt=document.getElementById('d-target');
+      const mw=document.getElementById('d-multi-wrap'); const mm=document.getElementById('d-multi'); mm.innerHTML=prodsOpt;
+      scope.addEventListener('change', ()=>{
+        tw.style.display='none'; mw.style.display='none';
+        if(scope.value==='category'){ tw.style.display='block'; tt.innerHTML=catsOpt; }
+        else if(scope.value==='product'){ tw.style.display='block'; tt.innerHTML=prodsOpt; }
+        else if(scope.value==='products'){ mw.style.display='block'; }
+      });
+    });
+    document.getElementById('add-coupon').addEventListener('click', ()=>{
+      open('New coupon', `
+        <label>Code<input id="c-code" placeholder="WELCOME10" style="text-transform:uppercase"/></label>
+        <label>Type<select id="c-kind"><option value="percent">Percent off</option><option value="fixed">Amount off (₹)</option><option value="free_shipping">Free shipping</option></select></label>
+        <label>Value<input id="c-value" type="number" placeholder="10"/></label>
+        <label>Minimum order (₹, optional)<input id="c-min" type="number" placeholder="0"/></label>
+        <label>Restrict to one product (optional)<select id="c-prod"><option value="">Any product</option>${prodsOpt}</select></label>
+      `, async()=>{
+        await post('/api/admin/discounts',{type:'coupon',code:v('c-code'),kind:v('c-kind'),value:Number(v('c-value'))||0,min_order:Number(v('c-min'))||0,product_slug:v('c-prod'),active:1});
+      });
+    });
+    document.querySelectorAll('.del-disc').forEach(b=>b.addEventListener('click',async()=>{ if(confirm('Delete this discount?')){ await post('/api/admin/discounts',{type:'discount',delete:true,id:Number(b.dataset.id)}); }}));
+    document.querySelectorAll('.del-coup').forEach(b=>b.addEventListener('click',async()=>{ if(confirm('Delete this coupon?')){ await post('/api/admin/discounts',{type:'coupon',delete:true,code:b.dataset.code}); }}));
+
+    function v(id){ return (document.getElementById(id)||{}).value||''; }
+    async function post(url,body){ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); if(r.ok) location.reload(); else alert('Save failed — is the database connected?'); }
+  </script>
+</AdminLayout>

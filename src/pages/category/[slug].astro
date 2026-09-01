@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { getCategories, getCategory, getProductsByCategory, getChildCategories } from '../../lib/catalog';
-import { breadcrumbSchema } from '../../lib/seo';
+import { getCategories, getCategory, getProductsByCategory, getChildCategories, hasMixedKinds } from '../../lib/catalog';
+import { breadcrumbSchema, collectionSchema } from '../../lib/seo';
 
 export function getStaticPaths() {
   return getCategories().map((c) => ({ params: { slug: c.slug } }));
@@ -14,51 +14,53 @@ if (!category) return Astro.redirect('/404');
 
 const products = getProductsByCategory(slug!);
 const children = getChildCategories(slug!);
+const mixedKinds = hasMixedKinds(products);
+const parent = category.parent_slug ? getCategory(category.parent_slug) : null;
 
-const jsonld = [
-  breadcrumbSchema(
-    [
-      { name: 'Home', url: '/' },
-      { name: 'Store', url: '/store/' },
-      { name: category.name, url: `/category/${category.slug}/` },
-    ],
-    Astro.site,
-  ),
-];
+const crumbs = [{ name: 'Home', url: '/' }, { name: 'Store', url: '/store/' }];
+if (parent) crumbs.push({ name: parent.name, url: `/category/${parent.slug}/` });
+crumbs.push({ name: category.name, url: `/category/${category.slug}/` });
+
+const catImage = products[0]?.images?.[0]?.url;
+const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.name, category.slug, products, Astro.site)];
 ---
 
 <BaseLayout
   title={category.name}
-  description={category.description || `Shop the ${category.name} collection from aPaulogy.`}
+  description={category.description || `Shop the ${category.name} collection from aPaulogy — watercolour prints and merchandise by Paul Fernandes of old Bangalore, Mumbai and Goa.`}
+  image={catImage || '/og-default.png'}
+  imageAlt={`${category.name} — aPaulogy`}
   jsonld={jsonld}
 >
   <div class="container-page py-12">
-    <nav class="text-xs text-[var(--color-muted)] mb-4" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
-      <a href="/" class="hover:text-[var(--color-terracotta)]">Home</a> <span aria-hidden="true">/</span>
-      <a href="/store/" class="hover:text-[var(--color-terracotta)]">Store</a> <span aria-hidden="true">/</span>
+    <nav class="text-xs text-[var(--color-muted)] mb-5" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+      <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span>
+      <a href="/store/" class="link-hover">Store</a> <span aria-hidden="true">/</span>
+      {parent && (<><a href={`/category/${parent.slug}/`} class="link-hover">{parent.name}</a> <span aria-hidden="true">/</span> </>)}
       <span class="text-[var(--color-ink-soft)]">{category.name}</span>
     </nav>
 
     <header class="mb-10 max-w-2xl">
       <p class="eyebrow">Collection</p>
-      <h1 class="text-5xl mt-2">{category.name}</h1>
-      {category.description && <p class="mt-3 text-[var(--color-ink-soft)] text-lg">{category.description}</p>}
+      <h1 class="text-5xl sm:text-6xl mt-3">{category.name}</h1>
+      {category.description && <p class="mt-4 text-[var(--color-ink-soft)] text-lg">{category.description}</p>}
+      <p class="mt-3 text-sm text-[var(--color-muted)]" style="font-family:var(--font-sans)">{products.length} {products.length === 1 ? 'piece' : 'pieces'}</p>
     </header>
 
     {children.length > 0 && (
-      <div class="flex flex-wrap gap-2 mb-10" style="font-family:var(--font-sans)">
+      <div class="flex flex-wrap gap-2 mb-12" style="font-family:var(--font-sans)">
         {children.map((c) => (
-          <a href={`/category/${c.slug}/`} class="px-4 py-1.5 text-xs uppercase tracking-wide rounded-full border border-[var(--color-line)] hover:border-[var(--color-ink)] transition-colors">{c.name}</a>
+          <a href={`/category/${c.slug}/`} class="px-4 py-1.5 text-[0.72rem] uppercase tracking-[0.12em] border border-[var(--color-line-strong)] hover:bg-black hover:text-white transition-colors">{c.name}</a>
         ))}
       </div>
     )}
 
     {products.length > 0 ? (
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-        {products.map((p) => <ProductCard product={p} />)}
+        {products.map((p) => <ProductCard product={p} showKind={mixedKinds} />)}
       </div>
     ) : (
-      <p class="text-[var(--color-ink-soft)]">New pieces are being added to this collection. <a href="/store/" class="underline">Browse the full store</a>.</p>
+      <p class="text-[var(--color-ink-soft)]">New pieces are being added to this collection. <a href="/store/" class="link-underline">Browse the full store</a>.</p>
     )}
   </div>
 </BaseLayout>

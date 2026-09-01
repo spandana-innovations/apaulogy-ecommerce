@@ -1,41 +1,51 @@
 @import "tailwindcss";
 
+/* Self-hosted serif faces (license-clean, bundled — no third-party requests) */
+@import "@fontsource/eb-garamond/400.css";
+@import "@fontsource/eb-garamond/500.css";
+@import "@fontsource/eb-garamond/400-italic.css";
+@import "@fontsource/cormorant-garamond/400.css";
+@import "@fontsource/cormorant-garamond/500.css";
+@import "@fontsource/cormorant-garamond/600.css";
+
 /* ==========================================================================
-   aPaulogy design system
-   Nostalgic watercolour aesthetic: warm paper, ink, heritage green, terracotta
-   & mustard gold. Display titles use BrandyWine; body uses a refined serif.
+   aPaulogy — a monochrome gallery
+   Pure black & white chrome; the watercolours are the only colour on the wall.
+   Display titles use Brandy Wine; everything else is a refined serif.
    ========================================================================== */
 
 @theme {
-  /* --- Brand palette --- */
-  --color-paper: #faf5ea;        /* page background — aged paper */
-  --color-paper-deep: #f2e9d8;   /* panels / cards */
-  --color-ink: #24211c;          /* primary text — sepia black */
-  --color-ink-soft: #4a453c;     /* secondary text */
-  --color-muted: #8b8577;        /* captions / meta */
+  /* --- Monochrome palette (pure B&W + a disciplined grey ramp) --- */
+  --color-paper: #ffffff;        /* page — the gallery wall */
+  --color-paper-deep: #f4f4f4;   /* faint panels / cards */
+  --color-ink: #000000;          /* primary text & frames — pure black */
+  --color-ink-soft: #2b2b2b;     /* secondary text */
+  --color-muted: #767676;        /* captions / meta */
+  --color-line: #e3e3e3;         /* hairline borders */
+  --color-line-strong: #111111;  /* frame lines */
+  --color-frame: #d9d9d9;        /* image frames — light gray, softer than #ccc */
 
-  --color-terracotta: #b8543c;   /* primary accent (CTA, links) */
-  --color-terracotta-dark: #97402c;
-  --color-heritage: #3d5443;     /* deep bottle green */
-  --color-heritage-dark: #2c3e32;
-  --color-mustard: #d29b3f;      /* gold accent */
-  --color-line: #e2d6bf;         /* hairline borders on paper */
+  /* Legacy accent names remapped to monochrome so nothing renders in colour */
+  --color-terracotta: #000000;
+  --color-terracotta-dark: #333333;
+  --color-heritage: #000000;      /* dark sections = black */
+  --color-heritage-dark: #0a0a0a;
+  --color-mustard: #ffffff;
 
   /* --- Typography --- */
   --font-display: "BrandyWine", "Cormorant Garamond", "Playfair Display", Georgia, serif;
   --font-serif: "EB Garamond", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-  /* --- Radii & shadows --- */
-  --radius-card: 4px;
-  --shadow-frame: 0 1px 0 #fff8 inset, 0 8px 30px -12px rgba(36, 33, 28, 0.35);
+  /* --- Radii & shadows (restrained; a gallery is quiet) --- */
+  --radius-card: 2px;
+  --shadow-frame: 0 12px 30px -18px rgba(0, 0, 0, 0.45);
 }
 
 /* --------------------------------------------------------------------------
    BrandyWine — display face for titles.
-   Drop the licensed font file at /public/fonts/brandywine.woff2 (and .woff).
-   Until then, the fallback serifs above render gracefully. `swap` avoids
-   invisible text (good CLS/LCP). See README > Fonts.
+   Drop the licensed font at /public/fonts/brandywine.woff2 (and .woff) and it
+   activates automatically. Until then the Cormorant Garamond fallback renders.
    -------------------------------------------------------------------------- */
 @font-face {
   font-family: "BrandyWine";
@@ -46,61 +56,50 @@
   font-display: swap;
 }
 
-/* Self-hosted body serif for consistency & speed (no third-party requests).
-   Files are optional; system serif fallback covers them. */
-@font-face {
-  font-family: "EB Garamond";
-  src: url("/fonts/ebgaramond.woff2") format("woff2");
-  font-weight: 400 600;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* --------------------------------------------------------------------------
    Base
    -------------------------------------------------------------------------- */
-:root {
-  color-scheme: light;
-  --header-h: 4.5rem;
-}
+/* Base element styles live in @layer base so component classes (.btn etc.)
+   reliably win the cascade — an unlayered `a { color: inherit }` would
+   otherwise override a layered `.btn-primary { color: #fff }`. */
+@layer base {
+  :root {
+    color-scheme: light;
+    --header-h: 5.75rem;
+  }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-}
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
 
-body {
-  background-color: var(--color-paper);
-  /* subtle paper grain via layered gradients — no image request */
-  background-image:
-    radial-gradient(rgba(184, 84, 60, 0.03) 1px, transparent 1px),
-    radial-gradient(rgba(61, 84, 67, 0.03) 1px, transparent 1px);
-  background-size: 22px 22px, 22px 22px;
-  background-position: 0 0, 11px 11px;
-  color: var(--color-ink);
-  font-family: var(--font-serif);
-  font-size: 1.02rem;
-  line-height: 1.65;
-}
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
 
-h1, h2, h3, .font-display {
-  font-family: var(--font-display);
-  font-weight: 400;
-  line-height: 1.08;
-  letter-spacing: 0.01em;
-}
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    font-weight: 500;
+    line-height: 1.06;
+    letter-spacing: 0.005em;
+  }
 
-a { color: inherit; text-decoration: none; }
+  a { color: inherit; text-decoration: none; }
 
-::selection { background: var(--color-mustard); color: var(--color-ink); }
+  ::selection { background: #000; color: #fff; }
 
-/* Focus visibility for accessibility */
-:where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 2px solid var(--color-terracotta);
-  outline-offset: 2px;
-  border-radius: 2px;
+  /* Focus visibility for accessibility — black ring on white chrome */
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -109,50 +108,60 @@ a { color: inherit; text-decoration: none; }
 @layer components {
   .container-page {
     width: 100%;
-    max-width: 76rem;
+    max-width: 78rem;
     margin-inline: auto;
     padding-inline: 1.25rem;
   }
 
+  /* Buttons — solid black / inverted, no colour */
   .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.7rem 1.4rem;
+    padding: 0.72rem 1.5rem;
     font-family: var(--font-sans);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 600;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     border-radius: 2px;
     cursor: pointer;
-    transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
   }
   .btn:active { transform: translateY(1px); }
 
   .btn-primary {
-    background: var(--color-terracotta);
+    background: var(--color-ink);
     color: #fff;
-    border: 1px solid var(--color-terracotta);
+    border: 1px solid var(--color-ink);
   }
-  .btn-primary:hover { background: var(--color-terracotta-dark); border-color: var(--color-terracotta-dark); }
+  .btn-primary:hover { background: #fff; color: var(--color-ink); }
 
   .btn-outline {
     background: transparent;
     color: var(--color-ink);
     border: 1px solid var(--color-ink);
   }
-  .btn-outline:hover { background: var(--color-ink); color: var(--color-paper); }
+  .btn-outline:hover { background: var(--color-ink); color: #fff; }
 
+  /* Eyebrow — tracked sans label */
   .eyebrow {
     font-family: var(--font-sans);
-    font-size: 0.72rem;
+    font-size: 0.68rem;
     font-weight: 600;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.28em;
     text-transform: uppercase;
-    color: var(--color-terracotta);
+    color: var(--color-muted);
   }
+
+  /* Frame — the signature: a matted, framed print on a white wall */
+  .frame {
+    background: #fff;
+    border: 1px solid var(--color-line-strong);
+    padding: 0.55rem;
+  }
+  .frame-tight { padding: 0.3rem; }
 
   .card {
     background: var(--color-paper);
@@ -160,15 +169,36 @@ a { color: inherit; text-decoration: none; }
     border-radius: var(--radius-card);
   }
 
+  /* Sale / status chip */
+  .chip {
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    background: var(--color-ink);
+    color: #fff;
+    padding: 0.28rem 0.55rem;
+  }
+
   /* Rich text (product descriptions, policy pages) */
-  .prose-paper { max-width: 42rem; }
+  .prose-paper { max-width: 44rem; }
   .prose-paper p { margin-block: 0.9em; }
-  .prose-paper h2 { font-size: 1.9rem; margin-top: 1.4em; margin-bottom: 0.3em; }
-  .prose-paper h3 { font-size: 1.4rem; margin-top: 1.2em; margin-bottom: 0.3em; }
-  .prose-paper a { color: var(--color-terracotta); text-decoration: underline; text-underline-offset: 3px; }
+  .prose-paper h2 { font-family: var(--font-display); font-size: 2rem; margin-top: 1.4em; margin-bottom: 0.3em; }
+  .prose-paper h3 { font-family: var(--font-display); font-size: 1.5rem; margin-top: 1.2em; margin-bottom: 0.3em; }
+  .prose-paper h4 { font-family: var(--font-sans); font-size: 0.82rem; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1.6em; margin-bottom: 0.4em; }
+  .prose-paper strong { font-weight: 600; }
+  .prose-paper a { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  .prose-paper a:hover { color: var(--color-muted); }
   .prose-paper ul { list-style: disc; padding-left: 1.4em; margin-block: 0.9em; }
   .prose-paper ol { list-style: decimal; padding-left: 1.4em; margin-block: 0.9em; }
-  .prose-paper img { border-radius: 4px; margin-block: 1em; }
+  .prose-paper li { margin-block: 0.3em; }
+  .prose-paper img { margin-block: 1em; border: 1px solid var(--color-frame); padding: 0.4rem; background: #fff; max-width: 100%; height: auto; }
+  .prose-paper hr { border: 0; border-top: 1px solid var(--color-line); margin-block: 2em; }
+
+  /* Underline-on-hover text link */
+  .link-underline { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; text-decoration-color: var(--color-line-strong); }
+  .link-hover:hover { text-decoration: underline; text-underline-offset: 4px; }
 }
 
 /* Respect reduced motion */
@@ -176,3 +206,133 @@ a { color: inherit; text-decoration: none; }
   html { scroll-behavior: auto; }
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* --------------------------------------------------------------------------
+   Additions: thin frames, themed form controls, image protection, zoom, sliders
+   -------------------------------------------------------------------------- */
+@layer components {
+  /* #3 — light gray hairline around art (was black) */
+  .frame { background:#fff; border:1px solid var(--color-frame, #dcdcdc); padding:0; }
+  .frame-tight { padding:0; }
+  .art-pad { padding:0.5rem; background:#fff; }
+
+  /* #19 — themed select / inputs (no native Apple chrome) */
+  .field {
+    -webkit-appearance:none; appearance:none;
+    width:100%; background:#fff; color:var(--color-ink);
+    border:1px solid var(--color-ink); border-radius:0;
+    padding:0.75rem 2.5rem 0.75rem 0.9rem;
+    font-family:var(--font-sans); font-size:0.86rem; letter-spacing:0.02em;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6'%3E%3Cpath d='M6 9l6 6 6-6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 0.9rem center;
+    cursor:pointer;
+  }
+  .field:focus { outline:none; box-shadow:0 0 0 1px var(--color-ink); }
+  select.field::-ms-expand { display:none; }
+
+  .input {
+    width:100%; background:#fff; color:var(--color-ink);
+    border:1px solid var(--color-ink); border-radius:0;
+    padding:0.7rem 0.9rem; font-family:var(--font-serif); font-size:1rem;
+  }
+  .input:focus { outline:none; box-shadow:0 0 0 1px var(--color-ink); }
+  .field-label { display:block; font-family:var(--font-sans); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--color-muted); margin-bottom:0.5rem; }
+}
+
+/* #20 — image copy protection: no drag, no select, no long-press save */
+img.protected, .protected img {
+  -webkit-user-drag: none; -khtml-user-drag: none; -moz-user-drag: none; user-drag: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  pointer-events: none;
+}
+.art-guard { position: relative; }
+/* transparent shield sits above the image to swallow right-click / drag / save */
+.art-guard::after {
+  content: ""; position: absolute; inset: 0; z-index: 2;
+  background: transparent; cursor: default;
+}
+.art-guard.zoomable::after { cursor: zoom-in; }
+
+/* #4 — inline zoom (no popup): image magnifies inside its own frame */
+.zoom-wrap { position: relative; overflow: hidden; cursor: zoom-in; }
+.zoom-wrap img { transition: transform .28s ease; transform-origin: 50% 50%; will-change: transform; }
+.zoom-wrap.zoomed { cursor: zoom-out; }
+.zoom-wrap.zoomed img { transform: scale(2.4); }
+.zoom-hint { position:absolute; z-index:3; bottom:.7rem; right:.7rem; pointer-events:none;
+  background:#fff; border:1px solid var(--color-frame); padding:.4rem; line-height:0;
+  opacity:.9; transition:opacity .2s; }
+.zoom-wrap.zoomed .zoom-hint { opacity:0; }
+
+/* #14 — horizontal collection sliders */
+.slider-track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(58%, 1fr);
+  gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-left: 1.25rem;
+  -ms-overflow-style: none; scrollbar-width: none; padding-bottom: .5rem; }
+.slider-track::-webkit-scrollbar { display: none; }
+.slider-track > * { scroll-snap-align: start; }
+@media (min-width: 640px) { .slider-track { grid-auto-columns: minmax(31%, 1fr); } }
+@media (min-width: 1024px) { .slider-track { grid-auto-columns: minmax(23%, 1fr); } }
+.slider-btn { width:2.4rem; height:2.4rem; display:grid; place-items:center; border:1px solid var(--color-ink); background:#fff; transition:background .15s,color .15s; }
+.slider-btn:hover { background:#000; color:#fff; }
+.slider-btn:disabled { opacity:.3; cursor:default; background:#fff; color:var(--color-ink); }
+
+/* #22 — print-size scale selector (the plaques ARE the picker) */
+.size-panel { border:1px solid var(--color-line-strong); padding:1.1rem 1.25rem 1rem; background:#fff; }
+.size-intro { font-family:var(--font-sans); font-size:.8rem; color:var(--color-ink-soft); }
+.size-stage { display:flex; align-items:flex-end; gap:2rem; min-height:178px; padding:.9rem .3rem .5rem; }
+.size-man-img { height:158px; width:auto; flex:none; -webkit-user-drag:none; user-select:none; }
+.size-opt { appearance:none; -webkit-appearance:none; flex:none; cursor:pointer; position:relative;
+  background-color:#fff; border:1.5px solid var(--color-ink);
+  background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(0,0,0,.05) 5px,rgba(0,0,0,.05) 6px);
+  transition:background-color .2s,border-color .2s,box-shadow .2s; }
+.size-opt:hover { background-color:#efefef; box-shadow:0 3px 0 -1px rgba(0,0,0,.25); }
+.size-opt:focus-visible { outline:2px solid #000; outline-offset:2px; }
+.size-opt[aria-pressed="true"] { background-color:rgba(0,0,0,.14); border-color:#000; border-width:2.5px; }
+/* eye-catching nudge until a size is chosen */
+@keyframes sizeNudge { 0%,72%,100% { transform:translateY(0); } 82% { transform:translateY(-7px); } 90% { transform:translateY(1px); } }
+.size-stage:not(.chosen) .size-opt { animation:sizeNudge 2.6s ease-in-out infinite; }
+.size-stage:not(.chosen) .size-opt:nth-of-type(2) { animation-delay:.18s; }
+.size-stage:not(.chosen) .size-opt:nth-of-type(3) { animation-delay:.36s; }
+@media (prefers-reduced-motion: reduce) { .size-opt { animation:none !important; } }
+/* caption chips (labels + prices, mirror the plaques) */
+.size-chips { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.9rem; padding-top:.9rem; border-top:1px solid var(--color-line); }
+.size-chip { display:inline-flex; align-items:center; gap:.55rem; padding:.5rem .8rem; cursor:pointer;
+  border:1px solid var(--color-ink); background:#fff; font-family:var(--font-sans); font-size:.78rem; letter-spacing:.02em;
+  transition:background .15s,color .15s; }
+.size-chip:hover { background:var(--color-paper-deep); }
+.size-chip[aria-pressed="true"] { background:#000; color:#fff; }
+.size-chip[aria-pressed="true"] .chip-swatch { border-color:#fff; }
+.chip-swatch { display:inline-block; border:1px solid var(--color-ink); background:transparent; flex:none; }
+
+/* --- Map page: blips + tooltip ------------------------------------------- */
+.map-pin { position:absolute; transform:translate(-50%,-50%); z-index:2; padding:0; background:none; border:0; cursor:pointer; }
+.pin-dot { position:relative; display:grid; place-items:center; width:30px; height:30px; border-radius:50%;
+  background:#fdfcf8; color:#1a1712; border:1.5px solid #1a1712;
+  box-shadow:0 1px 3px rgba(0,0,0,.22), inset 0 0 0 3px #fff; transition:transform .15s, background .15s, color .15s; }
+.map-pin:hover .pin-dot, .map-pin:focus-visible .pin-dot { transform:scale(1.16); background:#1a1712; color:#fff; box-shadow:0 2px 6px rgba(0,0,0,.3), inset 0 0 0 3px #1a1712; }
+.pin-num { font-family:var(--font-display); font-size:1rem; line-height:1; margin-top:1px; }
+/* pulsing blip ring */
+.pin-dot::after { content:""; position:absolute; inset:-5px; border-radius:50%; border:1.5px solid #1a1712;
+  opacity:0; animation:blip 2.8s ease-out infinite; }
+.map-pin:nth-child(3n) .pin-dot::after { animation-delay:.7s; }
+.map-pin:nth-child(3n+1) .pin-dot::after { animation-delay:1.4s; }
+@keyframes blip { 0% { transform:scale(.55); opacity:.5; } 70% { transform:scale(1.5); opacity:0; } 100% { opacity:0; } }
+@media (prefers-reduced-motion: reduce){ .pin-dot::after{ animation:none; } }
+
+/* tooltip — a little hand-inked gallery placard */
+.map-tip { position:absolute; z-index:5; transform:translate(16px,-50%); width:196px;
+  background:#fdfcf8; color:var(--color-ink); text-decoration:none; display:block;
+  padding:7px; box-shadow:0 6px 22px rgba(0,0,0,.18); outline:1.5px solid #1a1712; }
+.map-tip::before { content:""; position:absolute; inset:3px; border:0.8px solid #1a1712; pointer-events:none; }
+#map-tip.hidden { display:none; }
+.map-tip.flip-x { transform:translate(calc(-100% - 16px),-50%); }
+.map-tip.flip-y { transform:translate(16px,calc(-100% + 16px)); }
+.map-tip.flip-x.flip-y { transform:translate(calc(-100% - 16px),calc(-100% + 16px)); }
+.map-tip img { width:100%; height:112px; object-fit:contain; background:#fff; display:block; }
+.tip-body { display:block; padding:.55rem .5rem .35rem; text-align:center; }
+.tip-name { display:block; font-family:var(--font-display); font-size:1.35rem; line-height:1.05; }
+.tip-name::after { content:""; display:block; width:34px; height:4px; margin:5px auto 0;
+  background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='5'%3E%3Cpath d='M1 3 Q10 0 20 3 T39 2' fill='none' stroke='%231a1712' stroke-width='1.2'/%3E%3C/svg%3E"); }
+.tip-price { display:block; font-family:var(--font-serif); font-size:.95rem; color:var(--color-ink-soft); margin-top:.35rem; }
+.tip-cta { display:inline-flex; align-items:center; gap:.35rem; font-family:var(--font-sans); font-size:.6rem;
+  text-transform:uppercase; letter-spacing:.16em; margin-top:.5rem; padding-top:.5rem; border-top:1px solid var(--color-line);
+  width:100%; justify-content:center; }

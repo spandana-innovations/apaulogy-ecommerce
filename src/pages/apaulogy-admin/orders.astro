@@ -1,0 +1,71 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getStats, listOrders, orderYears } from '../../lib/admin-data';
+import { formatINR } from '../../lib/format';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const url = Astro.url;
+const status = url.searchParams.get('status') || 'all';
+const year = url.searchParams.get('year') || 'all';
+const search = url.searchParams.get('q') || '';
+const page = parseInt(url.searchParams.get('page') || '1', 10);
+const { rows, total, pages } = await listOrders(env, { status, year, search, page, per: 50 });
+const years = await orderYears(env);
+const STATUSES = ['all','pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'];
+function qs(over: Record<string,string>) {
+  const p = new URLSearchParams({ status, year, q: search, page: String(page), ...over });
+  for (const [k,v] of [...p.entries()]) if (!v || v==='all' || (k==='page'&&v==='1')) p.delete(k);
+  const s = p.toString(); return s ? `?${s}` : '';
+}
+---
+<AdminLayout title="Orders" active="orders" dbBound={stats.dbBound}>
+  <form method="get" class="filters">
+    <input name="q" value={search} placeholder="Search order #, email, phone…" class="f-search"/>
+    <select name="status" onchange="this.form.submit()">
+      {STATUSES.map((s)=>(<option value={s} selected={s===status}>{s==='all'?'All statuses':s}</option>))}
+    </select>
+    <select name="year" onchange="this.form.submit()">
+      <option value="all" selected={year==='all'}>All years</option>
+      {years.map((y:string)=>(<option value={y} selected={y===year}>{y}</option>))}
+    </select>
+    <button class="btn" type="submit">Filter</button>
+    <span class="muted count">{total.toLocaleString()} orders</span>
+  </form>
+
+  <div class="card" style="overflow:hidden">
+    {rows.length ? (
+      <table>
+        <thead><tr><th>Order</th><th>Customer</th><th>Payment</th><th>Status</th><th>Tracking</th><th style="text-align:right">Total</th><th>Date</th></tr></thead>
+        <tbody>
+          {rows.map((o: any) => (
+            <tr>
+              <td><a href={`/apaulogy-admin/orders/${o.order_number}/`} class="u"><strong>{o.order_number}</strong></a></td>
+              <td>{o.email}<br/><span class="muted" style="font-size:.72rem">{o.phone||''}</span></td>
+              <td class="muted">{/bank/i.test(o.notes||'') ? 'Bank transfer' : (o.notes||'Online')}</td>
+              <td><span class={`pill s-${o.status}`}>{o.status}</span></td>
+              <td class="muted" style="font-size:.78rem">{o.tracking_number||'—'}</td>
+              <td style="text-align:right">{formatINR(o.total)}</td>
+              <td class="muted">{(o.created_at||'').slice(0,10)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ) : (<div class="empty">No orders match these filters.</div>)}
+  </div>
+
+  {pages > 1 && (
+    <nav class="pager">
+      {page > 1 && <a class="btn" href={qs({ page: String(page-1) })}>← Prev</a>}
+      <span class="muted">Page {page} of {pages}</span>
+      {page < pages && <a class="btn" href={qs({ page: String(page+1) })}>Next →</a>}
+    </nav>
+  )}
+
+  <style is:global>
+    .filters{ display:flex; gap:.6rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap }
+    .filters .f-search{ flex:1; min-width:220px } .filters select,.filters input{ padding:.5rem .6rem; border:1px solid var(--line); font:inherit; background:#fff }
+    .filters .count{ font-family:var(--font-sans); font-size:.82rem; margin-left:auto }
+    .pager{ display:flex; gap:1rem; align-items:center; justify-content:center; margin-top:1.4rem; font-family:var(--font-sans); font-size:.82rem }
+  </style>
+</AdminLayout>

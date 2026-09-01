@@ -1,0 +1,18 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getStats, listCustomers } from '../../lib/admin-data';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const rows = await listCustomers(env, 300);
+---
+<AdminLayout title="Customers" active="customers" dbBound={stats.dbBound}>
+  <div class="card" style="overflow:hidden">
+    {rows.length ? (
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th></tr></thead>
+        <tbody>{rows.map((c:any)=>(<tr><td><a href={`/apaulogy-admin/customers/${encodeURIComponent(c.email)}/`} style="text-decoration:underline"><strong>{c.name||'—'}</strong></a></td><td>{c.email}</td><td class="muted">{c.phone||'—'}</td><td class="muted">{(c.created_at||'').slice(0,10)}</td></tr>))}</tbody>
+      </table>
+    ) : (<div class="empty">No customers yet.</div>)}
+  </div>
+</AdminLayout>

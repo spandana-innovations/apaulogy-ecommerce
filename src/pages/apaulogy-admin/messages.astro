@@ -1,0 +1,17 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getStats, listMessages } from '../../lib/admin-data';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const stats = await getStats(env);
+const rows = await listMessages(env, 200);
+---
+<AdminLayout title="Messages" active="messages" dbBound={stats.dbBound}>
+  <div class="card" style="overflow:hidden">
+    {rows.length ? (
+      <table><thead><tr><th>From</th><th>Subject</th><th>Message</th><th>Date</th></tr></thead>
+        <tbody>{rows.map((m:any)=>(<tr><td><strong>{m.name||'—'}</strong><br/><span class="muted" style="font-size:.75rem">{m.email}</span></td>
+          <td>{m.subject||'—'}</td><td class="muted" style="max-width:320px">{m.body||''}</td><td class="muted">{(m.created_at||'').slice(0,10)}</td></tr>))}</tbody></table>
+    ) : (<div class="empty">No messages yet. Contact-form submissions appear here.</div>)}
+  </div>
+</AdminLayout>

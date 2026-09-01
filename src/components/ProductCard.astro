@@ -1,67 +1,49 @@
 ---
 import type { Product } from '../lib/catalog';
-import { effectivePrice } from '../lib/catalog';
-import { formatINR } from '../lib/format';
-import ArtPlaceholder from './ArtPlaceholder.astro';
+import { effectivePrice, isOnSale, hasPriceRange, productKind } from '../lib/catalog';
+import { formatINR, formatINRRange } from '../lib/format';
 
-export interface Props {
-  product: Product;
-}
-const { product } = Astro.props;
+export interface Props { product: Product; showKind?: boolean; }
+const { product, showKind = false } = Astro.props;
 const price = effectivePrice(product);
-const onSale = product.sale_price != null && product.sale_price < product.price;
+const onSale = isOnSale(product);
+const range = hasPriceRange(product);
 const img = product.images?.[0]?.url;
 const href = `/product/${product.slug}/`;
+const kind = showKind ? productKind(product) : null;
 ---
 
 <article class="group">
-  <a href={href} class="block relative overflow-hidden rounded-[var(--radius-card)] bg-[var(--color-paper-deep)]">
-    {onSale && (
-      <span class="absolute z-10 top-3 left-3 bg-[var(--color-terracotta)] text-white text-[0.65rem] font-semibold tracking-widest uppercase px-2 py-1 rounded-sm" style="font-family:var(--font-sans)">
-        Sale
-      </span>
-    )}
-    {img ? (
-      <img
-        src={img}
-        alt={product.images?.[0]?.alt || product.name}
-        width="600"
-        height="750"
-        loading="lazy"
-        decoding="async"
-        class="w-full h-auto aspect-[4/5] object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-      />
-    ) : (
-      <div class="transition-transform duration-500 group-hover:scale-[1.03]">
-        <ArtPlaceholder seed={product.art_seed || product.slug} label={product.name} />
-      </div>
-    )}
+  <a href={href} class="block frame art-guard overflow-hidden">
+    <div class="relative overflow-hidden bg-white art-pad">
+      {onSale && <span class="absolute z-10 top-2.5 left-2.5 chip">Sale</span>}
+      {img ? (
+        <img src={img} alt={product.images?.[0]?.alt || product.name} width="600" height="470" loading="lazy" decoding="async"
+          class="protected w-full h-auto aspect-[4/3] object-contain transition-transform duration-500 group-hover:scale-[1.03]" />
+      ) : (
+        <div class="w-full aspect-[4/3] grid place-items-center text-[var(--color-muted)] text-sm" style="font-family:var(--font-sans)">aPaulogy</div>
+      )}
+    </div>
   </a>
 
   <div class="pt-3">
-    {product.collection && (
-      <p class="text-[0.68rem] tracking-[0.16em] uppercase text-[var(--color-muted)]" style="font-family:var(--font-sans)">
-        {product.collection}
-      </p>
-    )}
-    <h3 class="text-xl leading-snug mt-0.5">
-      <a href={href} class="hover:text-[var(--color-terracotta)] transition-colors">{product.name}</a>
+    {kind && <p class="text-[0.6rem] uppercase tracking-[0.16em] text-[var(--color-muted)] mb-1" style="font-family:var(--font-sans)">{kind}</p>}
+    <h3 class="text-2xl leading-snug truncate">
+      <a href={href} class="link-hover" title={product.name}>{product.name}</a>
     </h3>
-    <div class="mt-1 flex items-baseline gap-2">
-      <span class="text-[var(--color-ink)] font-medium">{formatINR(price)}</span>
-      {onSale && (
-        <span class="text-[var(--color-muted)] line-through text-sm">{formatINR(product.price)}</span>
-      )}
+    <div class="mt-1 flex items-baseline gap-2" style="font-family:var(--font-sans)">
+      <span class="text-[var(--color-ink)] text-[0.9rem] font-medium">
+        {range ? formatINRRange(price, product.price_max!) : formatINR(price)}
+      </span>
+      {onSale && !range && <span class="text-[var(--color-muted)] line-through text-sm">{formatINR(product.price)}</span>}
     </div>
-    <button
-      class="btn btn-outline mt-3 w-full !py-2 text-[0.72rem]"
-      data-add-to-cart
-      data-slug={product.slug}
-      data-name={product.name}
-      data-price={price}
-      data-image={img || ''}
-    >
-      Add to cart
-    </button>
+    {product.type === 'variable' ? (
+      <a href={href} class="btn btn-outline mt-3 w-full !py-2 text-[0.7rem]">Select options</a>
+    ) : (
+      <button class="btn btn-outline mt-3 w-full !py-2 text-[0.7rem]" data-add-to-cart
+        data-slug={product.slug} data-name={product.name} data-price={price} data-image={img || ''}>
+        Add to cart
+      </button>
+    )}
   </div>
 </article>

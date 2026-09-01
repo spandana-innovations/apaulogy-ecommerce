@@ -1,0 +1,90 @@
+---
+export const prerender = false;
+import { readCookie, verifySession, ADMIN_COOKIE } from '../../lib/admin-auth';
+import { makeCaptcha } from '../../lib/captcha';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+// already signed in? go to dashboard
+if (await verifySession(readCookie(Astro.request, ADMIN_COOKIE), env)) return Astro.redirect('/apaulogy-admin/');
+const cap = await makeCaptcha(env);
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Sign in · aPaulogy Admin</title>
+  <style>
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+      background:#0e0d0b;color:#14120f;display:grid;place-items:center;min-height:100vh}
+    .box{background:#fff;border:1px solid #e6e3dc;border-radius:6px;width:340px;max-width:92vw;padding:2rem 1.8rem;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+    .logo{display:flex;align-items:center;gap:.6rem;justify-content:center;margin-bottom:1.4rem}
+    .logo img{width:34px;height:34px} .logo b{font-family:Georgia,serif;font-size:1.2rem}
+    h1{font-family:Georgia,serif;font-weight:600;font-size:1.15rem;text-align:center;margin:.2rem 0 1.4rem}
+    label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.09em;color:#6b655c;margin:.9rem 0 .35rem}
+    input{width:100%;padding:.65rem .8rem;border:1px solid #cfccc4;border-radius:3px;font:inherit}
+    button{width:100%;margin-top:1.4rem;padding:.7rem;background:#111;color:#fff;border:0;border-radius:3px;font-size:.9rem;cursor:pointer}
+    button:hover{background:#000} .err{color:#b00020;font-size:.8rem;margin-top:.8rem;min-height:1em;text-align:center}
+    .hint{margin-top:1.2rem;text-align:center;font-size:.72rem;color:#9a948b}
+    .cap{margin-top:1.3rem;border-top:1px solid #eee;padding-top:1rem}
+    .cap-q{font-size:.8rem;color:#3a352f;margin:0 0 .6rem;text-align:center}
+    .cap-q b{font-family:Georgia,serif}
+    .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem}
+    .cap-tile{padding:0;border:2px solid #e6e3dc;background:#fff;cursor:pointer;aspect-ratio:4/3;overflow:hidden}
+    .cap-tile img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+    .cap-tile.sel{border-color:#000;box-shadow:0 0 0 2px #000}
+  </style>
+</head>
+<body>
+  <form class="box" id="f">
+    <div class="logo"><img src="/favicon.svg" alt="" /><b>aPaulogy</b></div>
+    <h1>Admin sign in</h1>
+    <label for="u">Username</label>
+    <input id="u" name="user" autocomplete="username" autofocus />
+    <label for="p">Password</label>
+    <input id="p" name="pass" type="password" autocomplete="current-password" />
+
+    <div class="cap">
+      <p class="cap-q">Click the watercolour of <b>{cap.prompt}</b></p>
+      <div class="cap-grid" id="cap-grid">
+        {cap.tiles.map((t) => (
+          <button type="button" class="cap-tile" data-i={t.i} aria-label="artwork">
+            <img src={t.img} alt="" loading="lazy" />
+          </button>
+        ))}
+      </div>
+      <input type="hidden" name="cap_choice" id="cap-choice" value="-1" />
+      <input type="hidden" name="cap_nonce" value={cap.nonce} />
+      <input type="hidden" name="cap_exp" value={cap.exp} />
+      <input type="hidden" name="cap_sig" value={cap.sig} />
+    </div>
+
+    <button type="submit">Sign in</button>
+    <p class="err" id="err"></p>
+    <p class="hint">Protected area · authorised staff only</p>
+  </form>
+  <script>
+    const f = document.getElementById('f');
+    const choice = document.getElementById('cap-choice');
+    document.querySelectorAll('.cap-tile').forEach((t) => t.addEventListener('click', () => {
+      document.querySelectorAll('.cap-tile').forEach((x)=>x.classList.remove('sel'));
+      t.classList.add('sel'); choice.value = t.dataset.i;
+    }));
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const err = document.getElementById('err'); err.textContent = '';
+      if (choice.value === '-1') { err.textContent = 'Please click the artwork shown above.'; return; }
+      const btn = f.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Signing in…';
+      const fd = new FormData(f); const body = Object.fromEntries(fd.entries());
+      body.user = (body.user||'').trim();
+      try {
+        const r = await fetch('/api/admin/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        if (r.ok) { location.href = '/apaulogy-admin/'; return; }
+        const d = await r.json().catch(()=>({}));
+        err.textContent = d.error || 'Sign in failed.';
+        if (d.captcha) location.reload();
+      } catch { err.textContent = 'Network error. Try again.'; }
+      btn.disabled = false; btn.textContent = 'Sign in';
+    });
+  </script>
+</body>
+</html>

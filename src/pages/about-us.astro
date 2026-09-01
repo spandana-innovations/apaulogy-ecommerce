@@ -1,27 +1,108 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ArtPlaceholder from '../components/ArtPlaceholder.astro';
+import Icon from '../components/Icon.astro';
+import { SOCIALS } from '../lib/socials';
+import { breadcrumbSchema, SITE_NAME } from '../lib/seo';
+
+const jsonld = [
+  breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'About', url: '/about-us/' }], Astro.site),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Paul Fernandes',
+    jobTitle: 'Cartoonist, Illustrator & Founder',
+    worksFor: { '@type': 'Organization', name: SITE_NAME },
+    description: 'Bengaluru-based cartoonist and watercolourist chronicling the life and times of 1970s Bangalore.',
+    image: new URL('/brand/paul-with-book.webp', Astro.site ?? Astro.url.origin).toString(),
+  },
+];
 ---
 
 <BaseLayout
-  title="About Us"
-  description="aPaulogy is the gallery of cartoonist and watercolourist Paul Fernandes — an ‘ology on the life and times of 1970s Bangalore."
+  title="About"
+  description="aPaulogy is the gallery of cartoonist Paul Fernandes — sixty watercolours reminiscing the gentle, laid-back Bangalore of the 1970s, with detours through vintage Mumbai and Goa."
+  image="/brand/paul-with-book.webp"
+  imageAlt="Paul Fernandes with his book, Bangalore: Swinging in the 70s"
   type="article"
+  jsonld={jsonld}
 >
-  <div class="container-page py-16 grid lg:grid-cols-2 gap-12 items-start">
-    <div class="lg:sticky lg:top-24 rounded-sm overflow-hidden shadow-[var(--shadow-frame)]">
-      <ArtPlaceholder seed="bungalow" label="A Bangalore bungalow" ratio="4 / 5" />
+  <div class="container-page py-12 lg:py-16">
+    <nav class="text-xs text-[var(--color-muted)] mb-6 flex items-center gap-1.5" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+      <a href="/" class="link-hover">Home</a> <Icon name="chevronRight" size={12} class="opacity-40" />
+      <span class="text-[var(--color-ink-soft)]">About</span>
+    </nav>
+
+    <div class="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <!-- Text -->
+      <div class="max-w-xl">
+        <p class="eyebrow">aPaulogy</p>
+        <h1 class="text-5xl sm:text-6xl mt-3">An ‘ology on the life &amp; times of Bangalore</h1>
+
+        <div class="prose-paper mt-8 text-[var(--color-ink-soft)] space-y-5">
+          <p>
+            aPaulogy is a curious name — both weighty and light, serious and funny, insightful and
+            ludicrous. Perfect for cartoonist Paul Fernandes’ gallery, which showcases sixty
+            watercolour prints inspired by his ‘ology on the life and times of Bangalore in the 70s.
+          </p>
+          <p>
+            Entering aPaulogy is like walking down memory lane — a gentle, laid-back city where people
+            walked everywhere and stopped to wish; a time when tongas were summoned for long journeys
+            and riding a cycle minus a kerosene oil lamp was a serious crime.
+          </p>
+          <p>
+            Recognise in each of Paul’s watercolours the well-known landmarks of old Bangalore — schools
+            and colleges, churches and theatres, bars and restaurants, tree-lined shaded avenues and
+            graceful monkey-topped bungalows — the pensioners and characters, all remembered with
+            light-hearted humour.
+          </p>
+          <p>
+            Paul began drawing this older, slower city after his ancestral home on Pottery Road was
+            pulled down. What started as a personal, pictorial diary of streets and buildings, people
+            and events, became an artist’s gift to his city — now carried onto prints, plaques, tiles
+            and everyday things to keep the memory close.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 mt-9">
+          <a href="/store/" class="btn btn-primary gap-2"><Icon name="store" size={16} /> Explore the gallery</a>
+          <a href="/contact-us/" class="btn btn-outline gap-2"><Icon name="mail" size={15} /> Visit or contact</a>
+        </div>
+
+        <div class="flex items-center gap-3 mt-7">
+          {SOCIALS.map((s) => (
+            <a href={s.href} rel="noopener" target="_blank" aria-label={`aPaulogy on ${s.name}`}
+              class="w-10 h-10 grid place-items-center border border-[var(--color-ink)] hover:bg-black hover:text-white transition-colors">
+              <Icon name={s.icon} size={18} stroke={1.5} />
+            </a>
+          ))}
+        </div>
+      </div>
+
+      <!-- Paul + book -->
+      <figure class="relative">
+        <div class="relative bg-[var(--color-paper-deep)] border border-[var(--color-frame)]">
+          <img src="/brand/paul-with-book.webp"
+            alt="Paul Fernandes with his book, Bangalore: Swinging in the 70s"
+            class="protected w-full h-auto object-contain" width="450" height="436" loading="eager" />
+        </div>
+        <figcaption class="mt-4 text-sm text-[var(--color-muted)] text-center" style="font-family:var(--font-sans)">
+          Paul Fernandes, artist &amp; founder — with <em>Bangalore: Swinging in the 70s</em>.
+        </figcaption>
+      </figure>
     </div>
-    <div class="prose-paper">
-      <p class="eyebrow">Our story</p>
-      <h1 class="text-5xl mt-2 mb-6">An ‘ology on a city that was</h1>
-      <p>aPaulogy is the gallery of cartoonist and watercolourist <strong>Paul Fernandes</strong>. It began as a personal ‘ology — a study, an affection, a chronicle — of the life and times of Bangalore in the 1970s.</p>
-      <p>Sixty watercolours trace a gentler city: monkey-topped bungalows and shaded avenues; the schools and colleges, churches and theatres; the bars and restaurants where the city gathered. Alongside them run detours through vintage Mumbai’s bazaars and cafes, and the sunlit calm of Goa.</p>
-      <h2>Made with care</h2>
-      <p>Every illustration is reproduced to archival standards and <strong>personally signed by the artist</strong> before it ships. Beyond framed prints, the illustrations live on mugs, tiles, coasters, bags and cards — small everyday objects that carry a little of the city with them.</p>
-      <h2>Visit the gallery</h2>
-      <p>The aPaulogy gallery is in Richards Town, Bengaluru. Prints and merchandise are available here in the online store and shipped across India and worldwide.</p>
-      <p><a href="/store/">Browse the store →</a></p>
-    </div>
+
+    <!-- A few landmarks he's known for -->
+    <section class="mt-20 pt-12 border-t border-[var(--color-line)]">
+      <p class="eyebrow text-center">Do you remember…?</p>
+      <h2 class="text-3xl sm:text-4xl text-center mt-2">The places he draws</h2>
+      <div class="flex flex-wrap justify-center gap-x-8 gap-y-2 mt-8 text-[var(--color-ink-soft)]" style="font-family:var(--font-serif)">
+        {['Koshy’s','The Only Place','Airlines Hotel','MG Road','Victoria Hotel','Cubbon Park','Coffee House','Bangalore Club'].map((n, i) => (
+          <>
+            {i > 0 && <span class="text-[var(--color-muted)]" aria-hidden="true">·</span>}
+            <span>{n}</span>
+          </>
+        ))}
+      </div>
+    </section>
   </div>
 </BaseLayout>
