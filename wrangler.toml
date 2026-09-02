@@ -20,12 +20,4 @@ CURRENCY = "INR"
 
 # D1 database (apaulogyecomm). Migrate with:
 #   wrangler d1 execute apaulogyecomm --remote --file=db/migrations-admin.sql
-[[d1_databases]]
-binding = "DB"
-database_name = "apaulogyecomm"
-database_id = "7d04e7a9-8bce-44da-af8c-6e5dfb3eabc3"
-
 # R2 bucket (apaulogyecomm) for product image uploads
-[[r2_buckets]]
-binding = "MEDIA"
-bucket_name = "apaulogyecomm"
