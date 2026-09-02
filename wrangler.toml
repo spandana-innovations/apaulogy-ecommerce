@@ -23,7 +23,7 @@ CURRENCY = "INR"
 [[d1_databases]]
 binding = "DB"
 database_name = "apaulogyecomm"
-database_id = "b420ee8b-cede-46bc-a979-ad7f2910c1ce"
+database_id = "7d04e7a9-8bce-44da-af8c-6e5dfb3eabc3"
 
 # R2 bucket (apaulogyecomm) for product image uploads
 [[r2_buckets]]
