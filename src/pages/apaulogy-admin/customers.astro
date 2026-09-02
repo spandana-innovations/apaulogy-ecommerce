@@ -2,17 +2,43 @@
 export const prerender = false;
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { getStats, listCustomers } from '../../lib/admin-data';
+import { formatINR } from '../../lib/format';
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
-const rows = await listCustomers(env, 300);
+const url = Astro.url;
+const search = url.searchParams.get('q') || '';
+const page = parseInt(url.searchParams.get('page') || '1', 10);
+const { rows, total, pages } = await listCustomers(env, { search, page, per: 50 });
+function qs(o:Record<string,string>){ const p=new URLSearchParams({q:search,page:String(page),...o}); for(const [k,v] of [...p.entries()]) if(!v||(k==='page'&&v==='1')) p.delete(k); const s=p.toString(); return s?`?${s}`:''; }
 ---
 <AdminLayout title="Customers" active="customers" dbBound={stats.dbBound}>
+  <form method="get" class="filters">
+    <input name="q" value={search} placeholder="Search name, email, phone…" class="f-search"/>
+    <button class="btn" type="submit">Search</button>
+    <span class="muted count">{total.toLocaleString()} customers</span>
+  </form>
   <div class="card" style="overflow:hidden">
     {rows.length ? (
       <table>
-        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th></tr></thead>
-        <tbody>{rows.map((c:any)=>(<tr><td><a href={`/apaulogy-admin/customers/${encodeURIComponent(c.email)}/`} style="text-decoration:underline"><strong>{c.name||'—'}</strong></a></td><td>{c.email}</td><td class="muted">{c.phone||'—'}</td><td class="muted">{(c.created_at||'').slice(0,10)}</td></tr>))}</tbody>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th style="text-align:right">Orders</th><th style="text-align:right">Spend</th><th>Joined</th></tr></thead>
+        <tbody>{rows.map((c:any)=>(<tr>
+          <td><a href={`/apaulogy-admin/customers/${encodeURIComponent(c.email)}/`} class="u"><strong style="font-weight:600">{c.name||'—'}</strong></a></td>
+          <td>{c.email}</td><td class="muted">{c.phone||'—'}</td>
+          <td style="text-align:right">{c.orders}</td><td style="text-align:right">{formatINR(c.spend)}</td>
+          <td class="muted">{(c.created_at||'').slice(0,10)}</td>
+        </tr>))}</tbody>
       </table>
-    ) : (<div class="empty">No customers yet.</div>)}
+    ) : (<div class="empty">No customers match.</div>)}
   </div>
+  {pages > 1 && (<nav class="pager">
+    {page > 1 && <a class="btn" href={qs({page:String(page-1)})}>← Prev</a>}
+    <span class="muted">Page {page} of {pages}</span>
+    {pages > page && <a class="btn" href={qs({page:String(page+1)})}>Next →</a>}
+  </nav>)}
+  <style is:global>
+    .filters{ display:flex; gap:.6rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap }
+    .filters .f-search{ flex:1; min-width:220px; padding:.5rem .6rem; border:1px solid var(--line) }
+    .filters .count{ font-family:var(--font-sans); font-size:.82rem; margin-left:auto }
+    .pager{ display:flex; gap:1rem; align-items:center; justify-content:center; margin-top:1.4rem; font-family:var(--font-sans); font-size:.82rem }
+  </style>
 </AdminLayout>

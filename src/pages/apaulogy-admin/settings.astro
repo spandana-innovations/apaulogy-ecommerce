@@ -25,6 +25,29 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
       </div>
     </section>
 
+    <!-- PhonePe -->
+    <section class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">PhonePe payment keys</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Domestic customers can pay via PhonePe. International orders always use Razorpay.</p>
+      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
+        <label class="fld">Merchant ID<input id="pp-mid" placeholder="e.g. M22XXXXXXXX"/></label>
+        <label class="fld">Salt Key<input id="pp-salt" type="password" placeholder="Leave blank to keep"/></label>
+        <label class="fld">Salt Index<input id="pp-index" placeholder="1"/></label>
+        <div><button class="btn" id="pp-save" style="background:#000;color:#fff">Save PhonePe</button> <span class="muted" id="pp-msg" style="font-size:.78rem"></span></div>
+      </div>
+    </section>
+
+    <!-- Email (Resend) -->
+    <section class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Email (Resend)</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Order confirmations and shipping updates are sent through Resend.</p>
+      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
+        <label class="fld">Resend API key<input id="re-key" type="password" placeholder="re_… (leave blank to keep)"/></label>
+        <label class="fld">From address<input id="re-from" placeholder="orders@apaulogy.com"/></label>
+        <div><button class="btn" id="re-save" style="background:#000;color:#fff">Save email</button> <span class="muted" id="re-msg" style="font-size:.78rem"></span></div>
+      </div>
+    </section>
+
     <!-- Shortcuts -->
     <section class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">Store configuration</h2>
@@ -67,5 +90,8 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
       const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
     });
+    async function saveSettings(body, msgId){ const m=document.getElementById(msgId); m.textContent='Saving…'; const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); m.textContent=r.ok?'Saved ✓':'Failed — database connected?'; }
+    document.getElementById('pp-save').addEventListener('click',()=>saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim()},'pp-msg'));
+    document.getElementById('re-save').addEventListener('click',()=>saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'));
   </script>
 </AdminLayout>

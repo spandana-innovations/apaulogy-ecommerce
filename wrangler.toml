@@ -1,4 +1,4 @@
-name = "apaulogy"
+name = "apaulogy-ecommerce"
 main = "./dist/_worker.js/index.js"
 compatibility_date = "2025-08-01"
 compatibility_flags = ["nodejs_compat"]
@@ -18,6 +18,3 @@ SITE_URL = "https://apaulogy.com"
 MEDIA_BASE_URL = "https://cdn.apaulogy.com"
 CURRENCY = "INR"
 
-# D1 database (apaulogyecomm). Migrate with:
-#   wrangler d1 execute apaulogyecomm --remote --file=db/migrations-admin.sql
-# R2 bucket (apaulogyecomm) for product image uploads

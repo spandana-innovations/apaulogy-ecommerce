@@ -57,8 +57,17 @@ export async function listOrders(env: Env, opts: { status?: string; search?: str
 export async function orderYears(env: Env) {
   return (await q(env, `SELECT DISTINCT substr(created_at,1,4) yr FROM orders ORDER BY yr DESC`)).rows.map((r: any) => r.yr).filter(Boolean);
 }
-export async function listCustomers(env: Env, limit = 200) {
-  return (await q(env, `SELECT email, name, phone, created_at FROM customers ORDER BY created_at DESC LIMIT ?`, limit)).rows;
+export async function listCustomers(env: Env, opts: { search?: string; page?: number; per?: number } = {}) {
+  const per = Math.min(100, opts.per || 50); const page = Math.max(1, opts.page || 1);
+  const where: string[] = []; const bind: any[] = [];
+  if (opts.search) { where.push('(email LIKE ? OR name LIKE ? OR phone LIKE ?)'); const s = `%${opts.search}%`; bind.push(s, s, s); }
+  const clause = where.length ? `WHERE ${where.join(' AND ')}` : '';
+  const total = (await one<{ n: number }>(env, `SELECT COUNT(*) n FROM customers ${clause}`, ...bind))?.n ?? 0;
+  const rows = (await q(env, `SELECT c.email, c.name, c.phone, c.created_at,
+      (SELECT COUNT(*) FROM orders o WHERE o.email=c.email) orders,
+      (SELECT COALESCE(SUM(total),0) FROM orders o WHERE o.email=c.email AND o.status IN ('completed','processing','shipped')) spend
+    FROM customers c ${clause} ORDER BY c.created_at DESC LIMIT ? OFFSET ?`, ...bind, per, (page - 1) * per)).rows;
+  return { rows, total, page, per, pages: Math.max(1, Math.ceil(total / per)) };
 }
 export async function listRequests(env: Env, limit = 200) {
   return (await q(env, `SELECT reference, name, email, phone, scope, details, created FROM data_requests ORDER BY created DESC LIMIT ?`, limit)).rows;
