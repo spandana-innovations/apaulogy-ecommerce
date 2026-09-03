@@ -38,9 +38,19 @@
         <input id="lm-name" name="name" type="text" autocomplete="name" placeholder="First name" />
         <label class="lm-lbl" for="lm-newpass" style="margin-top:.8rem">Create a password</label>
         <div class="lm-passwrap">
-          <input id="lm-newpass" name="newpass" type="password" autocomplete="new-password" placeholder="At least 6 characters" />
+          <input id="lm-newpass" name="newpass" type="password" autocomplete="new-password" placeholder="At least 8 characters" />
           <button type="button" class="lm-eye" data-eye="lm-newpass" aria-label="Show password"></button>
         </div>
+        <div class="lm-strength" id="lm-strength" hidden>
+          <div class="lm-bars"><span></span><span></span><span></span><span></span></div>
+          <span class="lm-strength-label" id="lm-strength-label"></span>
+        </div>
+        <ul class="lm-reqs" id="lm-reqs" hidden>
+          <li data-req="len">At least 8 characters</li>
+          <li data-req="case">Upper &amp; lower case letters</li>
+          <li data-req="num">A number</li>
+          <li data-req="sym">A symbol</li>
+        </ul>
         <button type="button" class="lm-btn" id="lm-create-go">Create account</button>
       </div>
 
@@ -77,6 +87,22 @@
   .lm-err{ font-family:var(--font-sans); font-size:.8rem; color:#b00020; text-align:center; margin:.9rem 0 0; }
   .lm-alt{ font-family:var(--font-sans); font-size:.82rem; text-align:center; color:var(--color-muted); margin:1.3rem 0 0; }
   .lm-alt button{ background:none; border:0; color:var(--color-ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; font:inherit; }
+  .lm-strength{ margin-top:.7rem; }
+  .lm-bars{ display:flex; gap:5px; }
+  .lm-bars span{ flex:1; height:5px; border-radius:3px; background:var(--color-line); transition:background .2s; }
+  .lm-strength.s1 .lm-bars span:nth-child(1){ background:#c0392b; }
+  .lm-strength.s2 .lm-bars span:nth-child(-n+2){ background:#d98324; }
+  .lm-strength.s3 .lm-bars span:nth-child(-n+3){ background:#2e8b57; }
+  .lm-strength.s4 .lm-bars span{ background:#1f7a43; }
+  .lm-strength-label{ display:block; font-family:var(--font-sans); font-size:.72rem; margin-top:.35rem; font-weight:600; }
+  .lm-strength.s1 .lm-strength-label{ color:#c0392b; } .lm-strength.s2 .lm-strength-label{ color:#b56a12; }
+  .lm-strength.s3 .lm-strength-label{ color:#2e8b57; } .lm-strength.s4 .lm-strength-label{ color:#1f7a43; }
+  .lm-reqs{ list-style:none; margin:.7rem 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:.25rem .8rem; }
+  .lm-reqs li{ font-family:var(--font-sans); font-size:.72rem; color:var(--color-muted); padding-left:1.1rem; position:relative; }
+  .lm-reqs li::before{ content:"○"; position:absolute; left:0; color:var(--color-muted); }
+  .lm-reqs li.ok{ color:var(--color-ink); }
+  .lm-reqs li.ok::before{ content:"✓"; color:#1f7a43; }
+
 </style>
 
 <script>
@@ -128,9 +154,23 @@
       }catch{ err.textContent='Network error. Please try again.'; err.hidden=false; }
     }
     document.getElementById('lm-form').addEventListener('submit',(e)=>{ e.preventDefault(); if(!steps.password.hidden){ submit(emailI.value.trim(), document.getElementById('lm-pass').value); } });
+    // password strength gauge
+    const np=document.getElementById('lm-newpass'), strengthEl=document.getElementById('lm-strength'), strengthLbl=document.getElementById('lm-strength-label'), reqsEl=document.getElementById('lm-reqs');
+    function scorePw(v){ const r={len:v.length>=8, case:/[a-z]/.test(v)&&/[A-Z]/.test(v), num:/\d/.test(v), sym:/[^A-Za-z0-9]/.test(v)}; const n=Object.values(r).filter(Boolean).length; return {r,n}; }
+    np && np.addEventListener('input',()=>{
+      const v=np.value; if(!v){ strengthEl.hidden=true; reqsEl.hidden=true; return; }
+      strengthEl.hidden=false; reqsEl.hidden=false;
+      const {r,n}=scorePw(v);
+      Object.keys(r).forEach(k=>{ const li=reqsEl.querySelector('[data-req="'+k+'"]'); if(li) li.classList.toggle('ok', r[k]); });
+      const lvl = v.length<6?1 : n<=1?1 : n===2?2 : n===3?3 : 4;
+      strengthEl.className='lm-strength s'+lvl;
+      strengthLbl.textContent = lvl<=1?'Weak password' : lvl===2?'Acceptable' : lvl===3?'Strong' : 'Very strong';
+    });
     document.getElementById('lm-create-go').addEventListener('click',()=>{
+      const v=np.value; const {n}=scorePw(v);
+      if(v.length<8 || n<2){ err.textContent='Please choose a stronger password (8+ chars, mix of types).'; err.hidden=false; return; }
       // Customer accounts aren't enabled yet — guide gracefully.
-      err.textContent='Account creation is coming soon. For now, please continue as a guest at checkout.'; err.hidden=false;
+      err.textContent='Account creation is coming soon — your details are valid. For now, please continue as a guest at checkout.'; err.hidden=false;
     });
   }
   initLoginModal();
