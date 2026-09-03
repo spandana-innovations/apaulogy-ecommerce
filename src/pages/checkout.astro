@@ -28,10 +28,22 @@ import Icon from '../components/Icon.astro';
           <div class="grid sm:grid-cols-2 gap-4 mt-3">
             <label class="block sm:col-span-2"><span class="field-label">Address line 1</span><input name="line1" required class="input" autocomplete="address-line1" /><small class="err" data-err></small></label>
             <label class="block sm:col-span-2"><span class="field-label">Address line 2 (optional)</span><input name="line2" class="input" autocomplete="address-line2" /></label>
+            <label class="block"><span class="field-label">PIN / ZIP code</span><input name="postcode" required class="input" autocomplete="postal-code" inputmode="numeric" maxlength="10" /><small class="err" data-err></small><small id="pin-hint" class="pin-hint"></small></label>
             <label class="block"><span class="field-label">City</span><input name="city" required class="input" autocomplete="address-level2" /><small class="err" data-err></small></label>
-            <label class="block"><span class="field-label">State</span><input name="state" required class="input" autocomplete="address-level1" /><small class="err" data-err></small></label>
-            <label class="block"><span class="field-label">PIN code</span><input name="postcode" required class="input" autocomplete="postal-code" inputmode="numeric" maxlength="6" /><small class="err" data-err></small></label>
-            <label class="block"><span class="field-label">Country</span><input name="country" value="India" required class="input" autocomplete="country-name" /></label>
+            <label class="block"><span class="field-label">State</span>
+              <select name="state" required class="input" id="state-select" autocomplete="address-level1">
+                <option value="" selected disabled>Select state</option>
+                {['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman & Nicobar Islands','Chandigarh','Dadra & Nagar Haveli and Daman & Diu','Delhi','Jammu & Kashmir','Ladakh','Lakshadweep','Puducherry'].map((st) => (<option value={st}>{st}</option>))}
+                <option value="Other / Outside India">Other / Outside India</option>
+              </select>
+              <small class="err" data-err></small>
+            </label>
+            <label class="block"><span class="field-label">Country</span>
+              <select name="country" required class="input" id="country-select" autocomplete="country-name">
+                <option value="India" selected>India</option>
+                {['United States','United Kingdom','United Arab Emirates','Canada','Australia','Singapore','Germany','France','Netherlands','New Zealand','Qatar','Saudi Arabia','Kuwait','Oman','Bahrain','Malaysia','Switzerland','Ireland','Sweden','Japan','Other'].map((c) => (<option value={c}>{c}</option>))}
+              </select>
+            </label>
           </div>
         </fieldset>
 
@@ -131,6 +143,33 @@ import Icon from '../components/Icon.astro';
         return { subtotal, shipping, total };
       }
       await quoteShipping(); let totals=recalc();
+
+      // #8 — auto-fill city/state from an Indian PIN code (India Post public API)
+      const pin = form.querySelector('[name=postcode]') as HTMLInputElement | null;
+      const cityI = form.querySelector('[name=city]') as HTMLInputElement | null;
+      const stateS = form.querySelector('[name=state]') as HTMLSelectElement | null;
+      const countryS = form.querySelector('[name=country]') as HTMLSelectElement | null;
+      const pinHint = document.getElementById('pin-hint');
+      async function lookupPin(){
+        if(!pin || !countryS || countryS.value!=='India') return;
+        const v=pin.value.trim();
+        if(!/^\d{6}$/.test(v)){ if(pinHint) pinHint.textContent=''; return; }
+        if(pinHint){ pinHint.textContent='Looking up…'; pinHint.style.color='var(--color-muted)'; }
+        try{
+          const r=await fetch('https://api.postalpincode.in/pincode/'+v);
+          const d=await r.json();
+          const po=d && d[0] && d[0].Status==='Success' && d[0].PostOffice && d[0].PostOffice[0];
+          if(po){
+            if(cityI && !cityI.value) cityI.value = po.District || po.Block || '';
+            if(stateS && po.State){ for(const o of Array.from(stateS.options)){ if(o.value===po.State){ stateS.value=po.State; break; } } }
+            if(pinHint){ pinHint.textContent='✓ '+(po.District||'')+', '+(po.State||''); pinHint.style.color='#1f6b2e'; }
+          } else if(pinHint){ pinHint.textContent='PIN not found — enter city & state manually.'; pinHint.style.color='var(--color-muted)'; }
+        }catch{ if(pinHint) pinHint.textContent=''; }
+      }
+      pin?.addEventListener('blur', lookupPin);
+      pin?.addEventListener('input', ()=>{ if(pin.value.trim().length===6) lookupPin(); });
+      // international: hide PIN hint & re-quote shipping
+      countryS?.addEventListener('change', async()=>{ if(pinHint) pinHint.textContent=''; await quoteShipping(); totals=recalc(); });
       document.querySelector('[name=country]')?.addEventListener('change', async()=>{ await quoteShipping(); totals=recalc(); });
 
       document.getElementById('co-apply')?.addEventListener('click', async ()=>{

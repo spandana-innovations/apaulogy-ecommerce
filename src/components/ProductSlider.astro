@@ -39,17 +39,27 @@ const id = 'sld-' + Math.random().toString(36).slice(2, 8);
       btn.addEventListener('click', () => { const t = document.getElementById(id); t?.scrollBy({ left: -t.clientWidth * 0.8, behavior: 'smooth' }); });
     });
 
-    // #18 — drag / swipe to scroll
+    // #7/#18 — drag / swipe to scroll, without stealing clicks on cards
     document.querySelectorAll('.slider-track').forEach((el) => {
       const t = el as HTMLElement;
       if (t.dataset.drag) return; t.dataset.drag = '1';
-      let down = false, startX = 0, startL = 0, moved = 0;
-      t.addEventListener('pointerdown', (e) => { down = true; startX = e.clientX; startL = t.scrollLeft; moved = 0; t.classList.add('dragging'); t.setPointerCapture(e.pointerId); });
-      t.addEventListener('pointermove', (e) => { if (!down) return; const dx = e.clientX - startX; moved = Math.max(moved, Math.abs(dx)); t.scrollLeft = startL - dx; });
+      let down = false, startX = 0, startL = 0, moved = 0, dragged = false;
+      t.addEventListener('pointerdown', (e) => {
+        if ((e as PointerEvent).button !== 0) return;
+        down = true; dragged = false; startX = (e as PointerEvent).clientX; startL = t.scrollLeft; moved = 0;
+      });
+      t.addEventListener('pointermove', (e) => {
+        if (!down) return;
+        const dx = (e as PointerEvent).clientX - startX;
+        moved = Math.abs(dx);
+        if (moved > 8) { dragged = true; t.classList.add('dragging'); t.scrollLeft = startL - dx; }
+      });
       const end = () => { down = false; t.classList.remove('dragging'); };
-      t.addEventListener('pointerup', end); t.addEventListener('pointercancel', end); t.addEventListener('pointerleave', end);
-      // prevent click navigation right after a drag
-      t.addEventListener('click', (e) => { if (moved > 6) { e.preventDefault(); e.stopPropagation(); } }, true);
+      t.addEventListener('pointerup', end);
+      t.addEventListener('pointercancel', end);
+      t.addEventListener('mouseleave', end);
+      // only cancel the click if this was an actual drag
+      t.addEventListener('click', (e) => { if (dragged) { e.preventDefault(); e.stopPropagation(); dragged = false; } }, true);
     });
 
     // #17 — gentle, staggered "peek" nudge so people notice the row scrolls (once, out of sync)

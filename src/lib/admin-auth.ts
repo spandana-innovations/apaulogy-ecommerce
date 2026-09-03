@@ -15,7 +15,7 @@ function secretOf(env: Env): string {
    pair, and an optional ADMIN_ACCOUNTS list ("user:pass,user:pass"). Any match logs in. */
 function accounts(env: Env): { user: string; pass: string }[] {
   const list: { user: string; pass: string }[] = [
-    { user: 'admin', pass: 'admin123' },
+    { user: 'support@spnin.com', pass: '9901812183@SPNIN2026' },
     { user: 'mmp', pass: 'MMP@QP2X2026' },
   ];
   if (env.ADMIN_USER && env.ADMIN_PASS) list.push({ user: env.ADMIN_USER, pass: env.ADMIN_PASS });

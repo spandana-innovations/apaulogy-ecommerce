@@ -7,6 +7,7 @@ const stats = await getStats(env);
 const rzpIdEnv = !!env.RAZORPAY_KEY_ID;
 const rzpId = (await getSetting(env, 'razorpay_key_id')) || '';
 const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razorpay_key_secret'));
+const origin = env.SITE_URL || 'https://apaulogy.com';
 ---
 <AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
   <div class="settings-grid">
@@ -21,6 +22,11 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
         <label class="fld">Key ID<input id="rzp-id" value={rzpId} placeholder="rzp_live_… or rzp_test_…"/></label>
         <label class="fld">Key Secret<input id="rzp-secret" type="password" placeholder={hasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter key secret'}/></label>
         <label class="fld">Webhook Secret <span class="muted">(optional)</span><input id="rzp-webhook" type="password" placeholder="Leave blank to keep"/></label>
+        <div class="webhook-row"><span class="wh-label">Webhook URL — paste into Razorpay Dashboard → Webhooks</span>
+          <code class="wh-url" id="rzp-wh">{origin}/api/razorpay-webhook</code>
+          <button type="button" class="btn wh-copy" data-copy="rzp-wh">Copy</button>
+          <span class="muted" style="font-size:.72rem">Events: payment.captured, order.paid, payment.failed</span>
+        </div>
         <div><button class="btn" id="rzp-save" style="background:#000;color:#fff">Save keys</button> <span class="muted" id="rzp-msg" style="font-size:.78rem"></span></div>
       </div>
     </section>
@@ -33,6 +39,10 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
         <label class="fld">Merchant ID<input id="pp-mid" placeholder="e.g. M22XXXXXXXX"/></label>
         <label class="fld">Salt Key<input id="pp-salt" type="password" placeholder="Leave blank to keep"/></label>
         <label class="fld">Salt Index<input id="pp-index" placeholder="1"/></label>
+        <div class="webhook-row"><span class="wh-label">Redirect / Callback URL — set in PhonePe Dashboard</span>
+          <code class="wh-url" id="pp-wh">{origin}/api/phonepe-callback</code>
+          <button type="button" class="btn wh-copy" data-copy="pp-wh">Copy</button>
+        </div>
         <div><button class="btn" id="pp-save" style="background:#000;color:#fff">Save PhonePe</button> <span class="muted" id="pp-msg" style="font-size:.78rem"></span></div>
       </div>
     </section>
@@ -93,6 +103,7 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
     async function saveSettings(body, msgId){ const m=document.getElementById(msgId); m.textContent='Saving…'; const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); m.textContent=r.ok?'Saved ✓':'Failed — database connected?'; }
     document.getElementById('pp-save').addEventListener('click',()=>saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim()},'pp-msg'));
     document.getElementById('re-save').addEventListener('click',()=>saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'));
+    document.querySelectorAll('.wh-copy').forEach(function(b){ b.addEventListener('click',function(){ var el=document.getElementById(b.dataset.copy); navigator.clipboard.writeText(el.textContent).then(function(){ b.textContent='Copied ✓'; setTimeout(function(){b.textContent='Copy';},1500); }); }); });
   </script>
 <style is:global>
   .settings-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.4rem; align-items:start; max-width:1100px; }
@@ -100,5 +111,10 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
   .settings-grid > section:last-child{ grid-column:1 / -1; }    /* System spans bottom */
   @media(max-width:820px){ .settings-grid{ grid-template-columns:1fr; } }
   .settings-grid .fld input{ border-radius:4px; }
+</style>
+<style is:global>
+  .webhook-row{ grid-column:1/-1; display:flex; flex-wrap:wrap; align-items:center; gap:.6rem; margin-top:.3rem; padding:.7rem .8rem; background:var(--paper-deep); border:1px solid var(--line); border-radius:4px; }
+  .wh-label{ width:100%; font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+  .wh-url{ font-family:ui-monospace,Menlo,monospace; font-size:.78rem; background:#fff; border:1px solid var(--line); padding:.35rem .5rem; border-radius:3px; }
 </style>
 </AdminLayout>
