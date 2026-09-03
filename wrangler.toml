@@ -18,3 +18,12 @@ SITE_URL = "https://apaulogy.com"
 MEDIA_BASE_URL = "https://cdn.apaulogy.com"
 CURRENCY = "INR"
 
+
+[[d1_databases]]
+binding = "DB"
+database_name = "apaulogyecomm"
+database_id = "7d04e7a9-8bce-44da-af8c-6e5dfb3eabc3"
+
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "apaulogyecomm"
