@@ -9,6 +9,7 @@ command = "npm run build"
 [assets]
 directory = "./dist"
 binding = "ASSETS"
+run_worker_first = [ "/api/*", "/apaulogy-admin/*" ]
 
 [observability]
 enabled = true
