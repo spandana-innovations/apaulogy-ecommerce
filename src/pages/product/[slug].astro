@@ -194,6 +194,18 @@ const MAN_INCHES = 69;
         </button>
         <p id="variation-hint" class="mt-2 text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)" hidden>Please choose a print size first.</p>
 
+  <!-- Mobile sticky add-to-cart bar -->
+  <div id="sticky-buy" class="sticky-buy sm:hidden" aria-hidden="true">
+    <div class="sb-info">
+      <span class="sb-name">{product.name}</span>
+      <span class="sb-price" id="sb-price">{range ? formatINRRange(price, product.price_max!) : formatINR(price)}</span>
+    </div>
+    <button id="sb-add" class="btn btn-primary sb-btn"
+      data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''} data-variable={variations.length > 0 ? '1' : '0'}>
+      Add to cart
+    </button>
+  </div>
+
         {product.description_html && (
           <div class="prose-paper mt-10 border-t border-[var(--color-line)] pt-8" set:html={product.description_html} />
         )}
@@ -286,6 +298,16 @@ const MAN_INCHES = 69;
       return true;
     }
     addBtn?.addEventListener('click', add);
+    // mobile sticky bar mirrors the add button + reveals on scroll
+    const sb = document.getElementById('sticky-buy');
+    const sbAdd = document.getElementById('sb-add');
+    sbAdd?.addEventListener('click', () => { if (add()) { document.dispatchEvent(new CustomEvent('cart:added')); } });
+    if (sb && addBtn) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => { sb.classList.toggle('show', !en.isIntersecting); });
+      }, { rootMargin: '0px 0px -20% 0px' });
+      io.observe(addBtn);
+    }
     document.getElementById('buy-btn')?.addEventListener('click', () => { if (add()) window.location.href='/checkout/'; });
 
     // ---------------- Inline zoom (magnify inside the frame) -----------------

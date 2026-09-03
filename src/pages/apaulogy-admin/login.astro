@@ -50,7 +50,7 @@ if (await verifySession(readCookie(Astro.request, ADMIN_COOKIE), env)) return As
     <label for="u">Username or email</label>
     <input id="u" name="user" type="text" autocomplete="username" autofocus />
     <label for="p">Password</label>
-    <input id="p" name="pass" type="password" autocomplete="current-password" />
+    <div class="pw-wrap"><input id="p" name="pass" type="password" autocomplete="current-password" /><button type="button" class="pw-eye" id="pw-eye" aria-label="Show password"></button></div>
 
     <div class="slide" id="slide" role="slider" aria-label="Slide to verify you are human" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
       <span class="fill" id="fill"></span>

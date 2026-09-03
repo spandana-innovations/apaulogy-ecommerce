@@ -3,7 +3,7 @@ import Icon from './Icon.astro';
 ---
 <div id="cart-drawer-root" class="fixed inset-0 z-[70] hidden" role="dialog" aria-modal="true" aria-label="Shopping cart">
   <div id="cart-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 transition-opacity duration-300"></div>
-  <aside id="cart-panel" class="absolute top-0 right-0 h-full w-full max-w-[26rem] bg-white shadow-[var(--shadow-frame)] flex flex-col translate-x-full transition-transform duration-300 ease-out border-l border-[var(--color-line-strong)]">
+  <aside id="cart-panel" class="cart-panel absolute bg-white shadow-[var(--shadow-frame)] flex flex-col transition-transform duration-300 ease-out border-[var(--color-line-strong)]">
     <div class="flex items-center justify-between px-5 h-[var(--header-h)] border-b border-[var(--color-line-strong)]">
       <p class="flex items-center gap-2 text-lg" style="font-family:var(--font-display)"><Icon name="cart" size={20} /> Your cart <span id="cart-drawer-count" class="text-[var(--color-muted)] text-base"></span></p>
       <button id="cart-drawer-close" class="p-1.5 hover:text-[var(--color-muted)]" aria-label="Close cart"><Icon name="close" size={22} /></button>
@@ -78,8 +78,8 @@ import Icon from './Icon.astro';
       itemsEl.querySelectorAll('.cd-rm').forEach(b=>b.addEventListener('click',()=>{const s=(b as HTMLElement).dataset;Cart().remove(s.slug,s.variant||undefined);}));
     }
 
-    function open(){ root!.classList.remove('hidden'); requestAnimationFrame(()=>{ panel.classList.remove('translate-x-full'); backdrop.classList.remove('opacity-0'); }); document.body.style.overflow='hidden'; render(); }
-    function close(){ panel.classList.add('translate-x-full'); backdrop.classList.add('opacity-0'); document.body.style.overflow=''; setTimeout(()=>root!.classList.add('hidden'),300); }
+    function open(){ root!.classList.remove('hidden'); requestAnimationFrame(()=>{ panel.classList.add('is-open'); backdrop.classList.remove('opacity-0'); }); document.body.style.overflow='hidden'; render(); }
+    function close(){ panel.classList.remove('is-open'); backdrop.classList.add('opacity-0'); document.body.style.overflow=''; setTimeout(()=>root!.classList.add('hidden'),300); }
 
     document.getElementById('cart-toggle')?.addEventListener('click',(e)=>{e.preventDefault();open();});
     document.getElementById('cart-drawer-close')?.addEventListener('click',close);

@@ -1,6 +1,8 @@
 /* Fine-line icon set (24×24, stroke=currentColor) tuned to the vintage B&W theme.
    Each entry is the inner markup of an <svg>. Keep strokes hairline (1.4). */
 export const ICONS: Record<string, string> = {
+  home: '<path d="M4 11.5 12 4l8 7.5V20a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z" stroke-linejoin="round"/>',
+  grid: '<rect x="3.5" y="3.5" width="7" height="7" rx="1"/><rect x="13.5" y="3.5" width="7" height="7" rx="1"/><rect x="3.5" y="13.5" width="7" height="7" rx="1"/><rect x="13.5" y="13.5" width="7" height="7" rx="1"/>',
   // chrome
   search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>',

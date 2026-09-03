@@ -1,0 +1,138 @@
+---
+// Popup login modal — blurred backdrop, site logo, email-first, one field at a time,
+// with an option to create an account. Rendered site-wide; opened by the user icon.
+---
+<div id="login-modal" class="lm-root" hidden aria-hidden="true">
+  <div class="lm-backdrop" data-lm-close></div>
+  <div class="lm-card" role="dialog" aria-modal="true" aria-label="Sign in">
+    <button class="lm-x" data-lm-close aria-label="Close">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <img src="/brand/logo.jpeg" alt="aPaulogy" class="lm-logo" width="200" height="77" />
+    <h2 class="lm-title" id="lm-title">Sign in</h2>
+    <p class="lm-sub" id="lm-sub">Enter your email to continue</p>
+
+    <form id="lm-form" novalidate>
+      <!-- Step 1: email -->
+      <div class="lm-step" data-step="email">
+        <label class="lm-lbl" for="lm-email">Email</label>
+        <input id="lm-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" autofocus />
+        <button type="button" class="lm-btn" id="lm-next">Continue</button>
+      </div>
+
+      <!-- Step 2: password (sign in) -->
+      <div class="lm-step" data-step="password" hidden>
+        <button type="button" class="lm-back" id="lm-back-1">← <span id="lm-email-echo"></span></button>
+        <label class="lm-lbl" for="lm-pass">Password</label>
+        <div class="lm-passwrap">
+          <input id="lm-pass" name="pass" type="password" autocomplete="current-password" placeholder="Your password" />
+          <button type="button" class="lm-eye" data-eye="lm-pass" aria-label="Show password"></button>
+        </div>
+        <button type="submit" class="lm-btn" id="lm-signin">Sign in</button>
+      </div>
+
+      <!-- Step 3: create account -->
+      <div class="lm-step" data-step="create" hidden>
+        <button type="button" class="lm-back" id="lm-back-2">← <span id="lm-email-echo2"></span></button>
+        <label class="lm-lbl" for="lm-name">Your name</label>
+        <input id="lm-name" name="name" type="text" autocomplete="name" placeholder="First name" />
+        <label class="lm-lbl" for="lm-newpass" style="margin-top:.8rem">Create a password</label>
+        <div class="lm-passwrap">
+          <input id="lm-newpass" name="newpass" type="password" autocomplete="new-password" placeholder="At least 6 characters" />
+          <button type="button" class="lm-eye" data-eye="lm-newpass" aria-label="Show password"></button>
+        </div>
+        <button type="button" class="lm-btn" id="lm-create-go">Create account</button>
+      </div>
+
+      <p class="lm-err" id="lm-err" hidden></p>
+    </form>
+
+    <p class="lm-alt" id="lm-alt"><span id="lm-alt-q">New here?</span> <button type="button" id="lm-toggle">Create an account</button></p>
+  </div>
+</div>
+
+<style>
+  .lm-root{ position:fixed; inset:0; z-index:90; display:grid; place-items:center; padding:1.2rem; }
+  .lm-backdrop{ position:absolute; inset:0; background:rgba(20,18,15,.45); backdrop-filter:blur(7px) saturate(120%); animation:lmFade .2s ease; }
+  .lm-card{ position:relative; width:390px; max-width:100%; background:#fff; border:1px solid var(--color-line);
+    border-radius:16px; padding:2.2rem 2rem 1.6rem; box-shadow:0 24px 70px rgba(0,0,0,.35); animation:lmUp .28s cubic-bezier(.2,.8,.2,1); }
+  @keyframes lmFade{ from{opacity:0} to{opacity:1} }
+  @keyframes lmUp{ from{opacity:0; transform:translateY(14px) scale(.98)} to{opacity:1; transform:none} }
+  .lm-x{ position:absolute; top:1rem; right:1rem; background:none; border:0; color:var(--color-muted); cursor:pointer; padding:.2rem; }
+  .lm-x:hover{ color:var(--color-ink); }
+  .lm-logo{ display:block; height:44px; width:auto; margin:0 auto 1.1rem; }
+  .lm-title{ font-family:var(--font-display); font-size:1.7rem; text-align:center; margin:0 0 .2rem; }
+  .lm-sub{ font-family:var(--font-sans); font-size:.82rem; color:var(--color-muted); text-align:center; margin:0 0 1.4rem; }
+  .lm-lbl{ display:block; font-family:var(--font-sans); font-size:.68rem; text-transform:uppercase; letter-spacing:.09em; color:var(--color-muted); margin-bottom:.4rem; }
+  #lm-form input{ width:100%; padding:.8rem .9rem; border:1px solid var(--color-line-strong); border-radius:8px; font:inherit; font-size:.95rem; background:#fff; }
+  #lm-form input:focus{ outline:none; box-shadow:0 0 0 3px rgba(0,0,0,.08); }
+  .lm-btn{ width:100%; margin-top:1.1rem; padding:.85rem; background:#000; color:#fff; border:0; border-radius:8px; font-family:var(--font-sans); font-size:.92rem; cursor:pointer; transition:background .15s; }
+  .lm-btn:hover{ background:#1a1815; }
+  .lm-back{ background:none; border:0; color:var(--color-muted); font-family:var(--font-sans); font-size:.82rem; cursor:pointer; margin-bottom:.9rem; padding:0; }
+  .lm-back:hover{ color:var(--color-ink); }
+  .lm-passwrap{ position:relative; }
+  .lm-passwrap input{ padding-right:2.8rem !important; }
+  .lm-eye{ position:absolute; right:.7rem; top:50%; transform:translateY(-50%); background:none; border:0; cursor:pointer; color:var(--color-muted); padding:.3rem; }
+  .lm-eye:hover{ color:var(--color-ink); }
+  .lm-err{ font-family:var(--font-sans); font-size:.8rem; color:#b00020; text-align:center; margin:.9rem 0 0; }
+  .lm-alt{ font-family:var(--font-sans); font-size:.82rem; text-align:center; color:var(--color-muted); margin:1.3rem 0 0; }
+  .lm-alt button{ background:none; border:0; color:var(--color-ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; font:inherit; }
+</style>
+
+<script>
+  function eyeIcon(shown){ return shown
+    ? '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18" stroke-linecap="round"/></svg>'
+    : '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>'; }
+
+  function initLoginModal(){
+    const root = document.getElementById('login-modal');
+    if (!root || root.dataset.bound) return; root.dataset.bound = '1';
+    const err = document.getElementById('lm-err');
+    const steps = { email: root.querySelector('[data-step=email]'), password: root.querySelector('[data-step=password]'), create: root.querySelector('[data-step=create]') };
+    const title = document.getElementById('lm-title'), sub = document.getElementById('lm-sub'), alt = document.getElementById('lm-alt');
+    const emailI = document.getElementById('lm-email');
+    let mode = 'signin';
+
+    function show(step){ Object.values(steps).forEach(s=>s.hidden=true); steps[step].hidden=false; err.hidden=true; }
+    function open(){ root.hidden=false; root.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; show('email'); title.textContent='Sign in'; sub.textContent='Enter your email to continue'; alt.hidden=false; mode='signin'; setTimeout(()=>emailI.focus(),50); }
+    function close(){ root.hidden=true; root.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+    (window).apaulogyLogin = open;
+
+    root.querySelectorAll('[data-lm-close]').forEach(el=>el.addEventListener('click',close));
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!root.hidden) close(); });
+
+    // eye toggles
+    root.querySelectorAll('.lm-eye').forEach(btn=>{ btn.innerHTML=eyeIcon(false); btn.addEventListener('click',()=>{ const inp=document.getElementById(btn.dataset.eye); const show=inp.type==='password'; inp.type=show?'text':'password'; btn.innerHTML=eyeIcon(show); inp.focus(); }); });
+
+    function validEmail(v){ return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v); }
+
+    document.getElementById('lm-next').addEventListener('click',()=>{
+      const v=emailI.value.trim();
+      if(!validEmail(v)){ err.textContent='Please enter a valid email.'; err.hidden=false; return; }
+      document.getElementById('lm-email-echo').textContent=v;
+      document.getElementById('lm-email-echo2').textContent=v;
+      if(mode==='create'){ show('create'); title.textContent='Create account'; sub.textContent=v; alt.hidden=true; document.getElementById('lm-name').focus(); }
+      else { show('password'); title.textContent='Welcome back'; sub.textContent=v; alt.hidden=true; document.getElementById('lm-pass').focus(); }
+    });
+    document.getElementById('lm-back-1').addEventListener('click',()=>{ show('email'); title.textContent='Sign in'; sub.textContent='Enter your email to continue'; alt.hidden=false; emailI.focus(); });
+    document.getElementById('lm-back-2').addEventListener('click',()=>{ show('email'); title.textContent='Sign in'; sub.textContent='Enter your email to continue'; alt.hidden=false; emailI.focus(); });
+    document.getElementById('lm-toggle').addEventListener('click',()=>{ mode = mode==='create'?'signin':'create'; document.getElementById('lm-alt-q').textContent = mode==='create'?'Already have an account?':'New here?'; document.getElementById('lm-toggle').textContent = mode==='create'?'Sign in':'Create an account'; });
+
+    async function submit(email, pass){
+      err.hidden=true;
+      try{
+        const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ user:email, pass, verified:'1' })});
+        const d=await r.json().catch(()=>({}));
+        if(r.ok && d.ok){ location.href = d.redirect || '/apaulogy-admin/'; return; }
+        err.textContent = d.error || 'Incorrect email or password.'; err.hidden=false;
+      }catch{ err.textContent='Network error. Please try again.'; err.hidden=false; }
+    }
+    document.getElementById('lm-form').addEventListener('submit',(e)=>{ e.preventDefault(); if(!steps.password.hidden){ submit(emailI.value.trim(), document.getElementById('lm-pass').value); } });
+    document.getElementById('lm-create-go').addEventListener('click',()=>{
+      // Customer accounts aren't enabled yet — guide gracefully.
+      err.textContent='Account creation is coming soon. For now, please continue as a guest at checkout.'; err.hidden=false;
+    });
+  }
+  initLoginModal();
+  document.addEventListener('astro:after-swap', initLoginModal);
+</script>

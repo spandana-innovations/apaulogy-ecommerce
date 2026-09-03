@@ -114,10 +114,10 @@ function organise(children: typeof menu) {
       <button id="search-toggle" class="p-2 hover:text-[var(--color-muted)] transition-colors" aria-label="Search" aria-controls="search-overlay">
         <Icon name="search" size={22} />
       </button>
-      <a id="account-link" href="/apaulogy-admin/" class="p-2 hover:text-[var(--color-muted)] transition-colors" aria-label="Admin sign in">
+      <button id="account-link" type="button" class="p-2 hover:text-[var(--color-muted)] transition-colors" aria-label="Sign in">
         <Icon name="user" size={22} />
         <span id="account-dot" hidden class="block w-1.5 h-1.5 rounded-full bg-black mx-auto mt-0.5"></span>
-      </a>
+      </button>
       <button id="cart-toggle" class="relative p-2 hover:text-[var(--color-muted)] transition-colors" aria-label="Open cart" aria-controls="cart-drawer">
         <Icon name="cart" size={22} />
         <span data-cart-count hidden class="absolute -top-0.5 -right-0.5 min-w-[1.05rem] h-[1.05rem] px-1 rounded-full bg-black text-white text-[0.62rem] font-bold grid place-items-center" style="font-family:var(--font-sans)">0</span>
@@ -198,4 +198,18 @@ function organise(children: typeof menu) {
   }
   initMenu();
   document.addEventListener('astro:after-swap', initMenu);
+</script>
+<script>
+  function initAccountBtn(){
+    const btn = document.getElementById('account-link');
+    if(!btn || btn.dataset.acct) return; btn.dataset.acct='1';
+    const authed = document.cookie.includes('apaulogy_role=admin');
+    if(authed){ document.getElementById('account-dot')?.removeAttribute('hidden'); btn.setAttribute('aria-label','Account'); }
+    btn.addEventListener('click',()=>{
+      if(document.cookie.includes('apaulogy_role=admin')){ location.href='/apaulogy-admin/'; return; }
+      if((window).apaulogyLogin) (window).apaulogyLogin(); else location.href='/apaulogy-admin/login/';
+    });
+  }
+  initAccountBtn();
+  document.addEventListener('astro:after-swap', initAccountBtn);
 </script>

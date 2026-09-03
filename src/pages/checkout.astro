@@ -71,6 +71,16 @@ import Icon from '../components/Icon.astro';
           <div class="flex justify-between" id="co-discount-row" hidden><dt>Discount</dt><dd id="co-discount">—</dd></div>
           <div class="flex justify-between"><dt>Shipping</dt><dd id="co-shipping">—</dd></div>
         </dl>
+        <!-- #1 GST invoice option, right by the totals -->
+        <label class="flex items-start gap-2.5 mt-3 pt-3 border-t border-[var(--color-line)] cursor-pointer" style="font-family:var(--font-sans)">
+          <input type="checkbox" id="co-gst" class="mt-0.5 accent-black" />
+          <span class="text-sm">I need a <strong>GST invoice</strong></span>
+        </label>
+        <div id="co-gst-fields" class="mt-3 grid gap-2.5" hidden style="font-family:var(--font-sans)">
+          <input id="co-gstin" class="input !py-2" placeholder="GSTIN (15 characters)" maxlength="15" style="text-transform:uppercase" />
+          <input id="co-gst-name" class="input !py-2" placeholder="Registered business name" />
+        </div>
+
         <div class="flex justify-between text-lg font-medium mt-3 pt-3 border-t border-[var(--color-line)]">
           <span>Total</span><span id="co-total">—</span>
         </div>
@@ -143,6 +153,7 @@ import Icon from '../components/Icon.astro';
         return { subtotal, shipping, total };
       }
       await quoteShipping(); let totals=recalc();
+      document.getElementById('co-gst')?.addEventListener('change',(e)=>{ document.getElementById('co-gst-fields')!.hidden = !(e.target as HTMLInputElement).checked; });
 
       // #8 — auto-fill city/state from an Indian PIN code (India Post public API)
       const pin = form.querySelector('[name=postcode]') as HTMLInputElement | null;
@@ -197,7 +208,9 @@ import Icon from '../components/Icon.astro';
         payBtn.disabled=true; const orig=payLabel.textContent; payLabel.textContent='Working…';
         const fd=new FormData(form); const customer=Object.fromEntries(fd.entries());
         totals=recalc();
-        const order={ items:items.map((it:any)=>({slug:it.slug,name:it.name,qty:it.qty,variant:it.variant,price:it.price})), customer, coupon, created:new Date().toISOString() };
+        const gstWanted=(document.getElementById('co-gst') as HTMLInputElement)?.checked;
+        const gst = gstWanted ? { gstin:(document.getElementById('co-gstin') as HTMLInputElement).value.trim().toUpperCase(), business:(document.getElementById('co-gst-name') as HTMLInputElement).value.trim() } : null;
+        const order={ items:items.map((it:any)=>({slug:it.slug,name:it.name,qty:it.qty,variant:it.variant,price:it.price})), customer, coupon, gst, created:new Date().toISOString() };
         try{
           const res=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)});
           if(!res.ok) throw new Error(((await res.json().catch(()=>({}))) as any).error||'Could not start payment');

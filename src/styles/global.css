@@ -387,3 +387,55 @@ img.protected, .protected img {
 
 /* #8 — pincode lookup hint */
 .pin-hint{ display:block; font-family:var(--font-sans); font-size:.72rem; color:var(--color-muted); margin-top:.3rem; min-height:1em; }
+
+/* ---- Modern mobile: bottom tab bar ---------------------------------------- */
+.mobile-tabbar{
+  position:fixed; left:0; right:0; bottom:0; z-index:40;
+  display:grid; grid-template-columns:repeat(5,1fr);
+  background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(14px);
+  border-top:1px solid var(--color-line);
+  padding-bottom:env(safe-area-inset-bottom, 0);
+  box-shadow:0 -2px 20px rgba(0,0,0,.06);
+}
+.mtab{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  padding:.5rem 0 .55rem; color:var(--color-muted); text-decoration:none; background:none; border:0; cursor:pointer;
+  -webkit-tap-highlight-color:transparent; }
+.mtab-ico{ position:relative; display:grid; place-items:center; height:24px; transition:transform .15s; }
+.mtab-label{ font-family:var(--font-sans); font-size:.6rem; letter-spacing:.04em; text-transform:uppercase; }
+.mtab.on{ color:var(--color-ink); }
+.mtab.on .mtab-ico{ transform:translateY(-1px); }
+.mtab.on::before{ content:""; position:absolute; top:0; width:26px; height:2px; background:var(--color-ink); border-radius:2px; }
+.mtab:active .mtab-ico{ transform:scale(.9); }
+.mtab.is-auth .mtab-ico::after{ content:""; position:absolute; top:-1px; right:-2px; width:7px; height:7px; background:#1f6b2e; border:1.5px solid #fff; border-radius:50%; }
+.mtab-badge{ position:absolute; top:-6px; right:-8px; min-width:15px; height:15px; padding:0 3px; background:#000; color:#fff;
+  font-family:var(--font-sans); font-size:.58rem; font-weight:700; border-radius:20px; display:grid; place-items:center; border:1.5px solid #fff; }
+/* keep content clear of the bar */
+@media (max-width:1023px){
+  body{ padding-bottom:calc(60px + env(safe-area-inset-bottom, 0)); }
+  footer{ margin-bottom:0; }
+}
+@media (min-width:1024px){ .mobile-tabbar{ display:none; } }
+
+/* ---- Cart: side-drawer on desktop, bottom-sheet on mobile ------------------ */
+.cart-panel{ top:0; right:0; height:100%; width:100%; max-width:26rem; border-left:1px solid var(--color-line-strong); transform:translateX(100%); }
+.cart-panel.is-open{ transform:translateX(0); }
+@media (max-width:640px){
+  .cart-panel{ top:auto; right:0; left:0; bottom:0; width:100%; max-width:none; height:auto; max-height:86vh;
+    border-left:0; border-top:1px solid var(--color-line-strong); border-radius:18px 18px 0 0; transform:translateY(100%); }
+  .cart-panel.is-open{ transform:translateY(0); }
+  /* grab handle */
+  .cart-panel::before{ content:""; position:absolute; top:9px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:var(--color-line); border-radius:4px; }
+}
+
+/* ---- Product: mobile sticky add-to-cart bar ------------------------------- */
+.sticky-buy{ position:fixed; left:0; right:0; z-index:39; bottom:calc(60px + env(safe-area-inset-bottom,0));
+  display:flex; align-items:center; gap:.8rem; padding:.6rem .9rem;
+  background:rgba(255,255,255,.96); backdrop-filter:saturate(180%) blur(12px);
+  border-top:1px solid var(--color-line); box-shadow:0 -3px 16px rgba(0,0,0,.08);
+  transform:translateY(130%); transition:transform .25s ease; }
+.sticky-buy.show{ transform:translateY(0); }
+.sb-info{ flex:1; min-width:0; display:flex; flex-direction:column; }
+.sb-name{ font-family:var(--font-display); font-size:1.05rem; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sb-price{ font-family:var(--font-sans); font-size:.8rem; color:var(--color-muted); }
+.sb-btn{ flex:none; padding:.7rem 1.3rem; }
+@media (min-width:641px){ .sticky-buy{ display:none !important; } }
