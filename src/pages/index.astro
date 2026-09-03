@@ -35,11 +35,20 @@ const mediums = [
 const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
 ---
 
-<BaseLayout title="Watercolours of a city that was" description={SITE_DESCRIPTION} preloadImage={heroBanner} imageAlt="11 Limited — Colaba to Bandra, a Paul Fernandes illustration" jsonld={jsonld}>
-  <!-- HERO: 11 Limited — Colaba to Bandra (matches the WordPress front page) -->
+<BaseLayout title="Watercolours of a city that was" description={SITE_DESCRIPTION} preloadImage="/uploads/banner/coastline-poster.webp" imageAlt="CoastLine — an amuseum of Mumbai musings by Paul Fernandes" jsonld={jsonld}>
+  <!-- HERO: CoastLine — animated banner from the aPaulogy gallery -->
   <section class="container-page pt-8 pb-4">
-    <div class="frame art-guard">
-      <img src={heroBanner} alt="11 Limited — Colaba to Bandra" class="protected w-full h-auto object-contain" width="1536" height="527" fetchpriority="high" />
+    <div class="art-guard">
+      <video
+        class="w-full h-auto block"
+        autoplay muted loop playsinline
+        poster="/uploads/banner/coastline-poster.webp"
+        width="1280" height="514"
+        aria-label="CoastLine — an amuseum of Mumbai musings, animated watercolour by Paul Fernandes">
+        <source src="/uploads/banner/coastline.webm" type="video/webm" />
+        <source src="/uploads/banner/coastline.mp4" type="video/mp4" />
+        <img src="/uploads/banner/coastline-poster.webp" alt="CoastLine — an amuseum of Mumbai musings" class="w-full h-auto" />
+      </video>
     </div>
     <div class="max-w-3xl mx-auto text-center mt-8">
       <h1 class="text-4xl sm:text-5xl uppercase tracking-wide">11 Limited — Colaba to Bandra</h1>

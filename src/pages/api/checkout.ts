@@ -5,6 +5,7 @@ import { createPendingOrder, type CartLine } from '../../lib/db';
 import { activeDiscounts, getCoupon, computeDiscount } from '../../lib/discounts';
 import { cartWeight, getRates, shippingFor, freeShippingSlugs } from '../../lib/shipping';
 import { getSetting } from '../../lib/admin-data';
+import { verifySession, readCookie, ADMIN_COOKIE } from '../../lib/admin-auth';
 
 export const prerender = false;
 
@@ -24,6 +25,11 @@ function fallbackRef(): string {
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const _env0 = (locals as any)?.runtime?.env ?? {};
+  // admin_no_order: signed-in admins cannot place orders
+  if (await verifySession(readCookie(request, ADMIN_COOKIE), _env0)) {
+    return new Response(JSON.stringify({ error: 'Admin accounts cannot place orders. Please use a customer account.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+  }
   const env = locals?.runtime?.env ?? ({} as Record<string, any>);
 
   let body: {

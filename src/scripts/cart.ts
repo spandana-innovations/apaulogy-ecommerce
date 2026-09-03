@@ -73,10 +73,17 @@ export const Cart = {
 document.dispatchEvent(new Event('cart:ready'));
 
 // Global "add to cart" delegation + toast feedback.
+function isAdminMode(): boolean {
+  return document.cookie.split(';').some((c) => c.trim().startsWith('apaulogy_role=admin'));
+}
 document.addEventListener('click', (e) => {
   const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-add-to-cart]');
   if (!btn) return;
   e.preventDefault();
+  if (isAdminMode()) {
+    toast('Admin accounts can’t place orders — sign out to shop.');
+    return;
+  }
   Cart.add({
     slug: btn.dataset.slug!,
     name: btn.dataset.name!,

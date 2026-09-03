@@ -89,6 +89,13 @@ export function readCookie(request: Request, name = COOKIE): string | undefined 
 export function sessionCookie(token: string): string {
   return `${COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${TTL_SECONDS}`;
 }
+// Non-HttpOnly hint so the storefront can show 'admin mode' (no add-to-cart). Not used for auth.
+export function roleHintCookie(): string {
+  return `apaulogy_role=admin; Path=/; Secure; SameSite=Lax; Max-Age=${TTL_SECONDS}`;
+}
+export function clearRoleHint(): string {
+  return `apaulogy_role=; Path=/; Secure; SameSite=Lax; Max-Age=0`;
+}
 export function clearCookie(): string {
   return `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
 }
