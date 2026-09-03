@@ -43,7 +43,15 @@ function dims(label: string): { w: number; h: number } | null {
   return null;
 }
 const sizeData = variations.map((v) => ({ slug: v.slug, label: v.label, price: v.sale_price ?? v.price, image: v.image || '', ...(dims(v.label) || { w: 0, h: 0 }) }));
-const hasDims = sizeData.some((s) => s.h > 0);
+
+// #7 — simple products: read the print size from the copy so every piece shows the runner scale.
+const copyForSize = (product.short_html || '') + ' ' + (product.description_html || '');
+const copyDims = dims(copyForSize.replace(/<[^>]+>/g, ' '));
+const singleSize = (variations.length === 0 && copyDims)
+  ? { w: copyDims.w, h: copyDims.h, label: `${copyDims.w % 1 ? copyDims.w : copyDims.w}″ × ${copyDims.h % 1 ? copyDims.h : copyDims.h}″` }
+  : null;
+
+const hasDims = sizeData.some((s) => s.h > 0) || !!singleSize;
 const isCanvas = variations.some((v) => /canvas/i.test(v.label));
 const optionLabel = isCanvas ? 'Format' : 'Print size';
 const PX_PER_INCH = 2.3;            // runner ≈ 69in → ~158px tall
@@ -52,10 +60,10 @@ const MAN_INCHES = 69;
 
 <BaseLayout title={product.name} description={metaDesc} image={ogImage} imageAlt={`${product.name} — aPaulogy`} type="product" jsonld={jsonld}>
   <div class="container-page py-10">
-    <nav class="text-xs text-[var(--color-muted)] mb-6 flex items-center gap-1.5 flex-wrap" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
-      <a href="/" class="link-hover">Home</a> <Icon name="chevronRight" size={12} class="opacity-40" />
-      <a href="/store/" class="link-hover">Store</a> <Icon name="chevronRight" size={12} class="opacity-40" />
-      {primaryCat && (<><a href={`/category/${primaryCat.slug}/`} class="link-hover">{primaryCat.name}</a> <Icon name="chevronRight" size={12} class="opacity-40" /></>)}
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="/" class="link-hover">Home</a> <span aria-hidden="true" class="opacity-50">/</span>
+      <a href="/store/" class="link-hover">Store</a> <span aria-hidden="true" class="opacity-50">/</span>
+      {primaryCat && (<><a href={`/category/${primaryCat.slug}/`} class="link-hover">{primaryCat.name}</a> <span aria-hidden="true" class="opacity-50">/</span></>)}
       <span class="text-[var(--color-ink-soft)]">{product.name}</span>
     </nav>
 
@@ -144,6 +152,27 @@ const MAN_INCHES = 69;
             </div>
 
             <script type="application/json" id="ps-data" set:html={JSON.stringify(sizeData)}></script>
+          </div>
+        )}
+
+        {/* #7 — simple products: show the piece to scale against the runner (single size) */}
+        {variations.length === 0 && singleSize && (
+          <div class="mt-8" style="font-family:var(--font-sans)">
+            <span class="field-label">Print size</span>
+            <div class="size-panel hidden sm:block">
+              <p class="size-intro"><strong>To scale</strong> — this print is <strong>{singleSize.label}</strong>, shown against our runner (about 5′9″).</p>
+              <div class="size-stage chosen">
+                <img src="/brand/scale-man.png" alt="A runner from Paul's artwork, standing in for a 5 foot 9 adult" class="size-man-img protected" width="183" height="239" draggable="false" />
+                <span class="size-opt" aria-pressed="true" style={`width:${singleSize.w * PX_PER_INCH}px;height:${singleSize.h * PX_PER_INCH}px;cursor:default;animation:none`}></span>
+              </div>
+              <div class="size-chips">
+                <span class="size-chip" aria-pressed="true">
+                  <span class="chip-swatch" style={`width:${Math.max(8, singleSize.w * 0.9)}px;height:${Math.max(8, singleSize.h * 0.9)}px`}></span>
+                  <span>{singleSize.label}</span>
+                </span>
+              </div>
+            </div>
+            <p class="sm:hidden text-sm text-[var(--color-ink-soft)]">Print size: <strong>{singleSize.label}</strong></p>
           </div>
         )}
 

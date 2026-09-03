@@ -344,3 +344,43 @@ img.protected, .protected img {
 @media (min-width:1024px){ .cols-control{ display:inline-flex; gap:.15rem; align-items:center; } }
 .cols-control button{ width:26px; height:26px; border:1px solid var(--color-line); background:#fff; cursor:pointer; font-family:var(--font-sans); font-size:.72rem; }
 .cols-control button[aria-pressed="true"]{ background:#000; color:#fff; border-color:#000; }
+
+/* #15 — "A Series of N Drawings" flourish */
+.series-tag{ display:flex; align-items:center; justify-content:center; gap:.9rem; }
+.series-text{ font-family:var(--font-display); font-size:1.35rem; font-style:italic; color:var(--color-ink-soft); letter-spacing:.01em; white-space:nowrap; }
+.series-rule{ height:1px; width:min(60px,12vw); background:linear-gradient(90deg,transparent,var(--color-muted)); }
+.series-rule:last-child{ background:linear-gradient(90deg,var(--color-muted),transparent); }
+
+/* #13 — consistent breadcrumbs */
+.breadcrumb{ font-family:var(--font-sans); font-size:.72rem; color:var(--color-muted); margin-bottom:1.5rem; display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+.breadcrumb a{ color:var(--color-muted); text-decoration:none; }
+.breadcrumb a:hover{ color:var(--color-ink); text-decoration:underline; text-underline-offset:2px; }
+.breadcrumb .opacity-50{ opacity:.5; }
+
+/* #18 — drag-to-scroll affordance */
+.slider-track { cursor: grab; }
+.slider-track.dragging { cursor: grabbing; scroll-snap-type: none; }
+.slider-track.dragging * { pointer-events: none; }
+
+/* #5 — polished policy / content pages */
+.prose-paper{ line-height:1.75; color:var(--color-ink-soft); }
+.prose-paper h2{ font-family:var(--font-display); font-size:1.9rem; margin:2.2rem 0 .7rem; color:var(--color-ink); }
+.prose-paper h3{ font-family:var(--font-display); font-size:1.4rem; margin:1.8rem 0 .5rem; color:var(--color-ink); }
+.prose-paper h4{ font-family:var(--font-serif); font-weight:600; font-size:1.1rem; margin:1.4rem 0 .4rem; color:var(--color-ink); }
+.prose-paper p{ margin:0 0 1.1rem; }
+.prose-paper ul, .prose-paper ol{ margin:0 0 1.2rem 1.2rem; padding-left:1rem; }
+.prose-paper li{ margin:.4rem 0; }
+.prose-paper ul li{ list-style:none; position:relative; }
+.prose-paper ul li::before{ content:''; position:absolute; left:-1rem; top:.65em; width:5px; height:5px; background:var(--color-ink); border-radius:50%; }
+.prose-paper a{ color:var(--color-ink); text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
+.prose-paper strong{ color:var(--color-ink); font-weight:600; }
+.prose-paper hr{ border:0; height:1px; background:var(--color-line); margin:2rem 0; }
+.prose-paper > *:first-child{ margin-top:0; }
+/* first line as a lead paragraph */
+.prose-paper > p:first-of-type{ font-size:1.15rem; color:var(--color-ink); }
+
+/* #6 — contact map */
+.map-embed{ border:1px solid var(--color-line); }
+.map-embed iframe{ display:block; filter:grayscale(0.2) contrast(1.05); }
+.map-link{ display:block; padding:.6rem .9rem; font-family:var(--font-sans); font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; border-top:1px solid var(--color-line); text-decoration:none; color:var(--color-ink); }
+.map-link:hover{ background:var(--color-paper-deep); }

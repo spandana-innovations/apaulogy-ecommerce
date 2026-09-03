@@ -9,7 +9,7 @@ const rzpId = (await getSetting(env, 'razorpay_key_id')) || '';
 const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razorpay_key_secret'));
 ---
 <AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
-  <div style="max-width:680px;display:grid;gap:1.6rem">
+  <div class="settings-grid">
     <!-- Razorpay -->
     <section class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Razorpay payment keys</h2>
@@ -59,7 +59,7 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
       </div>
     </section>
 
-    <!-- System -->
+    <!-- System (full width) -->
     <section class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">System</h2>
       <table>
@@ -94,4 +94,11 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
     document.getElementById('pp-save').addEventListener('click',()=>saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim()},'pp-msg'));
     document.getElementById('re-save').addEventListener('click',()=>saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'));
   </script>
+<style is:global>
+  .settings-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.4rem; align-items:start; max-width:1100px; }
+  .settings-grid > section:first-child{ grid-column:1 / -1; }   /* Razorpay spans top */
+  .settings-grid > section:last-child{ grid-column:1 / -1; }    /* System spans bottom */
+  @media(max-width:820px){ .settings-grid{ grid-template-columns:1fr; } }
+  .settings-grid .fld input{ border-radius:4px; }
+</style>
 </AdminLayout>

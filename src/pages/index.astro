@@ -24,54 +24,35 @@ const shelves = [
 const featured = getFeaturedProducts(10);
 
 // #8 — the ways the art comes: choose your medium
-const mediums = [
-  { icon: 'frame',  name: 'Mounted Prints', desc: 'Watercolour prints on paper, mounted and ready to frame.', href: '/category/wall-art/' },
-  { icon: 'tile',   name: 'On Tile', desc: 'Favourite scenes transferred onto tile — lean or hang.', href: '/category/illustrations-on-tile/' },
-  { icon: 'plaque', name: 'Plaques', desc: 'Compact wall plaques of the best-loved corners.', href: '/category/plaques/' },
-  { icon: 'scroll', name: 'Posters', desc: 'Large-format posters of the classics.', href: '/category/posters/' },
-  { icon: 'book',   name: 'Books', desc: 'Coffee-table books to drift through, cover to cover.', href: '/category/coffee-table-books/' },
-  { icon: 'bag',    name: 'Carriables & Gifts', desc: 'Bags, coasters, paperweights and small delights.', href: '/category/merchandise/' },
-];
+const mediums = [{"icon": "frame", "name": "Mounted Prints", "desc": "Watercolour prints on paper, mounted and ready to frame.", "href": "/category/wall-art/", "ex": [{"slug": "pensioner", "name": "Pensioner", "img": "/uploads/2017/03/Pensioner-WITHWatermark1.webp"}, {"slug": "jackals-wedding", "name": "Jackals Wedding", "img": "/uploads/2017/03/apaulogyJackalsWedding-WITHWatermar.webp"}, {"slug": "plaza-theatre", "name": "Plaza Theatre", "img": "/uploads/2017/03/apaulogyPlaza-WITHWatermark.webp"}]}, {"icon": "tile", "name": "On Tile", "desc": "Favourite scenes transferred onto tile — lean or hang.", "href": "/category/illustrations-on-tile/", "ex": [{"slug": "parade-cafe-framed-tile", "name": "Parade Cafe Framed Tile", "img": "/uploads/2017/08/Koshys-F.webp"}, {"slug": "bangalore-club-framed-tile", "name": "Bangalore Club Framed Tile", "img": "/uploads/2017/08/BangClub-F-1.webp"}, {"slug": "russel-market-framed-tile", "name": "Russel Market Framed Tile", "img": "/uploads/2017/08/Russel-F.webp"}]}, {"icon": "plaque", "name": "Plaques", "desc": "Compact wall plaques of the best-loved corners.", "href": "/category/plaques/", "ex": [{"slug": "bangalore-morphed-series-mounted", "name": "Bangalore Morphed Series Mounted", "img": "/uploads/2017/03/Morphing-ALLRevised.webp"}, {"slug": "channa-sing-wallah-plaque", "name": "Channa Sing Wallah Plaque", "img": "/uploads/2017/03/Channa-Sing-Wallah-new.webp"}, {"slug": "amby-plaques-full-series", "name": "Amby Plaques Full Series", "img": "/uploads/2017/03/Ambyallplaque.webp"}]}, {"icon": "scroll", "name": "Posters", "desc": "Large-format posters of the classics.", "href": "/category/posters/", "ex": [{"slug": "amchi-mumbai", "name": "Amchi Mumbai", "img": "/uploads/2017/03/AmchiMumbaiPoster.webp"}, {"slug": "shineboards-1", "name": "Shineboards 1", "img": "/uploads/2017/03/Shineboard1-Top.webp"}, {"slug": "shineboards-2", "name": "Shineboards 2", "img": "/uploads/2017/03/A5.webp"}]}, {"icon": "book", "name": "Books", "desc": "Coffee-table books to drift through, cover to cover.", "href": "/category/coffee-table-books/", "ex": [{"slug": "bangalore-swinging-in-the-70s", "name": "Bangalore: Swinging in the 70s", "img": "/uploads/2017/03/swingingcov.webp"}, {"slug": "shineboard-arts-for-tamepass", "name": "Shineboard Arts: For Tamepass", "img": "/uploads/2017/03/Tamepass-Bookcover.webp"}, {"slug": "on-a-high-note", "name": "On a High Note", "img": "/uploads/2017/03/Highnote.webp"}]}, {"icon": "bag", "name": "Carriables & Gifts", "desc": "Bags, coasters, paperweights and small delights.", "href": "/category/merchandise/", "ex": [{"slug": "parade-cafe-slingbag", "name": "Parade Cafe Slingbag", "img": "/uploads/2017/03/KoshysFinal3.webp"}, {"slug": "jackals-wedding-slingbag", "name": "Jackals Wedding Slingbag", "img": "/uploads/2017/03/JacklsweddingFinal3.webp"}, {"slug": "good-manners-slingbag", "name": "Good Manners Slingbag", "img": "/uploads/2017/03/GoodmannersFinal3.webp"}]}];
 const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
 ---
 
-<BaseLayout title="Watercolours of a city that was" description={SITE_DESCRIPTION} preloadImage="/uploads/banner/coastline-poster.webp" imageAlt="CoastLine — an amuseum of Mumbai musings by Paul Fernandes" jsonld={jsonld}>
-  <!-- HERO: CoastLine — animated banner from the aPaulogy gallery -->
-  <section class="container-page pt-8 pb-4">
+<BaseLayout title="Watercolours of a city that was" description={SITE_DESCRIPTION} preloadImage="/uploads/banner/goodegg-poster.webp" imageAlt="A Bangalore bungalow morning by Paul Fernandes" jsonld={jsonld}>
+  <!-- HERO: wide animated banner from the aPaulogy gallery -->
+  <section class="container-page pt-8 pb-6">
     <div class="art-guard">
       <video
         class="w-full h-auto block"
         autoplay muted loop playsinline
-        poster="/uploads/banner/coastline-poster.webp"
-        width="1280" height="514"
-        aria-label="CoastLine — an amuseum of Mumbai musings, animated watercolour by Paul Fernandes">
-        <source src="/uploads/banner/coastline.webm" type="video/webm" />
-        <source src="/uploads/banner/coastline.mp4" type="video/mp4" />
-        <img src="/uploads/banner/coastline-poster.webp" alt="CoastLine — an amuseum of Mumbai musings" class="w-full h-auto" />
+        poster="/uploads/banner/goodegg-poster.webp"
+        width="1400" height="565"
+        aria-label="A Bangalore bungalow morning — animated watercolour by Paul Fernandes">
+        <source src="/uploads/banner/goodegg.webm" type="video/webm" />
+        <source src="/uploads/banner/goodegg.mp4" type="video/mp4" />
+        <img src="/uploads/banner/goodegg-poster.webp" alt="A Bangalore bungalow morning by Paul Fernandes" class="w-full h-auto" />
       </video>
     </div>
-    <div class="max-w-3xl mx-auto text-center mt-8">
-      <h1 class="text-4xl sm:text-5xl uppercase tracking-wide">11 Limited — Colaba to Bandra</h1>
-      <p class="mt-5 text-[var(--color-ink-soft)] text-left sm:text-center">
-        Drift down the 11 Limited bus route in Mumbai with the dabbawalas, the pani-puri makers, the
-        pav-bhaji sellers, the waiters, the bus drivers, the traffic police, the touts; the shop keepers,
-        the merchants, the Irani restaurant owners; the dreamers, the dream makers, the sellers of dreams,
-        the extras, the stars, the starry eyed; the Bawas, the Babus, the Bhaus, the Bhais, the Bhaiyas…
-        the Bambaiyas.
-      </p>
-      <p class="mt-3 text-[var(--color-ink-soft)] italic">Enjoy the ride!</p>
-      {preorder && (
-        <a href={`/product/${preorder.slug}/`} class="btn btn-primary mt-7 gap-2"><Icon name="cart" size={16} /> Order now</a>
-      )}
+  </section>
     </div>
   </section>
 
-  <!-- TRUST STRIP (claims removed per brief) -->
+  <!-- TRUST STRIP -->
   <section class="bg-black text-white mt-8">
     <div class="container-page py-3.5 flex flex-wrap justify-center items-center gap-x-8 gap-y-1.5 text-[0.68rem] tracking-[0.18em] uppercase" style="font-family:var(--font-sans)">
       <span class="flex items-center gap-2"><Icon name="truck" size={15} /> Shipped across India &amp; worldwide</span>
       <span class="opacity-40" aria-hidden="true">/</span>
-      <span class="flex items-center gap-2"><Icon name="frame" size={15} /> From the aPaulogy gallery</span>
+      <span class="flex items-center gap-2"><Icon name="frame" size={15} /> From aPaulogy Gallery</span>
       <span class="opacity-40" aria-hidden="true">/</span>
       <span class="flex items-center gap-2"><Icon name="shield" size={15} /> Secure checkout</span>
     </div>
@@ -92,10 +73,34 @@ const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
           </span>
           <span class="text-2xl" style="font-family:var(--font-display)">{m.name}</span>
           <span class="text-sm text-[var(--color-muted)]" style="font-family:var(--font-sans)">{m.desc}</span>
+          {m.ex && m.ex.length > 0 && (
+            <span class="medium-ex mt-1 w-full aspect-[16/9] overflow-hidden bg-white relative" data-count={m.ex.length}>
+              {m.ex.map((e, i) => (
+                <img src={e.img} alt={e.name} loading="lazy"
+                  class="medium-ex-img absolute inset-0 w-full h-full object-contain"
+                  style={`opacity:${i === 0 ? 1 : 0}`} />
+              ))}
+            </span>
+          )}
           <span class="mt-auto pt-1 inline-flex items-center gap-1.5 text-[0.7rem] uppercase tracking-[0.14em] font-semibold" style="font-family:var(--font-sans)">Browse <Icon name="arrowRight" size={13} /></span>
         </a>
       ))}
     </div>
+    <script is:inline>(function(){
+      function cycle(){
+        document.querySelectorAll('.medium-ex').forEach(function(box, k){
+          var imgs = box.querySelectorAll('.medium-ex-img'); if(imgs.length<2) return;
+          var idx = 0;
+          setInterval(function(){
+            imgs[idx].style.opacity = '0';
+            idx = (idx+1) % imgs.length;
+            imgs[idx].style.opacity = '1';
+          }, 2600 + k*450); /* out of sync per card */
+        });
+      }
+      if(document.readyState!=='loading') cycle(); else document.addEventListener('DOMContentLoaded', cycle);
+      document.addEventListener('astro:page-load', cycle);
+    })();</script>
   </section>
 
 

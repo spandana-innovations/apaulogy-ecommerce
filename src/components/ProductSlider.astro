@@ -38,6 +38,35 @@ const id = 'sld-' + Math.random().toString(36).slice(2, 8);
       const id = (btn as HTMLElement).dataset.sliderPrev!;
       btn.addEventListener('click', () => { const t = document.getElementById(id); t?.scrollBy({ left: -t.clientWidth * 0.8, behavior: 'smooth' }); });
     });
+
+    // #18 — drag / swipe to scroll
+    document.querySelectorAll('.slider-track').forEach((el) => {
+      const t = el as HTMLElement;
+      if (t.dataset.drag) return; t.dataset.drag = '1';
+      let down = false, startX = 0, startL = 0, moved = 0;
+      t.addEventListener('pointerdown', (e) => { down = true; startX = e.clientX; startL = t.scrollLeft; moved = 0; t.classList.add('dragging'); t.setPointerCapture(e.pointerId); });
+      t.addEventListener('pointermove', (e) => { if (!down) return; const dx = e.clientX - startX; moved = Math.max(moved, Math.abs(dx)); t.scrollLeft = startL - dx; });
+      const end = () => { down = false; t.classList.remove('dragging'); };
+      t.addEventListener('pointerup', end); t.addEventListener('pointercancel', end); t.addEventListener('pointerleave', end);
+      // prevent click navigation right after a drag
+      t.addEventListener('click', (e) => { if (moved > 6) { e.preventDefault(); e.stopPropagation(); } }, true);
+    });
+
+    // #17 — gentle, staggered "peek" nudge so people notice the row scrolls (once, out of sync)
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      document.querySelectorAll('.slider-track').forEach((el, i) => {
+        const t = el as HTMLElement;
+        if (t.dataset.nudged) return; t.dataset.nudged = '1';
+        const delay = 900 + i * 700 + Math.random() * 400;
+        setTimeout(() => {
+          if (t.scrollLeft > 4) return; // only if untouched at the start
+          const card = t.querySelector('*') as HTMLElement | null;
+          const step = card ? card.getBoundingClientRect().width * (1 + Math.random()) : 180;
+          t.scrollTo({ left: step, behavior: 'smooth' });
+          setTimeout(() => { if (t.scrollLeft <= step + 4) t.scrollTo({ left: 0, behavior: 'smooth' }); }, 1100);
+        }, delay);
+      });
+    }
   }
   initSliders();
   document.addEventListener('astro:after-swap', initSliders);

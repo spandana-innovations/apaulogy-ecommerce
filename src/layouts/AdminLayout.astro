@@ -38,7 +38,7 @@ const ICONS: Record<string,string> = {
   <meta name="robots" content="noindex,nofollow" />
   <title>{title} · aPaulogy Admin</title>
   <style is:global>
-    :root{ --ink:#000; --ink-soft:#2b2b2b; --muted:#767676; --line:#e3e3e3; --line-strong:#111; --paper:#faf8f3; --paper-deep:#f1eee7;
+    :root{ --ink:#000; --ink-soft:#2b2b2b; --muted:#767676; --line:#e6e2d9; --line-strong:#111; --paper:#f7f5f0; --paper-deep:#efece4; --gold:#b8973f;
       --font-display:"BrandyWine","Cormorant Garamond","Playfair Display",Georgia,serif;
       --font-serif:"EB Garamond",Georgia,serif;
       --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; }
@@ -53,21 +53,22 @@ const ICONS: Record<string,string> = {
     .brand-flourish{ display:block; width:78%; height:7px; margin:-.4rem 1.2rem .4rem; }
     aside{ display:flex; flex-direction:column; }
     .sidefig{ margin:auto 0 0; padding:1.2rem 1rem 1.4rem; text-align:center; opacity:.85; }
-    .sidefig img{ width:74px; height:auto; filter:brightness(0) invert(1); opacity:.6; }
+    .sidefig svg{ width:80px; height:62px; opacity:.75; }
     .sidefig figcaption{ font-family:var(--font-display); font-size:1.05rem; color:rgba(255,255,255,.45); margin-top:.3rem; }
     nav a{ display:flex; align-items:center; gap:.7rem; padding:.62rem 1.2rem; font-family:var(--font-sans); font-size:.74rem; text-transform:uppercase; letter-spacing:.11em; color:rgba(255,255,255,.65); border-left:3px solid transparent; }
     nav a:hover{ background:rgba(255,255,255,.05); color:#fff; }
-    nav a.on{ color:#fff; border-left-color:#fff; background:rgba(255,255,255,.06); }
+    nav a.on{ color:#fff; border-left-color:var(--gold); background:rgba(255,255,255,.08); }
     nav svg{ width:17px; height:17px; flex:none; }
-    main{ padding:1.6rem 2rem 3rem; max-width:1200px; }
+    main{ padding:1.7rem 2.4rem 3rem; max-width:none; width:100%; }
     .card{ transition:box-shadow .15s, transform .12s; }
     tbody tr{ transition:background .12s; } tbody tr:hover{ background:#faf9f6; }
     .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1.4rem; }
-    .top h1{ font-family:var(--font-display); font-weight:600; font-size:2.3rem; margin:0; }
+    .top{ padding-bottom:1.1rem; border-bottom:1px solid var(--line); }
+    .top h1{ font-family:var(--font-display); font-weight:600; font-size:2.4rem; margin:0; }
     .btn{ display:inline-flex; align-items:center; gap:.4rem; border:1px solid var(--ink); background:#fff; padding:.5rem .9rem; font-family:var(--font-sans); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; cursor:pointer; border-radius:0; }
     .btn:hover{ background:var(--ink); color:#fff; }
     .banner{ background:#fff7e6; border:1px solid #e8d9a8; color:#7a5c12; padding:.6rem .9rem; border-radius:3px; font-size:.82rem; margin-bottom:1.2rem; }
-    .card{ background:#fff; border:1px solid var(--line); border-radius:4px; }
+    .card{ background:#fff; border:1px solid var(--line); border-radius:6px; box-shadow:0 1px 2px rgba(20,18,15,.04); }
     table{ width:100%; border-collapse:collapse; font-family:var(--font-sans); font-size:.84rem; background:#fff; }
     th,td{ text-align:left; padding:.7rem .9rem; border-bottom:1px solid var(--line); }
     th{ font-size:.64rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); background:#faf9f6; }
@@ -79,7 +80,8 @@ const ICONS: Record<string,string> = {
     .s-completed{ background:#dff0e0; color:#1f6b2e; } .s-refunded{ background:#eee; color:#555; } .s-failed{ background:#f6dede; color:#8a1f1f; }
     .empty{ text-align:center; color:var(--muted); padding:3rem 1rem; }
     .grid-stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; }
-    .stat{ background:#fff; border:1px solid var(--line); border-radius:4px; padding:1rem 1.1rem; }
+    .stat{ background:#fff; border:1px solid var(--line); border-radius:6px; padding:1.15rem 1.25rem; box-shadow:0 1px 2px rgba(20,18,15,.04); position:relative; overflow:hidden; }
+    .stat::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--gold); opacity:.5; }
     .stat .k{ font-size:.68rem; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); }
     .stat .v{ font-family:var(--font-display); font-size:2.1rem; margin-top:.15rem; line-height:1; }
     .muted{ color:var(--muted); }
@@ -91,7 +93,7 @@ const ICONS: Record<string,string> = {
   <div class="app">
     <aside>
       <div class="brand"><img src="/favicon.svg" alt="" /><b>aPaulogy</b></div>
-      <svg class="brand-flourish" viewBox="0 0 200 8" preserveAspectRatio="none"><path d="M4 4 Q50 0 100 4 T196 3" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.4" stroke-linecap="round"/></svg>
+      <svg class="brand-flourish" viewBox="0 0 200 8" preserveAspectRatio="none"><path d="M4 4 Q50 0 100 4 T196 3" fill="none" stroke="var(--gold)" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/></svg>
       <nav>
         {nav.map((n) => (
           <a href={n.href} class={active === n.key ? 'on' : ''}>
@@ -101,7 +103,11 @@ const ICONS: Record<string,string> = {
         ))}
       </nav>
       <figure class="sidefig">
-        <img src="/brand/scale-man.png" alt="" />
+        <svg viewBox="0 0 90 70" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="20" cy="52" r="12"/><circle cx="68" cy="52" r="12"/>
+          <path d="M20 52 L38 30 L68 52 M38 30 L44 16 M32 16 h16"/><circle cx="46" cy="9" r="6"/>
+          <path d="M38 30 L54 30"/>
+        </svg>
         <figcaption>Minding the shop</figcaption>
       </figure>
     </aside>
@@ -113,7 +119,7 @@ const ICONS: Record<string,string> = {
         </button>
       </div>
       {!dbBound && (
-        <div class="banner">Database not connected yet — live data appears once you bind a D1 database (<code>DB</code>) in <code>wrangler.toml</code> and load <code>db/schema.sql</code>. The admin, auth and actions all work now.</div>
+        <div class="banner"><strong>Live data isn't connected to this deployment yet.</strong> On your Cloudflare project → Settings → Bindings, confirm <code>DB</code> → <code>apaulogyecomm</code>, then <em>redeploy</em> (bindings only attach to new deployments). If the database is bound but empty, run the <code>db/import-*.sql</code> files in the D1 Console.</div>
       )}
       <slot />
     </main>

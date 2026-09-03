@@ -33,7 +33,7 @@ const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.
   jsonld={jsonld}
 >
   <div class="container-page py-12">
-    <nav class="text-xs text-[var(--color-muted)] mb-5" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+    <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span>
       <a href="/store/" class="link-hover">Store</a> <span aria-hidden="true">/</span>
       {parent && (<><a href={`/category/${parent.slug}/`} class="link-hover">{parent.name}</a> <span aria-hidden="true">/</span> </>)}
@@ -44,7 +44,11 @@ const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.
       <p class="eyebrow">Collection</p>
       <h1 class="text-5xl sm:text-6xl mt-3">{category.name}</h1>
       {category.description && <p class="mt-4 text-[var(--color-ink-soft)] text-lg">{category.description}</p>}
-      <p class="mt-3 text-sm text-[var(--color-muted)]" style="font-family:var(--font-sans)">A Series of {products.length} {products.length === 1 ? 'Drawing' : 'Drawings'}</p>
+      <p class="series-tag mt-4">
+        <span class="series-rule"></span>
+        <span class="series-text">A Series of {products.length} {products.length === 1 ? 'Drawing' : 'Drawings'}</span>
+        <span class="series-rule"></span>
+      </p>
     </header>
 
     {children.length > 0 && (
@@ -60,7 +64,7 @@ const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.
         <span class="text-[0.62rem] uppercase tracking-[0.12em] text-[var(--color-muted)] mr-2" style="font-family:var(--font-sans)">Per row</span>
         <button data-cols="2" aria-pressed="false">2</button><button data-cols="3" aria-pressed="true">3</button><button data-cols="4" aria-pressed="false">4</button>
       </div></div>
-      <script is:inline>(function(){var g=document.currentScript.parentElement.querySelector('.product-grid');if(!g)return;var saved=localStorage.getItem('apg_cols')||'3';function set(n){g.style.setProperty('--cols',n);document.querySelectorAll('.cols-control button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.cols===n);});localStorage.setItem('apg_cols',n);}document.querySelectorAll('.cols-control button').forEach(function(b){b.addEventListener('click',function(){set(b.dataset.cols);});});set(saved);})();</script>
+      <script is:inline>(function(){function init(){var g=document.querySelector('.product-grid');if(!g)return;var saved=localStorage.getItem('apg_cols')||'3';function set(n){g.style.setProperty('--cols',n);document.querySelectorAll('.cols-control button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.cols===n));});localStorage.setItem('apg_cols',n);}document.querySelectorAll('.cols-control button').forEach(function(b){b.addEventListener('click',function(){set(b.dataset.cols);});});set(saved);}if(document.readyState!=='loading')init();else document.addEventListener('DOMContentLoaded',init);document.addEventListener('astro:page-load',init);})();</script>
 
       <div class="product-grid grid gap-6 lg:gap-8">
         {products.map((p) => <ProductCard product={p} showKind={mixedKinds} />)}
