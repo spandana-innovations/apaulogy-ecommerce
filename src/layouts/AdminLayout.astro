@@ -1,9 +1,7 @@
 ---
 export interface Props { title: string; active: string; dbBound?: boolean; }
 const { title, active, dbBound = true } = Astro.props;
-import '@fontsource/cormorant-garamond/600.css';
-import '@fontsource/eb-garamond/400.css';
-import '@fontsource/eb-garamond/500.css';
+import '@fontsource-variable/inter';
 const nav = [
   { key: 'dashboard',   label: 'Dashboard',      href: '/apaulogy-admin/',            icon: 'grid' },
   { key: 'orders',      label: 'Orders',         href: '/apaulogy-admin/orders/',     icon: 'bag' },
@@ -45,9 +43,9 @@ const ICONS: Record<string,string> = {
       --ok:#39d98a; --ok-bg:rgba(57,217,138,.14); --warn:#ffcf5c; --warn-bg:rgba(255,207,92,.14);
       --info:#6cb6ff; --info-bg:rgba(108,182,255,.14); --bad:#ff7a7a; --bad-bg:rgba(255,122,122,.14);
       --r:12px; --r-sm:8px; --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35);
-      --font-display:"BrandyWine","Cormorant Garamond","Playfair Display",Georgia,serif;
-      --font-serif:"EB Garamond",Georgia,serif;
-      --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      --font-display:"Inter Variable","Inter",-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      --font-serif:"Inter Variable","Inter",-apple-system,sans-serif;
+      --font-sans:"Inter Variable","Inter",-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     }
     *{ box-sizing:border-box; } html,body{ margin:0; }
     body{ font-family:var(--font-sans); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; }
@@ -55,12 +53,24 @@ const ICONS: Record<string,string> = {
     ::selection{ background:var(--gold-soft); }
 
     .app{ display:grid; grid-template-columns:250px 1fr; min-height:100vh; }
+    /* #1 — light theme */
+    html[data-theme="light"]{
+      --bg:#f5f6f8; --panel:#ffffff; --panel-2:#f7f8fa; --raise:#eef1f4;
+      --ink:#141a22; --ink-soft:#3d4653; --muted:#7a8494; --line:#e6e9ee; --line-strong:#d3d8e0;
+      --gold:#a9842f; --gold-soft:rgba(169,132,47,.14); --blue:#2b7fff;
+      --ok:#178a52; --ok-bg:#e3f6ec; --warn:#9a6a00; --warn-bg:#fbf1d6; --info:#1f6fd0; --info-bg:#e5effb; --bad:#c23b3b; --bad-bg:#fbe6e6;
+      --shadow:0 1px 2px rgba(20,26,34,.05), 0 8px 26px rgba(20,26,34,.06);
+    }
+    html[data-theme="light"] .app > aside{ background:#0e1620; }  /* keep sidebar dark for contrast */
+    html[data-theme="light"] .brand b{ color:#fff; }
+    html[data-theme="light"] nav a{ color:rgba(255,255,255,.7); }
+
 
     /* Sidebar */
     .app > aside{ background:#04090f; color:var(--ink); padding:1.3rem .9rem; position:sticky; top:0; height:100vh; overflow-y:auto; display:flex; flex-direction:column; gap:.2rem; border-right:1px solid var(--line); }
     .brand{ display:flex; align-items:center; gap:.7rem; padding:.2rem .6rem 1rem; }
     .brand img{ width:34px; height:34px; background:#fff; border-radius:9px; padding:3px; }
-    .brand b{ font-family:var(--font-display); font-weight:600; font-size:1.5rem; letter-spacing:.01em; color:#fff; }
+    .brand b{ font-family:var(--font-display); font-weight:700; font-size:1.15rem; letter-spacing:-.01em; color:var(--ink); }
     .brand-flourish{ display:none; }
     nav{ display:flex; flex-direction:column; gap:2px; margin-top:.2rem; }
     nav a{ display:flex; align-items:center; gap:.75rem; padding:.62rem .8rem; border-radius:var(--r-sm);
@@ -71,9 +81,10 @@ const ICONS: Record<string,string> = {
     nav svg{ width:18px; height:18px; flex:none; opacity:.65; }
 
     /* Main */
-    main{ padding:1.9rem 2.6rem 3rem; max-width:1360px; width:100%; }
+    main{ padding:1.9rem 2.6rem 1.2rem; max-width:1360px; width:100%; display:flex; flex-direction:column; min-height:100vh; }
+    main > .top ~ *:last-of-type{ } .adm-footer{ margin-top:auto !important; }
     .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1.8rem; }
-    .top h1{ font-family:var(--font-display); font-weight:600; font-size:2.6rem; margin:0; line-height:1; color:#fff; }
+    .top h1{ font-family:var(--font-display); font-weight:700; font-size:1.9rem; letter-spacing:-.02em; margin:0; line-height:1.1; color:var(--ink); }
 
     /* Buttons */
     .btn{ display:inline-flex; align-items:center; gap:.45rem; border:1px solid var(--line-strong); background:var(--raise); color:var(--ink);
@@ -115,7 +126,7 @@ const ICONS: Record<string,string> = {
     .stat{ background:linear-gradient(180deg,var(--panel),var(--panel-2)); border:1px solid var(--line); border-radius:var(--r); padding:1.3rem 1.35rem; box-shadow:var(--shadow); transition:transform .13s, border-color .13s; }
     .stat:hover{ transform:translateY(-2px); border-color:var(--gold); }
     .stat .k{ font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:600; }
-    .stat .v{ font-family:var(--font-display); font-size:2.5rem; margin-top:.3rem; line-height:1; color:#fff; }
+    .stat .v{ font-family:var(--font-display); font-weight:700; font-size:1.9rem; letter-spacing:-.02em; margin-top:.35rem; line-height:1; color:var(--ink); }
 
     /* Forms */
     input,select,textarea{ font:inherit; font-size:.88rem; padding:.6rem .75rem; border:1px solid var(--line-strong); border-radius:var(--r-sm); background:var(--panel-2); color:var(--ink); transition:border-color .13s, box-shadow .13s; }
@@ -125,6 +136,10 @@ const ICONS: Record<string,string> = {
     .muted{ color:var(--muted); }
     code{ font-family:ui-monospace,Menlo,monospace; background:var(--panel-2); padding:.1rem .35rem; border-radius:4px; }
 
+    /* #4 — kill stray light backgrounds in dark mode (except real image thumbs) */
+    html[data-theme="dark"] main [style*="background:#fff"]:not(img):not(.imgcell img){ background:var(--panel-2) !important; color:var(--ink); }
+    html[data-theme="dark"] main [style*="background:#000"]:not(.rm-img){ }
+    .imgcell img{ background:#fff !important; }  /* thumbnails need white behind transparent art */
     /* admin footer */
     .adm-footer{ margin-top:3rem; padding-top:1.4rem; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:1rem; font-size:.78rem; color:var(--muted); }
     .adm-footer .sep{ opacity:.4; margin:0 .3rem; }
@@ -152,7 +167,10 @@ const ICONS: Record<string,string> = {
     <main>
       <div class="top">
         <h1>{title}</h1>
-        <button class="btn" id="logout" aria-label="Sign out" title="Sign out" style="padding:.5rem;border-radius:0">
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme" title="Toggle light / dark" style="padding:.5rem;border-radius:8px;margin-right:.5rem">
+          <svg id="theme-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></svg>
+        </button>
+        <button class="btn" id="logout" aria-label="Sign out" title="Sign out" style="padding:.5rem;border-radius:8px">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
         </button>
       </div>
@@ -164,14 +182,18 @@ const ICONS: Record<string,string> = {
       <footer class="adm-footer">
         <p>© {new Date().getFullYear()} aPaulogy Gallery <span class="sep">|</span> All artwork © Paul Fernandes</p>
         <a href="https://quantump2x.com" rel="noopener" target="_blank" class="adm-credit" aria-label="Quantum P2X">
-          <span>Built by</span>
-          <img src="/brand/quantump2x.svg" alt="Quantum P2X" width="22" height="22" />
-          <span class="adm-credit-name">Quantum P2X</span>
+          <img src="/brand/quantump2x.svg" alt="Quantum P2X" width="26" height="26" />
         </a>
       </footer>
     </main>
   </div>
   <script>
+    const sun='<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/>';
+    const moon='<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>';
+    function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); const ico=document.getElementById('theme-ico'); if(ico) ico.innerHTML = t==='light' ? moon : sun; localStorage.setItem('apg_admin_theme', t); }
+    applyTheme(localStorage.getItem('apg_admin_theme') || 'dark');
+    document.getElementById('theme-toggle')?.addEventListener('click', ()=>{ applyTheme(document.documentElement.getAttribute('data-theme')==='light' ? 'dark' : 'light'); });
+
     document.getElementById('logout')?.addEventListener('click', async () => {
       await fetch('/api/admin/logout', { method: 'POST' });
       location.href = '/';

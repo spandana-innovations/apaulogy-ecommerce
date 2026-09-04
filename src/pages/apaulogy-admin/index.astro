@@ -87,7 +87,7 @@ const needsAction = (s.pending || 0) + (s.onhold || 0);
 
   <style is:global>
     .action-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:1rem; margin-bottom:1.6rem }
-    .action{ display:flex; flex-direction:column; gap:.15rem; padding:1.1rem 1.2rem; background:#fff; border:1px solid var(--line);
+    .action{ display:flex; flex-direction:column; gap:.15rem; padding:1.1rem 1.2rem; background:var(--panel); border:1px solid var(--line); color:var(--ink);
       position:relative; transition:transform .12s, box-shadow .12s; }
     .action:hover{ transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.08) }
     .action .a-k{ font-family:var(--font-sans); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted) }

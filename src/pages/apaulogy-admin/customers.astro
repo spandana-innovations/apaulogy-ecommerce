@@ -2,7 +2,7 @@
 export const prerender = false;
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { getStats, listCustomers } from '../../lib/admin-data';
-import { formatINR } from '../../lib/format';
+import { formatINR, since } from '../../lib/format';
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
 const url = Astro.url;
@@ -20,12 +20,12 @@ function qs(o:Record<string,string>){ const p=new URLSearchParams({q:search,page
   <div class="card" style="overflow:hidden">
     {rows.length ? (
       <table>
-        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th style="text-align:right">Orders</th><th style="text-align:right">Spend</th><th>Joined</th></tr></thead>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th style="text-align:right">Orders</th><th style="text-align:right">Lifetime spend</th><th>Customer since</th></tr></thead>
         <tbody>{rows.map((c:any)=>(<tr>
           <td><a href={`/apaulogy-admin/customers/${encodeURIComponent(c.email)}/`} class="u"><strong style="font-weight:600">{c.name||'—'}</strong></a></td>
           <td>{c.email}</td><td class="muted">{c.phone||'—'}</td>
           <td style="text-align:right">{c.orders}</td><td style="text-align:right">{formatINR(c.spend)}</td>
-          <td class="muted">{(c.created_at||'').slice(0,10)}</td>
+          <td class="muted"><span title={(c.created_at||'').slice(0,10)}>{since(c.created_at)}</span></td>
         </tr>))}</tbody>
       </table>
     ) : (<div class="empty">No customers match.</div>)}

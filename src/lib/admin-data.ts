@@ -1,17 +1,23 @@
 type Env = Record<string, any>;
 
-async function q<T = any>(env: Env, sql: string, ...bind: any[]): Promise<{ ok: boolean; rows: T[] }> {
+async function q<T = any>(env: Env, sql: string, ...bind: any[]): Promise<{ ok: boolean; rows: T[]; error?: string }> {
   if (!env?.DB) return { ok: false, rows: [] };
   try {
-    const res = await env.DB.prepare(sql).bind(...bind).all();
-    return { ok: true, rows: (res.results as T[]) || [] };
-  } catch {
-    return { ok: false, rows: [] };
+    const stmt = bind.length ? env.DB.prepare(sql).bind(...bind) : env.DB.prepare(sql);
+    const res = await stmt.all();
+    return { ok: true, rows: (res?.results as T[]) || [] };
+  } catch (e: any) {
+    return { ok: false, rows: [], error: String(e?.message || e) };
   }
 }
 async function one<T = any>(env: Env, sql: string, ...bind: any[]): Promise<T | null> {
-  const r = await q<T>(env, sql, ...bind);
-  return r.rows[0] ?? null;
+  if (!env?.DB) return null;
+  try {
+    const stmt = bind.length ? env.DB.prepare(sql).bind(...bind) : env.DB.prepare(sql);
+    return (await stmt.first()) as T;
+  } catch {
+    return null;
+  }
 }
 
 export async function getStats(env: Env) {

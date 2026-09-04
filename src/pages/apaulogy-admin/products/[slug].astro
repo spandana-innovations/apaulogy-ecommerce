@@ -38,8 +38,8 @@ const varWeights = (() => { try { return ov.variations_json ? Object.fromEntries
       <div class="card" style="padding:1.2rem">
         <h3 style="font-family:var(--font-display);font-size:1.3rem;margin:0 0 .8rem">{p.title}</h3>
         <label class="fld">Title<input id="f-title" value={p.title}/></label>
-        <label class="fld">Short description (HTML)<textarea id="f-short" rows="2" set:html={p.short_html}></textarea></label>
-        <label class="fld">Full description (HTML)<textarea id="f-desc" rows="6" set:html={p.description_html}></textarea></label>
+        <label class="fld">Short description (HTML)<textarea id="f-short" rows="2">{p.short_html}</textarea></label>
+        <label class="fld">Full description (HTML)<textarea id="f-desc" rows="6">{p.description_html}</textarea></label>
       </div>
 
       <div class="card" style="padding:1.2rem">
@@ -115,7 +115,7 @@ const varWeights = (() => { try { return ov.variations_json ? Object.fromEntries
 
   <style is:global>
     .fld{ display:block; margin-bottom:.7rem } .fld input,.fld textarea{ width:100%; margin-top:.25rem }
-    #editor input,#editor textarea,#editor select{ font:inherit; padding:.45rem .6rem; border:1px solid var(--line); border-radius:0; background:#fff }
+    #editor input,#editor textarea,#editor select{ font:inherit; padding:.5rem .65rem; border:1px solid var(--line-strong); border-radius:8px; background:var(--panel-2); color:var(--ink) }
     @media(max-width:900px){ #editor{ grid-template-columns:1fr !important } }
   </style>
 

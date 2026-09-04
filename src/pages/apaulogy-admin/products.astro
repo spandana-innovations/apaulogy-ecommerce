@@ -24,7 +24,7 @@ const products = cat.products.map((p:any) => ({
       <tbody>
         {products.map((p:any) => (
           <tr data-name={p.name.toLowerCase()} data-cat={p.cat.toLowerCase()}>
-            <td style="width:52px">{p.img ? <img src={p.img} alt="" style="width:40px;height:32px;object-fit:contain;background:#fff;border:1px solid #eee" /> : ''}</td>
+            <td style="width:52px">{p.img ? <img src={p.img} alt="" style="width:40px;height:32px;object-fit:contain;background:#fff;border:1px solid var(--line)" /> : ''}</td>
             <td><strong style="font-weight:600">{p.name}</strong></td>
             <td class="muted">{p.cat}</td>
             <td><span class="pill" style="background:#eee;color:#444">{p.type}</span></td>
