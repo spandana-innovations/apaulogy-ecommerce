@@ -25,7 +25,7 @@ const cats = cat.categories.map((c:any) => {
             <td class="muted">{c.count}</td>
             <td class="muted" style="max-width:240px">{c.meta_title||'—'}</td>
             <td>{c.hidden?'Hidden':'✓'}</td>
-            <td style="text-align:right"><button class="edit-cat btn" data-cat={JSON.stringify(c)}>Edit</button></td>
+            <td style="text-align:right"><button class="edit-cat btn" data-cat={Buffer.from(JSON.stringify(c)).toString("base64")}>Edit</button></td>
           </tr>
         ))}
       </tbody>
@@ -52,7 +52,7 @@ const cats = cat.categories.map((c:any) => {
   <script>
     const modal=document.getElementById('modal'); let slug='';
     document.querySelectorAll('.edit-cat').forEach(b=>b.addEventListener('click',()=>{
-      const c=JSON.parse(b.dataset.cat); slug=c.slug;
+      const c=JSON.parse(decodeURIComponent(escape(atob(b.dataset.cat)))); slug=c.slug;
       document.getElementById('m-title').textContent='Edit — '+c.name;
       document.getElementById('c-name').value=c.name||'';
       document.getElementById('c-desc').value=c.description||'';
