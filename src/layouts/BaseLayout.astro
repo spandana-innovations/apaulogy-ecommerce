@@ -129,5 +129,12 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
       document.addEventListener('astro:after-swap', guardImages);
       document.addEventListener('astro:page-load', guardImages);
     </script>
+      <script>
+      (function(){
+        function sid(){ try{ var k='apg_sid'; var v=localStorage.getItem(k); if(!v){ v=Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem(k,v); } return v; }catch(e){ return ''; } }
+        function hit(){ try{ navigator.sendBeacon ? navigator.sendBeacon('/api/track', new Blob([JSON.stringify({path:location.pathname, referrer:document.referrer||'', session:sid()})],{type:'application/json'})) : fetch('/api/track',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({path:location.pathname, referrer:document.referrer||'', session:sid()})}); }catch(e){} }
+        hit(); document.addEventListener('astro:page-load', hit);
+      })();
+    </script>
   </body>
 </html>

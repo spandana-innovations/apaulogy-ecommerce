@@ -91,16 +91,16 @@ const needsAction = (s.pending || 0) + (s.onhold || 0);
       position:relative; transition:transform .12s, box-shadow .12s; }
     .action:hover{ transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.08) }
     .action .a-k{ font-family:var(--font-sans); font-size:.66rem; text-transform:uppercase; letter-spacing:.1em; color:var(--muted) }
-    .action .a-v{ font-family:var(--font-display); font-size:2.2rem; line-height:1.05 }
+    .action .a-v{ font-family:var(--font-display); font-weight:700; font-size:2rem; line-height:1.05; color:var(--ink) }
     .action .a-cta{ font-family:var(--font-sans); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; margin-top:.3rem; opacity:.6 }
-    .a-hot{ border-color:#000; box-shadow:inset 3px 0 0 #000 } .a-hot .a-v{ color:#000 }
-    .a-warm{ box-shadow:inset 3px 0 0 #8a6100 } .a-rev .a-v{ font-size:1.7rem }
+    .a-hot{ border-color:var(--gold); box-shadow:inset 3px 0 0 var(--gold) } .a-hot .a-v{ color:var(--ink) }
+    .a-warm{ box-shadow:inset 3px 0 0 var(--warn) } .a-rev .a-v{ font-size:1.7rem; color:var(--ok) }
     .dash-cols{ display:grid; grid-template-columns:1fr 300px; gap:1.6rem; align-items:start }
     .sec-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:.7rem }
     .sec-head.sm{ margin-bottom:0 } .sec-head h2{ font-family:var(--font-display); font-size:1.35rem; margin:0 }
-    .badge{ font-family:var(--font-sans); font-size:.7rem; background:#000; color:#fff; border-radius:20px; padding:.05rem .5rem; vertical-align:middle }
+    .badge{ font-family:var(--font-sans); font-size:.7rem; background:var(--gold); color:#0a0f16; font-weight:700; border-radius:20px; padding:.05rem .5rem; vertical-align:middle }
     .lnk,.u{ font-family:var(--font-sans); font-size:.8rem; text-decoration:underline }
-    .card.pad{ padding:1.1rem 1.2rem; margin-bottom:1rem }
+    .card.pad{ padding:1.1rem 1.2rem; margin-bottom:1rem; background:var(--panel); color:var(--ink) }
     .mini-k{ display:block; font-family:var(--font-sans); font-size:.66rem; text-transform:uppercase; letter-spacing:.09em; color:var(--muted); margin-top:.6rem }
     .mini-v{ display:block; font-family:var(--font-display); font-size:1.5rem; line-height:1 }
     .mini-k:first-child{ margin-top:0 }

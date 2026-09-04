@@ -112,3 +112,20 @@ CREATE TABLE IF NOT EXISTS free_shipping_products (
 
 -- Extend coupons with an optional per-product constraint (safe if column exists)
 -- (D1 ignores duplicate-column errors on re-run; wrap in a no-op if already added)
+
+-- Site analytics: lightweight page-view tracking
+CREATE TABLE IF NOT EXISTS pageviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  path TEXT, referrer TEXT, session TEXT, device TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_pv_created ON pageviews(created_at);
+CREATE INDEX IF NOT EXISTS idx_pv_path ON pageviews(path);
+
+-- Order status timeline
+CREATE TABLE IF NOT EXISTS order_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_number TEXT, kind TEXT, detail TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_oe_order ON order_events(order_number);

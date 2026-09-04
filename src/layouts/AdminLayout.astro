@@ -6,6 +6,7 @@ const nav = [
   { key: 'dashboard',   label: 'Dashboard',      href: '/apaulogy-admin/',            icon: 'grid' },
   { key: 'orders',      label: 'Orders',         href: '/apaulogy-admin/orders/',     icon: 'bag' },
   { key: 'stats',       label: 'Stats',          href: '/apaulogy-admin/stats/',      icon: 'chart' },
+  { key: 'analytics',   label: 'Site analytics', href: '/apaulogy-admin/analytics/',  icon: 'pulse' },
   { key: 'products',    label: 'Products',       href: '/apaulogy-admin/products/',   icon: 'tag' },
   { key: 'categories',  label: 'Categories',     href: '/apaulogy-admin/categories/', icon: 'grid' },
   { key: 'discounts',   label: 'Discounts',      href: '/apaulogy-admin/discounts/',  icon: 'tag' },
@@ -24,6 +25,7 @@ const ICONS: Record<string,string> = {
   shield:'<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z" stroke-linejoin="round"/>',
   chat:'<path d="M4 5h16v11H8l-4 4z" stroke-linejoin="round"/>',
   chart:'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>',
+  pulse:'<path d="M3 12h4l2-6 4 12 2-6h6"/>',
   truck:'<path d="M3 6h11v9H3zM14 9h4l3 3v3h-7z"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>',
   cog:'<circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
 };
@@ -80,6 +82,12 @@ const ICONS: Record<string,string> = {
     nav a.on svg{ color:var(--gold); opacity:1; }
     nav svg{ width:18px; height:18px; flex:none; opacity:.65; }
 
+    .side-util{ margin-top:auto; padding-top:.8rem; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:2px; }
+    .side-btn{ display:flex; align-items:center; gap:.75rem; padding:.62rem .8rem; border-radius:var(--r-sm); background:none; border:0; cursor:pointer;
+      font-family:var(--font-sans); font-size:.82rem; font-weight:500; color:var(--ink-soft); transition:all .13s; text-align:left; }
+    .side-btn:hover{ background:rgba(255,255,255,.05); color:#fff; }
+    .side-btn svg{ opacity:.7; }
+    html[data-theme="light"] .side-btn:hover{ background:rgba(255,255,255,.08); }
     /* Main */
     main{ padding:1.9rem 2.6rem 1.2rem; max-width:1360px; width:100%; display:flex; flex-direction:column; min-height:100vh; }
     main > .top ~ *:last-of-type{ } .adm-footer{ margin-top:auto !important; }
@@ -163,16 +171,20 @@ const ICONS: Record<string,string> = {
           </a>
         ))}
       </nav>
+      <div class="side-util">
+        <button class="side-btn" id="theme-toggle" type="button" aria-label="Toggle theme">
+          <svg id="theme-ico" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></svg>
+          <span id="theme-label">Dark mode</span>
+        </button>
+        <button class="side-btn" id="logout" type="button" aria-label="Sign out">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          <span>Sign out</span>
+        </button>
+      </div>
     </aside>
     <main>
       <div class="top">
         <h1>{title}</h1>
-        <button class="btn" id="theme-toggle" aria-label="Toggle theme" title="Toggle light / dark" style="padding:.5rem;border-radius:8px;margin-right:.5rem">
-          <svg id="theme-ico" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></svg>
-        </button>
-        <button class="btn" id="logout" aria-label="Sign out" title="Sign out" style="padding:.5rem;border-radius:8px">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-        </button>
       </div>
       {!dbBound && (
         <div class="banner"><strong>Live data isn't connected to this deployment yet.</strong> On your Cloudflare project → Settings → Bindings, confirm <code>DB</code> → <code>apaulogyecomm</code>, then <em>redeploy</em> (bindings only attach to new deployments). If the database is bound but empty, run the <code>db/import-*.sql</code> files in the D1 Console.</div>
@@ -190,7 +202,7 @@ const ICONS: Record<string,string> = {
   <script>
     const sun='<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/>';
     const moon='<path d="M20 14.5A8 8 0 1 1 9.5 4 6.5 6.5 0 0 0 20 14.5z"/>';
-    function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); const ico=document.getElementById('theme-ico'); if(ico) ico.innerHTML = t==='light' ? moon : sun; localStorage.setItem('apg_admin_theme', t); }
+    function applyTheme(t){ document.documentElement.setAttribute('data-theme', t); const ico=document.getElementById('theme-ico'); if(ico) ico.innerHTML = t==='light' ? moon : sun; const lbl=document.getElementById('theme-label'); if(lbl) lbl.textContent = t==='light' ? 'Light mode' : 'Dark mode'; localStorage.setItem('apg_admin_theme', t); }
     applyTheme(localStorage.getItem('apg_admin_theme') || 'dark');
     document.getElementById('theme-toggle')?.addEventListener('click', ()=>{ applyTheme(document.documentElement.getAttribute('data-theme')==='light' ? 'dark' : 'light'); });
 

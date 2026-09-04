@@ -78,7 +78,7 @@ const varWeights = (() => { try { return ov.variations_json ? Object.fromEntries
 
       <div class="card" style="padding:1.2rem">
         <h4 style="margin:0 0 .8rem;font-family:var(--font-display);font-size:1.1rem">Shipping</h4>
-        {type!=='variable' ? (
+        {p.type!=='variable' ? (
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
             <label class="fld">Weight (kg)<input id="f-weight" type="number" step="0.05" value={p.weight}/></label>
             <label class="fld">Flat fee (₹)<input id="f-shipflat" type="number" value={p.ship_flat} placeholder="auto"/></label>

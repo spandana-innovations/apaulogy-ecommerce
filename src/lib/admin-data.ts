@@ -246,3 +246,32 @@ export async function setSetting(env: Env, key: string, value: string) {
   try { await env.DB.prepare(`INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`).bind(key, value).run(); return true; }
   catch { return false; }
 }
+
+/* ---- Site analytics (page-view tracking) -------------------------------- */
+export async function analyticsSummary(env: Env, days = 30) {
+  const s = await one<any>(env, `SELECT COUNT(*) views, COUNT(DISTINCT session) visitors,
+     SUM(CASE WHEN device='mobile' THEN 1 ELSE 0 END) mobile
+     FROM pageviews WHERE created_at >= date('now', ?)`, `-${days} days`);
+  return s || { views: 0, visitors: 0, mobile: 0 };
+}
+export async function viewsByDay(env: Env, days = 30) {
+  return (await q(env, `SELECT date(created_at) d, COUNT(*) views, COUNT(DISTINCT session) visitors
+     FROM pageviews WHERE created_at >= date('now', ?) GROUP BY d ORDER BY d`, `-${days} days`)).rows;
+}
+export async function topPages(env: Env, days = 30, limit = 15) {
+  return (await q(env, `SELECT path, COUNT(*) views, COUNT(DISTINCT session) visitors
+     FROM pageviews WHERE created_at >= date('now', ?) GROUP BY path ORDER BY views DESC LIMIT ?`, `-${days} days`, limit)).rows;
+}
+export async function topReferrers(env: Env, days = 30, limit = 10) {
+  return (await q(env, `SELECT CASE WHEN referrer='' THEN 'Direct / none' ELSE referrer END ref, COUNT(*) n
+     FROM pageviews WHERE created_at >= date('now', ?) GROUP BY ref ORDER BY n DESC LIMIT ?`, `-${days} days`, limit)).rows;
+}
+
+/* ---- Order status timeline ---------------------------------------------- */
+export async function orderEvents(env: Env, orderNumber: string) {
+  return (await q(env, `SELECT kind, detail, created_at FROM order_events WHERE order_number=? ORDER BY created_at`, orderNumber)).rows;
+}
+export async function logOrderEvent(env: Env, orderNumber: string, kind: string, detail = '') {
+  if (!env?.DB) return;
+  try { await env.DB.prepare(`INSERT INTO order_events (order_number, kind, detail) VALUES (?,?,?)`).bind(orderNumber, kind, detail).run(); } catch {}
+}

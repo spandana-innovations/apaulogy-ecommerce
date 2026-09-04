@@ -27,7 +27,7 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
           <button type="button" class="btn wh-copy" data-copy="rzp-wh">Copy</button>
           <span class="muted" style="font-size:.72rem">Events: payment.captured, order.paid, payment.failed</span>
         </div>
-        <div><button class="btn" id="rzp-save" style="background:#000;color:#fff">Save keys</button> <span class="muted" id="rzp-msg" style="font-size:.78rem"></span></div>
+        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="rzp-test">Test connection</button><button class="btn" id="rzp-save" style="background:#000;color:#fff">Save keys</button> <span class="muted" id="rzp-msg" style="font-size:.78rem"></span></div>
       </div>
     </section>
 
@@ -43,7 +43,7 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
           <code class="wh-url" id="pp-wh">{origin}/api/phonepe-callback</code>
           <button type="button" class="btn wh-copy" data-copy="pp-wh">Copy</button>
         </div>
-        <div><button class="btn" id="pp-save" style="background:#000;color:#fff">Save PhonePe</button> <span class="muted" id="pp-msg" style="font-size:.78rem"></span></div>
+        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="pp-test">Test</button><button class="btn" id="pp-save" style="background:#000;color:#fff">Save PhonePe</button> <span class="muted" id="pp-msg" style="font-size:.78rem"></span></div>
       </div>
     </section>
 
@@ -54,7 +54,7 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
         <label class="fld">Resend API key<input id="re-key" type="password" placeholder="re_… (leave blank to keep)"/></label>
         <label class="fld">From address<input id="re-from" placeholder="orders@apaulogy.com"/></label>
-        <div><button class="btn" id="re-save" style="background:#000;color:#fff">Save email</button> <span class="muted" id="re-msg" style="font-size:.78rem"></span></div>
+        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="re-test">Test connection</button><button class="btn" id="re-save" style="background:#000;color:#fff">Save email</button> <span class="muted" id="re-msg" style="font-size:.78rem"></span></div>
       </div>
     </section>
 
@@ -80,10 +80,6 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
           <tr><th>Razorpay</th><td>{(rzpIdEnv||rzpId) ? <span class="pill s-completed">Configured</span> : <span class="pill s-pending">Add keys above</span>}</td></tr>
         </tbody>
       </table>
-      <p class="muted" style="font-family:var(--font-sans);font-size:.8rem;margin-top:1rem">
-        Admin credentials come from <code>ADMIN_USER</code> / <code>ADMIN_PASS</code> / <code>ADMIN_SECRET</code>.
-        For maximum security, set the Razorpay secret as a Cloudflare Pages secret instead of storing it here.
-      </p>
     </section>
   </div>
   <style is:global>
@@ -92,8 +88,26 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
     .cfg:hover{background:var(--paper-deep)}
   </style>
   <script>
+
+    async function testKey(provider, body, msgId){
+      const m=document.getElementById(msgId); m.textContent='Testing…'; m.style.color='';
+      try{ const r=await fetch('/api/admin/test-key',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({provider},body))}); const d=await r.json();
+        if(d.ok){ m.style.color='#2e8b57'; m.textContent='✓ '+(d.message||'Valid'); return true; }
+        m.style.color='#c23b3b'; m.textContent='✗ '+(d.error||'Failed'); return false;
+      }catch(e){ m.style.color='#c23b3b'; m.textContent='✗ Test failed'; return false; }
+    }
+    let rzpOK=false, ppOK=false, reOK=false;
+    document.getElementById('rzp-test')?.addEventListener('click', async()=>{ rzpOK=await testKey('razorpay',{key_id:document.getElementById('rzp-id').value.trim(),key_secret:document.getElementById('rzp-secret').value},'rzp-msg'); });
+    document.getElementById('pp-test')?.addEventListener('click', async()=>{ ppOK=await testKey('phonepe',{merchant_id:document.getElementById('pp-mid').value.trim(),salt_key:document.getElementById('pp-salt').value},'pp-msg'); });
+    document.getElementById('re-test')?.addEventListener('click', async()=>{ reOK=await testKey('resend',{resend_key:document.getElementById('re-key').value},'re-msg'); });
+    // reset the OK flag whenever a cred field changes (force re-test)
+    ['rzp-id','rzp-secret'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>rzpOK=false));
+    ['pp-mid','pp-salt'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>ppOK=false));
+    ['re-key'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>reOK=false));
+
     document.getElementById('rzp-save').addEventListener('click', async()=>{
-      const msg=document.getElementById('rzp-msg'); msg.textContent='Saving…';
+      if(document.getElementById('rzp-secret').value && !rzpOK){ const m=document.getElementById('rzp-msg'); m.style.color='#c23b3b'; m.textContent='Please “Test connection” successfully before saving.'; return; }
+      const msg=document.getElementById('rzp-msg'); msg.textContent='Saving…'; msg.style.color='';
       const body={ razorpay_key_id:document.getElementById('rzp-id').value.trim(),
         razorpay_key_secret:document.getElementById('rzp-secret').value,
         razorpay_webhook_secret:document.getElementById('rzp-webhook').value };
@@ -101,8 +115,8 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
       msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
     });
     async function saveSettings(body, msgId){ const m=document.getElementById(msgId); m.textContent='Saving…'; const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); m.textContent=r.ok?'Saved ✓':'Failed — database connected?'; }
-    document.getElementById('pp-save').addEventListener('click',()=>saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim()},'pp-msg'));
-    document.getElementById('re-save').addEventListener('click',()=>saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'));
+    document.getElementById('pp-save').addEventListener('click',()=>{ if(document.getElementById('pp-salt').value && !ppOK){ const m=document.getElementById('pp-msg'); m.style.color='#c23b3b'; m.textContent='Please test PhonePe details before saving.'; return; } saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim()},'pp-msg'); });
+    document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'); });
     document.querySelectorAll('.wh-copy').forEach(function(b){ b.addEventListener('click',function(){ var el=document.getElementById(b.dataset.copy); navigator.clipboard.writeText(el.textContent).then(function(){ b.textContent='Copied ✓'; setTimeout(function(){b.textContent='Copy';},1500); }); }); });
   </script>
 <style is:global>

@@ -1,12 +1,13 @@
 ---
 export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
-import { getStats, getOrder } from '../../../lib/admin-data';
+import { getStats, getOrder, orderEvents } from '../../../lib/admin-data';
 import { formatINR } from '../../../lib/format';
 const { order } = Astro.params;
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
 const o = await getOrder(env, order!);
+const events = o ? await orderEvents(env, order!) : [];
 if (!o) return Astro.redirect('/apaulogy-admin/orders/');
 const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { return {}; } })();
 ---
@@ -49,9 +50,23 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
         <button class="btn" id="o-save" style="background:#000;color:#fff;justify-content:center;width:100%;margin-top:.5rem">Update order</button>
         <p class="muted" id="o-msg" style="font-size:.75rem;text-align:center;margin-top:.5rem"></p>
       </div>
+      <div class="card" style="padding:1.2rem">
+        <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .8rem">Timeline</h4>
+        <ol class="tl">
+          <li class="tl-i"><span class="tl-dot"></span><div><strong>Order placed</strong><span class="tl-t">{(o.created_at||'').replace('T',' ').slice(0,16)}</span></div></li>
+          {events.map((e:any)=>(<li class="tl-i"><span class="tl-dot"></span><div><strong>{e.kind==='status'?`Status → ${e.detail}`:e.kind==='tracking'?`Tracking added`:e.kind}</strong><span class="tl-t">{(e.created_at||'').replace('T',' ').slice(0,16)}{e.kind==='tracking'?` · ${e.detail}`:''}</span></div></li>))}
+          {!events.length && <li class="muted" style="font-size:.8rem;list-style:none">No changes yet — updates you make will appear here.</li>}
+        </ol>
+      </div>
     </div>
   </div>
   <style is:global>
+    .tl{ list-style:none; margin:0; padding:0; position:relative; }
+    .tl-i{ position:relative; padding:0 0 1rem 1.3rem; }
+    .tl-i:not(:last-child)::before{ content:""; position:absolute; left:4px; top:12px; bottom:0; width:1px; background:var(--line-strong); }
+    .tl-dot{ position:absolute; left:0; top:5px; width:9px; height:9px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 3px var(--gold-soft); }
+    .tl-i strong{ display:block; font-size:.85rem; }
+    .tl-t{ font-family:var(--font-sans); font-size:.72rem; color:var(--muted); }
     .fld{ display:block; margin-bottom:.6rem } .fld input,.fld select{ width:100%; margin-top:.25rem; padding:.45rem .6rem; border:1px solid var(--line); font:inherit }
   </style>
   <script is:inline define:vars={{ orderNum: o.order_number }}>window.__order=orderNum;</script>
