@@ -316,6 +316,10 @@ export async function readsToday(env: Env): Promise<number> {
   const r = await one<{ reads: number }>(env, `SELECT reads FROM usage_counters WHERE day=?`, day);
   return r?.reads ?? 0;
 }
+async function tableExists(env: Env, name: string): Promise<boolean> {
+  const r = await one<{ n: number }>(env, `SELECT COUNT(*) n FROM sqlite_master WHERE type='table' AND name=?`, name);
+  return (r?.n ?? 0) > 0;
+}
 export async function systemStatus(env: Env) {
   const services: { name: string; ok: boolean; note: string }[] = [];
   // D1
@@ -326,20 +330,52 @@ export async function systemStatus(env: Env) {
   }
   services.push({ name: 'Database (D1)', ok: d1ok, note: d1note });
   services.push({ name: 'Media storage (R2)', ok: !!env.MEDIA, note: env.MEDIA ? 'Bound' : 'Not bound' });
-  const rzp = !!(env.RAZORPAY_KEY_ID) || !!(await getSetting(env, 'razorpay_key_id'));
-  services.push({ name: 'Razorpay payments', ok: rzp, note: rzp ? 'Configured' : 'No keys' });
-  const pp = !!(await getSetting(env, 'phonepe_merchant_id'));
-  services.push({ name: 'PhonePe payments', ok: pp, note: pp ? 'Configured' : 'No keys' });
-  const re = !!(await getSetting(env, 'resend_key'));
-  services.push({ name: 'Email (Resend)', ok: re, note: re ? 'Configured' : 'No key' });
-  return { services, d1Limited: D1_LIMITED };
+
+  // Razorpay — verify live if secret present
+  {
+    const id = env.RAZORPAY_KEY_ID || (await getSetting(env, 'razorpay_key_id'));
+    const sec = env.RAZORPAY_KEY_SECRET || (await getSetting(env, 'razorpay_key_secret'));
+    if (!id || !sec) services.push({ name: 'Razorpay payments', ok: false, note: 'No keys' });
+    else {
+      try {
+        const r = await fetch('https://api.razorpay.com/v1/payments?count=1', { headers: { Authorization: 'Basic ' + btoa(`${id}:${sec}`) } });
+        services.push({ name: 'Razorpay payments', ok: r.ok, note: r.ok ? 'Verified · live' : (r.status === 401 ? 'Invalid keys' : `Error ${r.status}`) });
+      } catch { services.push({ name: 'Razorpay payments', ok: false, note: 'Unreachable' }); }
+    }
+  }
+  // Resend — verify live if key present
+  {
+    const key = await getSetting(env, 'resend_key');
+    if (!key) services.push({ name: 'Email (Resend)', ok: false, note: 'No key' });
+    else {
+      try {
+        const r = await fetch('https://api.resend.com/domains', { headers: { Authorization: `Bearer ${key}` } });
+        services.push({ name: 'Email (Resend)', ok: r.ok, note: r.ok ? 'Verified · live' : (r.status === 401 || r.status === 403 ? 'Invalid key' : `Error ${r.status}`) });
+      } catch { services.push({ name: 'Email (Resend)', ok: false, note: 'Unreachable' }); }
+    }
+  }
+  // PhonePe — cannot be pinged without a signed request
+  {
+    const mid = await getSetting(env, 'phonepe_merchant_id');
+    const salt = await getSetting(env, 'phonepe_salt_key');
+    services.push({ name: 'PhonePe payments', ok: !!(mid && salt), note: (mid && salt) ? 'Keys present · verified on first payment' : 'No keys' });
+  }
+
+  // Table health — features that need the latest migration
+  const missing: string[] = [];
+  if (d1ok) {
+    for (const t of ['pageviews', 'usage_counters', 'order_events']) {
+      if (!(await tableExists(env, t))) missing.push(t);
+    }
+  }
+  return { services, d1Limited: D1_LIMITED, missingTables: missing };
 }
 
 /* ---- Site modes (production | construction | paused) --------------------- */
 // Cached in module scope for 60s so we don't read D1 on every storefront request.
 let _modeCache: { at: number; mode: string } | null = null;
 export async function getSiteMode(env: Env): Promise<string> {
-  if (_modeCache && Date.now() - _modeCache.at < 60000) return _modeCache.mode;
+  if (_modeCache && Date.now() - _modeCache.at < 300000) return _modeCache.mode;
   const mode = (await getSetting(env, 'site_mode')) || 'production';
   _modeCache = { at: Date.now(), mode };
   return mode;

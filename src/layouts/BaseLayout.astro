@@ -136,5 +136,20 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
         hit(); document.addEventListener('astro:page-load', hit);
       })();
     </script>
+      <script>
+      (function(){
+        fetch('/api/site-mode').then(function(r){return r.json();}).then(function(d){
+          if(d && d.mode==='paused'){
+            document.documentElement.setAttribute('data-paused','1');
+            var bar=document.createElement('div');
+            bar.setAttribute('style','position:sticky;top:0;z-index:60;background:#8a1f1f;color:#fff;text-align:center;padding:.55rem 1rem;font-family:var(--font-sans),sans-serif;font-size:.82rem;letter-spacing:.02em');
+            bar.textContent='Ordering is temporarily paused — you can browse the gallery, checkout will reopen soon.';
+            document.body.insertBefore(bar, document.body.firstChild);
+            // disable checkout entry points
+            document.querySelectorAll('a[href="/checkout/"], a[href="/checkout"]').forEach(function(a){ a.setAttribute('aria-disabled','true'); a.style.pointerEvents='none'; a.style.opacity='.5'; });
+          }
+        }).catch(function(){});
+      })();
+    </script>
   </body>
 </html>

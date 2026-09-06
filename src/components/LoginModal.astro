@@ -63,6 +63,7 @@
 
 <style>
   .lm-root{ position:fixed; inset:0; z-index:90; display:grid; place-items:center; padding:1.2rem; }
+  .lm-root[hidden]{ display:none !important; }
   .lm-backdrop{ position:absolute; inset:0; background:rgba(20,18,15,.45); backdrop-filter:blur(7px) saturate(120%); animation:lmFade .2s ease; }
   .lm-card{ position:relative; width:390px; max-width:100%; background:#fff; border:1px solid var(--color-line);
     border-radius:16px; padding:2.2rem 2rem 1.6rem; box-shadow:0 24px 70px rgba(0,0,0,.35); animation:lmUp .28s cubic-bezier(.2,.8,.2,1); }

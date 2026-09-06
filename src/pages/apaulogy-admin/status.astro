@@ -11,8 +11,16 @@ const D1_FREE_WRITES = 100_000;      // 100k writes/day
 const pct = Math.min(100, Math.round((reads / D1_FREE_READS) * 100));
 const level = status.d1Limited ? 100 : pct;
 const barColor = level >= 90 ? 'var(--bad)' : level >= 75 ? 'var(--warn)' : 'var(--ok)';
+const missing = (status as any).missingTables || [];
 ---
 <AdminLayout title="Status" active="status" dbBound={base.dbBound}>
+  {missing.length > 0 && (
+    <div class="banner" style="background:var(--bad-bg);border-color:var(--bad);color:var(--bad)">
+      <strong>Some features need a database update.</strong> These tables are missing: <code>{missing.join(', ')}</code>.
+      Run <code>db/migrations-admin.sql</code> in your Cloudflare D1 Console (it's safe to re-run) to enable
+      <strong> Site analytics</strong> and the <strong>read-usage gauge</strong>. Until then those will show empty.
+    </div>
+  )}
   {(status.d1Limited || level >= 90) && (
     <div class="lockout">
       <strong>Database read limit reached.</strong> The admin can't load live data until the free-tier quota resets.

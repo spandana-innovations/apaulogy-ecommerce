@@ -12,9 +12,15 @@ import { getSiteMode } from '../../lib/admin-data';
 const siteMode = await getSiteMode(env);
 ---
 <AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
+  <div class="set-tabs" role="tablist">
+    <button class="set-tab on" data-tab="keys" type="button">Keys</button>
+    <button class="set-tab" data-tab="modes" type="button">Site modes</button>
+    <button class="set-tab" data-tab="resources" type="button">Resources</button>
+    <button class="set-tab" data-tab="admins" type="button">Admin users</button>
+  </div>
   <div class="settings-grid">
     <!-- Razorpay -->
-    <section class="card" style="padding:1.4rem">
+    <section data-panel="keys" class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Razorpay payment keys</h2>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">
         Enter your live or test keys from the Razorpay dashboard. Stored in your database and used at checkout.
@@ -34,7 +40,7 @@ const siteMode = await getSiteMode(env);
     </section>
 
     <!-- PhonePe -->
-    <section class="card" style="padding:1.4rem">
+    <section data-panel="keys" class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">PhonePe payment keys</h2>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Domestic customers can pay via PhonePe. International orders always use Razorpay.</p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
@@ -50,7 +56,7 @@ const siteMode = await getSiteMode(env);
     </section>
 
     <!-- Email (Resend) -->
-    <section class="card" style="padding:1.4rem">
+    <section data-panel="keys" class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Email (Resend)</h2>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Order confirmations and shipping updates are sent through Resend.</p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
@@ -61,7 +67,7 @@ const siteMode = await getSiteMode(env);
     </section>
 
     <!-- Shortcuts -->
-    <section class="card" style="padding:1.4rem">
+    <section data-panel="resources" class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">Store configuration</h2>
       <div style="display:grid;gap:.6rem;font-family:var(--font-sans);font-size:.9rem">
         <a href="/apaulogy-admin/shipping/" class="cfg">Weight-based shipping rates <span>→</span></a>
@@ -72,7 +78,7 @@ const siteMode = await getSiteMode(env);
     </section>
 
     <!-- Site modes -->
-    <section class="card" style="padding:1.4rem;grid-column:1/-1">
+    <section data-panel="modes" class="card" style="padding:1.4rem;grid-column:1/-1">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Site mode</h2>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Controls what visitors see on the storefront.</p>
       <div class="mode-grid">
@@ -83,8 +89,23 @@ const siteMode = await getSiteMode(env);
       <div style="margin-top:1rem"><button class="btn" id="mode-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply site mode</button> <span class="muted" id="mode-msg" style="font-size:.78rem"></span></div>
     </section>
 
+    <!-- Admin users -->
+    <section data-panel="admins" class="card" style="padding:1.4rem;grid-column:1/-1">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Admin users</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Accounts that can sign in to this admin.</p>
+      <table>
+        <thead><tr><th>Username</th><th>Source</th></tr></thead>
+        <tbody>
+          <tr><td><strong>support@spnin.com</strong></td><td class="muted">Built-in</td></tr>
+          <tr><td><strong>mmp</strong></td><td class="muted">Built-in</td></tr>
+          {env.ADMIN_USER && <tr><td><strong>{env.ADMIN_USER}</strong></td><td class="muted">Environment secret</td></tr>}
+        </tbody>
+      </table>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.8rem;margin-top:1rem">Add or change accounts via the <code>ADMIN_ACCOUNTS</code> Cloudflare secret (format <code>user:pass,user:pass</code>). Passwords are never shown.</p>
+    </section>
+
     <!-- System (full width) -->
-    <section class="card" style="padding:1.4rem">
+    <section data-panel="resources" class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">System</h2>
       <table>
         <tbody>
@@ -106,6 +127,14 @@ const siteMode = await getSiteMode(env);
     .mode-opt input{ margin-bottom:.3rem; }
     .mode-opt strong{ font-size:.95rem; } .mode-opt span{ font-size:.78rem; color:var(--muted); }
   </style>
+  <script>
+    (function(){
+      var grid=document.querySelector('.settings-grid');
+      function showTab(t){ grid.className='settings-grid show-'+t; document.querySelectorAll('.set-tab').forEach(function(b){ b.classList.toggle('on', b.dataset.tab===t); }); }
+      document.querySelectorAll('.set-tab').forEach(function(b){ b.addEventListener('click',function(){ showTab(b.dataset.tab); }); });
+      showTab('keys');
+    })();
+  </script>
   <script>
 
     async function testKey(provider, body, msgId){
@@ -141,6 +170,16 @@ const siteMode = await getSiteMode(env);
     document.querySelectorAll('.wh-copy').forEach(function(b){ b.addEventListener('click',function(){ var el=document.getElementById(b.dataset.copy); navigator.clipboard.writeText(el.textContent).then(function(){ b.textContent='Copied ✓'; setTimeout(function(){b.textContent='Copy';},1500); }); }); });
   </script>
 <style is:global>
+  .set-tabs{ display:flex; gap:.3rem; border-bottom:1px solid var(--line); margin-bottom:1.4rem; }
+  .set-tab{ padding:.6rem 1rem; background:none; border:0; border-bottom:2px solid transparent; margin-bottom:-1px; cursor:pointer;
+    font-family:var(--font-sans); font-size:.86rem; font-weight:500; color:var(--muted); }
+  .set-tab.on{ color:var(--ink); border-bottom-color:var(--gold); }
+  .set-tab:hover{ color:var(--ink); }
+  .settings-grid [data-panel]{ display:none; }
+  .settings-grid.show-keys [data-panel="keys"],
+  .settings-grid.show-modes [data-panel="modes"],
+  .settings-grid.show-resources [data-panel="resources"],
+  .settings-grid.show-admins [data-panel="admins"]{ display:block; }
   .settings-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.4rem; align-items:start; max-width:1100px; }
   .settings-grid > section:first-child{ grid-column:1 / -1; }   /* Razorpay spans top */
   .settings-grid > section:last-child{ grid-column:1 / -1; }    /* System spans bottom */
