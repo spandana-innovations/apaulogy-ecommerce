@@ -1,19 +1,25 @@
 ---
 export interface Props { title: string; active: string; dbBound?: boolean; }
 const { title, active, dbBound = true } = Astro.props;
+import { isD1Limited } from '../lib/admin-data';
+const d1Limited = isD1Limited();
 import '@fontsource-variable/inter';
 const nav = [
+  { section: 'Store' },
   { key: 'dashboard',   label: 'Dashboard',      href: '/apaulogy-admin/',            icon: 'grid' },
   { key: 'orders',      label: 'Orders',         href: '/apaulogy-admin/orders/',     icon: 'bag' },
-  { key: 'stats',       label: 'Stats',          href: '/apaulogy-admin/stats/',      icon: 'chart' },
-  { key: 'analytics',   label: 'Site analytics', href: '/apaulogy-admin/analytics/',  icon: 'pulse' },
   { key: 'products',    label: 'Products',       href: '/apaulogy-admin/products/',   icon: 'tag' },
   { key: 'categories',  label: 'Categories',     href: '/apaulogy-admin/categories/', icon: 'grid' },
   { key: 'discounts',   label: 'Discounts',      href: '/apaulogy-admin/discounts/',  icon: 'tag' },
   { key: 'shipping',    label: 'Shipping',       href: '/apaulogy-admin/shipping/',   icon: 'truck' },
   { key: 'customers',   label: 'Customers',      href: '/apaulogy-admin/customers/',  icon: 'users' },
+  { section: 'Insights' },
+  { key: 'stats',       label: 'Stats',          href: '/apaulogy-admin/stats/',      icon: 'chart' },
+  { key: 'analytics',   label: 'Site analytics', href: '/apaulogy-admin/analytics/',  icon: 'pulse' },
+  { section: 'System' },
   { key: 'requests',    label: 'Data requests',  href: '/apaulogy-admin/requests/',   icon: 'shield' },
   { key: 'messages',    label: 'Messages',       href: '/apaulogy-admin/messages/',   icon: 'chat' },
+  { key: 'status',      label: 'Status',         href: '/apaulogy-admin/status/',     icon: 'pulse' },
   { key: 'settings',    label: 'Settings',       href: '/apaulogy-admin/settings/',   icon: 'cog' },
 ];
 const ICONS: Record<string,string> = {
@@ -75,6 +81,7 @@ const ICONS: Record<string,string> = {
     .brand b{ font-family:var(--font-display); font-weight:700; font-size:1.15rem; letter-spacing:-.01em; color:var(--ink); }
     .brand-flourish{ display:none; }
     nav{ display:flex; flex-direction:column; gap:2px; margin-top:.2rem; }
+    .nav-section{ font-size:.62rem; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); padding:.9rem .8rem .35rem; font-weight:600; }
     nav a{ display:flex; align-items:center; gap:.75rem; padding:.62rem .8rem; border-radius:var(--r-sm);
       font-size:.82rem; font-weight:500; color:var(--ink-soft); transition:all .13s; }
     nav a:hover{ background:rgba(255,255,255,.05); color:#fff; }
@@ -164,11 +171,13 @@ const ICONS: Record<string,string> = {
       <div class="brand"><img src="/favicon.svg" alt="" /><b>aPaulogy</b></div>
       <svg class="brand-flourish" viewBox="0 0 200 8" preserveAspectRatio="none"><path d="M4 4 Q50 0 100 4 T196 3" fill="none" stroke="var(--gold)" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/></svg>
       <nav>
-        {nav.map((n) => (
-          <a href={n.href} class={active === n.key ? 'on' : ''}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={ICONS[n.icon]} />
-            {n.label}
-          </a>
+        {nav.map((n:any) => (
+          n.section
+            ? <div class="nav-section">{n.section}</div>
+            : <a href={n.href} class={active === n.key ? 'on' : ''}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" set:html={ICONS[n.icon]} />
+                {n.label}
+              </a>
         ))}
       </nav>
       <div class="side-util">
@@ -190,6 +199,12 @@ const ICONS: Record<string,string> = {
       <div class="top">
         <h1>{title}</h1>
       </div>
+      {d1Limited && (
+        <div class="banner" style="background:var(--bad-bg);border-color:var(--bad);color:var(--bad)">
+          <strong>Database read limit reached.</strong> Live data is paused until the free-tier quota resets (midnight UTC).
+          <a href="/apaulogy-admin/status/" style="text-decoration:underline;color:inherit">See Status →</a>
+        </div>
+      )}
       {!dbBound && (
         <div class="banner"><strong>Live data isn't connected to this deployment yet.</strong> On your Cloudflare project → Settings → Bindings, confirm <code>DB</code> → <code>apaulogyecomm</code>, then <em>redeploy</em> (bindings only attach to new deployments). If the database is bound but empty, run the <code>db/import-*.sql</code> files in the D1 Console.</div>
       )}

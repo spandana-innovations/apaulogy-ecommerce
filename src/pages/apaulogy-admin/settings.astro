@@ -8,6 +8,8 @@ const rzpIdEnv = !!env.RAZORPAY_KEY_ID;
 const rzpId = (await getSetting(env, 'razorpay_key_id')) || '';
 const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razorpay_key_secret'));
 const origin = env.SITE_URL || 'https://apaulogy.com';
+import { getSiteMode } from '../../lib/admin-data';
+const siteMode = await getSiteMode(env);
 ---
 <AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
   <div class="settings-grid">
@@ -69,6 +71,18 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
       </div>
     </section>
 
+    <!-- Site modes -->
+    <section class="card" style="padding:1.4rem;grid-column:1/-1">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Site mode</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Controls what visitors see on the storefront.</p>
+      <div class="mode-grid">
+        <label class={`mode-opt ${siteMode==='production'?'on':''}`}><input type="radio" name="site_mode" value="production" checked={siteMode==='production'}/><strong>Production</strong><span>Live &amp; taking orders normally.</span></label>
+        <label class={`mode-opt ${siteMode==='paused'?'on':''}`}><input type="radio" name="site_mode" value="paused" checked={siteMode==='paused'}/><strong>Sales paused</strong><span>Browsing works, checkout is disabled.</span></label>
+        <label class={`mode-opt ${siteMode==='construction'?'on':''}`}><input type="radio" name="site_mode" value="construction" checked={siteMode==='construction'}/><strong>Construction</strong><span>Storefront shows a “back soon” page. Admin stays open.</span></label>
+      </div>
+      <div style="margin-top:1rem"><button class="btn" id="mode-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply site mode</button> <span class="muted" id="mode-msg" style="font-size:.78rem"></span></div>
+    </section>
+
     <!-- System (full width) -->
     <section class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">System</h2>
@@ -86,6 +100,11 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
     .fld{display:block}.fld input{width:100%;margin-top:.25rem;padding:.5rem .6rem;border:1px solid var(--line);font:inherit}
     .cfg{display:flex;justify-content:space-between;padding:.7rem .9rem;border:1px solid var(--line);text-decoration:none;color:var(--ink)}
     .cfg:hover{background:var(--paper-deep)}
+    .mode-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:.8rem; }
+    .mode-opt{ display:flex; flex-direction:column; gap:.2rem; padding:1rem; border:1px solid var(--line-strong); border-radius:8px; cursor:pointer; }
+    .mode-opt.on{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-soft); }
+    .mode-opt input{ margin-bottom:.3rem; }
+    .mode-opt strong{ font-size:.95rem; } .mode-opt span{ font-size:.78rem; color:var(--muted); }
   </style>
   <script>
 
@@ -116,6 +135,8 @@ const origin = env.SITE_URL || 'https://apaulogy.com';
     });
     async function saveSettings(body, msgId){ const m=document.getElementById(msgId); m.textContent='Saving…'; const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); m.textContent=r.ok?'Saved ✓':'Failed — database connected?'; }
     document.getElementById('pp-save').addEventListener('click',()=>{ if(document.getElementById('pp-salt').value && !ppOK){ const m=document.getElementById('pp-msg'); m.style.color='#c23b3b'; m.textContent='Please test PhonePe details before saving.'; return; } saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim()},'pp-msg'); });
+    document.getElementById('mode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=site_mode]:checked'); saveSettings({site_mode:m?m.value:'production'},'mode-msg'); document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked)); });
+    document.querySelectorAll('input[name=site_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked))));
     document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'); });
     document.querySelectorAll('.wh-copy').forEach(function(b){ b.addEventListener('click',function(){ var el=document.getElementById(b.dataset.copy); navigator.clipboard.writeText(el.textContent).then(function(){ b.textContent='Copied ✓'; setTimeout(function(){b.textContent='Copy';},1500); }); }); });
   </script>

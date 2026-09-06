@@ -1,11 +1,26 @@
 import { defineMiddleware } from 'astro:middleware';
 import { verifySession, readCookie, ADMIN_COOKIE } from './lib/admin-auth';
+import { getSiteMode } from './lib/admin-data';
 
 const PUBLIC = ['/apaulogy-admin/login', '/api/admin/login', '/api/admin/logout'];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = new URL(context.request.url);
   const path = url.pathname.replace(/\/$/, '') || '/';
+  // Construction mode: show a maintenance page for the public storefront (admin stays reachable).
+  const env0 = (context.locals as any)?.runtime?.env ?? {};
+  const isAdminPath = path.startsWith('/apaulogy-admin') || path.startsWith('/api/admin');
+  const isAssetish = path.startsWith('/api/') || /\.[a-z0-9]+$/i.test(path);
+  if (!isAdminPath && !isAssetish) {
+    try {
+      const mode = await getSiteMode(env0);
+      if (mode === 'construction') {
+        return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>aPaulogy — back soon</title><div style="font-family:Georgia,serif;max-width:460px;margin:20vh auto;padding:0 1.5rem;text-align:center;color:#111"><img src="/favicon.svg" width="52" height="52" style="margin-bottom:1rem"><h1 style="font-weight:600;font-size:1.8rem">We\'ll be right back</h1><p style="color:#666;font-family:system-ui;line-height:1.6">The aPaulogy gallery is briefly closed for updates. Please check back shortly.</p></div>',
+          { status: 503, headers: { 'Content-Type': 'text/html', 'Retry-After': '3600' } });
+      }
+    } catch {}
+  }
+
   const guarded = path.startsWith('/apaulogy-admin') || path.startsWith('/api/admin');
   if (!guarded || PUBLIC.includes(path)) return next();
 

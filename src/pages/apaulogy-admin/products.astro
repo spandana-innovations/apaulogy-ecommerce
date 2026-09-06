@@ -108,9 +108,11 @@ const products = cat.products.map((p:any) => ({
 
   <script>
     (function(){
-      function openM(id){ document.getElementById(id).hidden=false; }
-      function closeAll(){ document.querySelectorAll('.pm-root').forEach(m=>m.hidden=true); }
+      function openM(id){ closeAll(); document.getElementById(id).hidden=false; document.body.style.overflow='hidden'; }
+      function closeAll(){ document.querySelectorAll('.pm-root').forEach(m=>m.hidden=true); document.body.style.overflow=''; }
       document.querySelectorAll('[data-pm-close]').forEach(el=>el.addEventListener('click',closeAll));
+      // clicking the dim backdrop closes; clicking inside the card does not
+      document.querySelectorAll('.pm-back').forEach(b=>b.addEventListener('click',closeAll));
       document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeAll(); });
       var inr=function(p){ return '₹'+Math.round(p/100).toLocaleString('en-IN'); };
 
@@ -147,9 +149,12 @@ const products = cat.products.map((p:any) => ({
           body.price=pr?Math.round(Number(pr)*100):null;
           body.sale_price=sl?Math.round(Number(sl)*100):null;
         }
-        var r=await fetch('/api/admin/product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-        msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
-        if(r.ok) setTimeout(function(){ location.reload(); },700);
+        var btn=document.getElementById('qe-save'); btn.disabled=true;
+        try{
+          var r=await fetch('/api/admin/product',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+          if(r.ok){ msg.style.color='#2e8b57'; msg.textContent='Saved ✓'; setTimeout(function(){ location.reload(); },600); }
+          else { msg.style.color='#c23b3b'; msg.textContent='Save failed — is the database connected?'; btn.disabled=false; }
+        }catch(e){ msg.style.color='#c23b3b'; msg.textContent='Network error.'; btn.disabled=false; }
       });
     })();
   </script>

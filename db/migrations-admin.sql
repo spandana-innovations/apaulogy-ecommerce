@@ -129,3 +129,9 @@ CREATE TABLE IF NOT EXISTS order_events (
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_oe_order ON order_events(order_number);
+
+-- Estimated daily read counter for the Status page gauge
+CREATE TABLE IF NOT EXISTS usage_counters (
+  day TEXT PRIMARY KEY,
+  reads INTEGER DEFAULT 0
+);

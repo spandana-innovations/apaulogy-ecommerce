@@ -14,6 +14,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (typeof b.phonepe_salt_index === 'string' && b.phonepe_salt_index) await setSetting(env, 'phonepe_salt_index', b.phonepe_salt_index);
     if (b.resend_key) await setSetting(env, 'resend_key', b.resend_key);
     if (typeof b.from_email === 'string' && b.from_email) await setSetting(env, 'from_email', b.from_email);
+    if (typeof b.site_mode === 'string' && ['production','construction','paused'].includes(b.site_mode)) await setSetting(env, 'site_mode', b.site_mode);
     return new Response(JSON.stringify({ ok:true }), { headers:{'Content-Type':'application/json'} });
   } catch (e:any) { return new Response(JSON.stringify({ ok:false, error:e.message }), { status:500 }); }
 };
