@@ -5,6 +5,7 @@ import { createPendingOrder, type CartLine } from '../../lib/db';
 import { activeDiscounts, getCoupon, computeDiscount } from '../../lib/discounts';
 import { cartWeight, getRates, shippingFor, freeShippingSlugs } from '../../lib/shipping';
 import { getSetting, getSiteMode } from '../../lib/admin-data';
+import { razorpayKeys } from '../../lib/payments';
 import { verifySession, readCookie, ADMIN_COOKIE } from '../../lib/admin-auth';
 
 export const prerender = false;
@@ -96,8 +97,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // ---- Online payment via Razorpay. ----------------------------------------
   // Keys come from env (most secure) or fall back to admin Settings in D1.
-  const keyId = env.RAZORPAY_KEY_ID || (await getSetting(env, 'razorpay_key_id')) || '';
-  const keySecret = env.RAZORPAY_KEY_SECRET || (await getSetting(env, 'razorpay_key_secret')) || '';
+  const rk = await razorpayKeys(env);
+  const keyId = rk.keyId; const keySecret = rk.keySecret;
   if (!keyId || !keySecret) {
     return json({ error: 'Online payments are not configured yet. Please try again later.' }, 503);
   }

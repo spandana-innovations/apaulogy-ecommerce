@@ -10,6 +10,8 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
 const origin = env.SITE_URL || 'https://apaulogy.com';
 import { getSiteMode } from '../../lib/admin-data';
 const siteMode = await getSiteMode(env);
+import { paymentMode } from '../../lib/payments';
+const payMode = await paymentMode(env);
 ---
 <AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
   <div class="set-tabs" role="tablist">
@@ -19,6 +21,17 @@ const siteMode = await getSiteMode(env);
     <button class="set-tab" data-tab="admins" type="button">Admin users</button>
   </div>
   <div class="settings-grid">
+    <!-- Payment mode -->
+    <section data-panel="keys" class="card" style="padding:1.4rem;grid-column:1/-1">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Payment mode</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Test mode uses sandbox keys and never charges real money. Switch to Live only when you're ready to accept real payments.</p>
+      <div class="mode-grid">
+        <label class={`mode-opt ${payMode==='test'?'on':''}`}><input type="radio" name="pay_mode" value="test" checked={payMode==='test'}/><strong>Test mode</strong><span>Sandbox — safe to trial checkout.</span></label>
+        <label class={`mode-opt ${payMode==='live'?'on':''}`}><input type="radio" name="pay_mode" value="live" checked={payMode==='live'}/><strong>Live mode</strong><span>Real payments from real customers.</span></label>
+      </div>
+      <div style="margin-top:1rem"><button class="btn" id="paymode-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply payment mode</button> <span class="muted" id="paymode-msg" style="font-size:.78rem"></span></div>
+    </section>
+
     <!-- Razorpay -->
     <section data-panel="keys" class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Razorpay payment keys</h2>
@@ -29,6 +42,9 @@ const siteMode = await getSiteMode(env);
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
         <label class="fld">Key ID<input id="rzp-id" value={rzpId} placeholder="rzp_live_… or rzp_test_…"/></label>
         <label class="fld">Key Secret<input id="rzp-secret" type="password" placeholder={hasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter key secret'}/></label>
+        <div style="border-top:1px solid var(--line);margin:.6rem 0;padding-top:.6rem"></div>
+        <label class="fld">Test Key ID <span class="muted">(rzp_test_…)</span><input id="rzp-test-id" placeholder="rzp_test_…"/></label>
+        <label class="fld">Test Key Secret<input id="rzp-test-secret" type="password" placeholder="Leave blank to keep"/></label>
         <label class="fld">Webhook Secret <span class="muted">(optional)</span><input id="rzp-webhook" type="password" placeholder="Leave blank to keep"/></label>
         <div class="webhook-row"><span class="wh-label">Webhook URL — paste into Razorpay Dashboard → Webhooks</span>
           <code class="wh-url" id="rzp-wh">{origin}/api/razorpay-webhook</code>
@@ -47,6 +63,10 @@ const siteMode = await getSiteMode(env);
         <label class="fld">Merchant ID<input id="pp-mid" placeholder="e.g. M22XXXXXXXX"/></label>
         <label class="fld">Salt Key<input id="pp-salt" type="password" placeholder="Leave blank to keep"/></label>
         <label class="fld">Salt Index<input id="pp-index" placeholder="1"/></label>
+        <div style="border-top:1px solid var(--line);margin:.6rem 0;padding-top:.6rem"></div>
+        <label class="fld">Test Merchant ID <span class="muted">(UAT)</span><input id="pp-test-mid" placeholder="PGTESTPAYUAT"/></label>
+        <label class="fld">Test Salt Key<input id="pp-test-salt" type="password" placeholder="Leave blank to keep"/></label>
+        <label class="fld">Test Salt Index<input id="pp-test-index" placeholder="1"/></label>
         <div class="webhook-row"><span class="wh-label">Redirect / Callback URL — set in PhonePe Dashboard</span>
           <code class="wh-url" id="pp-wh">{origin}/api/phonepe-callback</code>
           <button type="button" class="btn wh-copy" data-copy="pp-wh">Copy</button>
@@ -158,12 +178,16 @@ const siteMode = await getSiteMode(env);
       const msg=document.getElementById('rzp-msg'); msg.textContent='Saving…'; msg.style.color='';
       const body={ razorpay_key_id:document.getElementById('rzp-id').value.trim(),
         razorpay_key_secret:document.getElementById('rzp-secret').value,
-        razorpay_webhook_secret:document.getElementById('rzp-webhook').value };
+        razorpay_webhook_secret:document.getElementById('rzp-webhook').value,
+        razorpay_test_key_id:document.getElementById('rzp-test-id').value.trim(),
+        razorpay_test_key_secret:document.getElementById('rzp-test-secret').value };
       const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
       msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
     });
     async function saveSettings(body, msgId){ const m=document.getElementById(msgId); m.textContent='Saving…'; const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); m.textContent=r.ok?'Saved ✓':'Failed — database connected?'; }
-    document.getElementById('pp-save').addEventListener('click',()=>{ if(document.getElementById('pp-salt').value && !ppOK){ const m=document.getElementById('pp-msg'); m.style.color='#c23b3b'; m.textContent='Please test PhonePe details before saving.'; return; } saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim()},'pp-msg'); });
+    document.getElementById('pp-save').addEventListener('click',()=>{ if(document.getElementById('pp-salt').value && !ppOK){ const m=document.getElementById('pp-msg'); m.style.color='#c23b3b'; m.textContent='Please test PhonePe details before saving.'; return; } saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim(),phonepe_test_merchant_id:document.getElementById('pp-test-mid').value.trim(),phonepe_test_salt_key:document.getElementById('pp-test-salt').value,phonepe_test_salt_index:document.getElementById('pp-test-index').value.trim()},'pp-msg'); });
+    document.getElementById('paymode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=pay_mode]:checked'); saveSettings({payment_mode:m?m.value:'test'},'paymode-msg'); document.querySelectorAll('input[name=pay_mode]').forEach(r=>r.closest('.mode-opt').classList.toggle('on', r.checked)); });
+    document.querySelectorAll('input[name=pay_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('input[name=pay_mode]').forEach(x=>x.closest('.mode-opt').classList.toggle('on', x.checked))));
     document.getElementById('mode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=site_mode]:checked'); saveSettings({site_mode:m?m.value:'production'},'mode-msg'); document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked)); });
     document.querySelectorAll('input[name=site_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked))));
     document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'); });

@@ -2,7 +2,10 @@
 export interface Props { title: string; active: string; dbBound?: boolean; }
 const { title, active, dbBound = true } = Astro.props;
 import { isD1Limited } from '../lib/admin-data';
+import { paymentMode } from '../lib/payments';
 const d1Limited = isD1Limited();
+const _env = (Astro.locals as any)?.runtime?.env ?? {};
+let payMode='test'; try{ payMode = await paymentMode(_env); }catch{}
 import '@fontsource-variable/inter';
 const nav = [
   { section: 'Store' },
@@ -197,7 +200,7 @@ const ICONS: Record<string,string> = {
     </aside>
     <main>
       <div class="top">
-        <h1>{title}</h1>
+        <h1>{title} {payMode==='test' && <span class="test-pill">TEST MODE</span>}</h1>
       </div>
       {d1Limited && (
         <div class="banner" style="background:var(--bad-bg);border-color:var(--bad);color:var(--bad)">
