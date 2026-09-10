@@ -9,29 +9,18 @@ const url = Astro.url;
 const status = url.searchParams.get('status') || 'all';
 const year = url.searchParams.get('year') || 'all';
 const search = url.searchParams.get('q') || '';
-const tab = url.searchParams.get('tab') || '';
-const archived = tab === 'archived';
-const trashed = tab === 'bin';
 const page = parseInt(url.searchParams.get('page') || '1', 10);
-const per = Math.min(50, Math.max(10, parseInt(url.searchParams.get('per') || '10', 10)));
-const { rows, total, pages } = await listOrders(env, { status, year, search, page, per, archived, trashed });
+const { rows, total, pages } = await listOrders(env, { status, year, search, page, per: 50 });
 const years = await orderYears(env);
 const STATUSES = ['all','pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'];
 function qs(over: Record<string,string>) {
-  const p = new URLSearchParams({ tab, status, year, q: search, page: String(page), per: String(per), ...over });
-  for (const [k,v] of [...p.entries()]) if (!v || v==='all' || (k==='page'&&v==='1') || (k==='per'&&v==='10')) p.delete(k);
+  const p = new URLSearchParams({ status, year, q: search, page: String(page), ...over });
+  for (const [k,v] of [...p.entries()]) if (!v || v==='all' || (k==='page'&&v==='1')) p.delete(k);
   const s = p.toString(); return s ? `?${s}` : '';
 }
 ---
 <AdminLayout title="Orders" active="orders" dbBound={stats.dbBound}>
-  <div class="ord-tabs">
-    <a href="/apaulogy-admin/orders/" class={(!archived && !trashed) ? 'ord-tab on' : 'ord-tab'}>Live <span class="muted">· last 3 months</span></a>
-    <a href="/apaulogy-admin/orders/?tab=archived" class={archived ? 'ord-tab on' : 'ord-tab'}>Archived <span class="muted">· older</span></a>
-    <a href="/apaulogy-admin/orders/?tab=bin" class={trashed ? 'ord-tab on' : 'ord-tab'} style="margin-left:auto">🗑 Bin</a>
-  </div>
-
   <form method="get" class="filters">
-    {(archived||trashed) && <input type="hidden" name="tab" value={tab} />}
     <input name="q" value={search} placeholder="Search order #, email, phone…" class="f-search"/>
     <select name="status" onchange="this.form.submit()">
       {STATUSES.map((s)=>(<option value={s} selected={s===status}>{s==='all'?'All statuses':s}</option>))}
@@ -40,9 +29,6 @@ function qs(over: Record<string,string>) {
       <option value="all" selected={year==='all'}>All years</option>
       {years.map((y:string)=>(<option value={y} selected={y===year}>{y}</option>))}
     </select>
-    <select name="per" onchange="this.form.submit()" title="Rows per page">
-      {[10,20,50].map((n)=>(<option value={n} selected={n===per}>{n} / page</option>))}
-    </select>
     <button class="btn" type="submit">Filter</button>
     <span class="muted count">{total.toLocaleString()} orders</span>
   </form>
@@ -50,37 +36,23 @@ function qs(over: Record<string,string>) {
   <div class="card" style="overflow:hidden">
     {rows.length ? (
       <table>
-        <thead><tr><th>Order</th><th>Customer</th><th>Payment</th><th>Status</th><th>Tracking</th><th style="text-align:right">Total</th><th>Date</th>{trashed && <th style="text-align:right">Actions</th>}</tr></thead>
+        <thead><tr><th>Order</th><th>Customer</th><th>Payment</th><th>Status</th><th>Tracking</th><th style="text-align:right">Total</th><th>Date</th></tr></thead>
         <tbody>
           {rows.map((o: any) => (
             <tr>
               <td><a href={`/apaulogy-admin/orders/${o.order_number}/`} class="u"><strong>{o.order_number}</strong></a></td>
-              <td><a href={`/apaulogy-admin/customers/${encodeURIComponent(o.email)}/`} class="u">{o.email}</a><br/><span class="muted" style="font-size:.72rem">{o.phone||''}</span></td>
+              <td>{o.email}<br/><span class="muted" style="font-size:.72rem">{o.phone||''}</span></td>
               <td class="muted">{/bank/i.test(o.notes||'') ? 'Bank transfer' : (o.notes||'Online')}</td>
               <td><span class={`pill s-${o.status}`}>{o.status}</span></td>
               <td class="muted" style="font-size:.78rem">{o.tracking_number||'—'}</td>
               <td style="text-align:right">{formatINR(o.total)}</td>
               <td class="muted">{(o.created_at||'').slice(0,10)}</td>
-              {trashed && <td style="text-align:right;white-space:nowrap">
-                <button class="btn bin-act" data-act="restore" data-order={o.order_number} style="padding:.35rem .6rem">Restore</button>
-                <button class="btn bin-act" data-act="purge" data-order={o.order_number} style="padding:.35rem .6rem;color:var(--bad);border-color:var(--bad)">Delete</button>
-              </td>}
             </tr>
           ))}
         </tbody>
       </table>
-    ) : (<div class="empty">{trashed ? 'The bin is empty.' : 'No orders match these filters.'}</div>)}
+    ) : (<div class="empty">No orders match these filters.</div>)}
   </div>
-  {trashed && <p class="muted" style="font-size:.78rem;margin-top:.7rem">Deleted orders are kept here until you permanently delete them. “Delete” removes the order, its items and history for good.</p>}
-  <script>
-    document.querySelectorAll('.bin-act').forEach((b)=>b.addEventListener('click', async ()=>{
-      const el = b as HTMLButtonElement; const order = el.dataset.order; const act = el.dataset.act;
-      if (act === 'purge' && !confirm(`Permanently delete ${order}? This cannot be undone.`)) return;
-      el.disabled = true; el.textContent = act === 'purge' ? 'Deleting…' : 'Restoring…';
-      const r = await fetch('/api/admin/order-delete', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ order, action: act }) });
-      if (r.ok) { el.closest('tr')?.remove(); } else { el.disabled = false; el.textContent = act === 'purge' ? 'Delete' : 'Restore'; alert('Action failed — is the database connected and migrated?'); }
-    }));
-  </script>
 
   {pages > 1 && (
     <nav class="pager">
@@ -92,14 +64,8 @@ function qs(over: Record<string,string>) {
 
   <style is:global>
     .filters{ display:flex; gap:.6rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap }
-    .filters .f-search{ flex:1; min-width:220px } .filters select,.filters input{ padding:.5rem .6rem; border:1px solid var(--line-strong); font:inherit; background:var(--panel-2); color:var(--ink) }
+    .filters .f-search{ flex:1; min-width:220px } .filters select,.filters input{ padding:.5rem .6rem; border:1px solid var(--line); font:inherit; background:#fff }
     .filters .count{ font-family:var(--font-sans); font-size:.82rem; margin-left:auto }
     .pager{ display:flex; gap:1rem; align-items:center; justify-content:center; margin-top:1.4rem; font-family:var(--font-sans); font-size:.82rem }
   </style>
 </AdminLayout>
-<style is:global>
-  .ord-tabs{ display:flex; gap:.5rem; margin-bottom:1.1rem; border-bottom:1px solid var(--line); }
-  .ord-tab{ padding:.55rem .9rem; font-family:var(--font-sans); font-size:.85rem; font-weight:500; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }
-  .ord-tab.on{ color:var(--ink); border-bottom-color:var(--gold); }
-  .ord-tab:hover{ color:var(--ink); }
-</style>

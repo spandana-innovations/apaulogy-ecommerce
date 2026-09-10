@@ -43,10 +43,10 @@ if (page.slug === 'faq') {
 <BaseLayout title={page.title} description={metaDesc} imageAlt={`${page.title} — aPaulogy`} type="article" jsonld={jsonld}>
   <div class="container-page py-16">
     <div class="max-w-3xl mx-auto">
-      <nav class="breadcrumb" aria-label="Breadcrumb">
+      <nav class="text-xs text-[var(--color-muted)] mb-6" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
         <a href="/" class="link-hover">Home</a> <span aria-hidden="true">/</span> <span class="text-[var(--color-ink-soft)]">{page.title}</span>
       </nav>
-      <header class="mb-10 text-center">
+      <header class="mb-10">
         <p class="eyebrow">aPaulogy</p>
         <h1 class="text-5xl sm:text-6xl mt-3">{page.title}</h1>
       </header>

@@ -1,8 +1,6 @@
 import type { APIRoute } from 'astro';
 import { verifyWebhookSignature } from '../../lib/razorpay';
 import { markOrderPaid, recordEventOnce } from '../../lib/db';
-import { razorpayWebhookSecret } from '../../lib/payments';
-import { sendOrderEmail, orderEmailData } from '../../lib/email';
 
 export const prerender = false;
 
@@ -18,9 +16,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const signature = request.headers.get('x-razorpay-signature') || '';
   const raw = await request.text();
 
-  // Webhook secret may live in env or admin Settings.
-  const secret = await razorpayWebhookSecret(env);
-  const valid = await verifyWebhookSignature({ ...env, RAZORPAY_WEBHOOK_SECRET: secret }, raw, signature);
+  const valid = await verifyWebhookSignature(env, raw, signature);
   if (!valid) {
     return new Response('invalid signature', { status: 400 });
   }
@@ -44,30 +40,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const razorpayPaymentId = payment?.id;
 
     if ((event.event === 'payment.captured' || event.event === 'order.paid') && razorpayOrderId) {
-      const newlyPaid = await markOrderPaid(env.DB, razorpayOrderId, razorpayPaymentId || '');
-      if (newlyPaid) {
-        try {
-          const o: any = await env.DB.prepare(`SELECT order_number FROM orders WHERE razorpay_order_id=?`).bind(razorpayOrderId).first();
-          if (o?.order_number) {
-            const data = await orderEmailData(env, o.order_number);
-            if (data) await sendOrderEmail(env, 'order_confirmation', data);
-          }
-        } catch {}
-      }
+      await markOrderPaid(env.DB, razorpayOrderId, razorpayPaymentId || '');
     } else if (event.event === 'payment.failed' && razorpayOrderId) {
-      const res = await env.DB.prepare(
+      await env.DB.prepare(
         `UPDATE orders SET status='failed', updated_at=datetime('now')
          WHERE razorpay_order_id=? AND status='pending'`,
       ).bind(razorpayOrderId).run();
-      if ((res?.meta?.changes ?? 0) > 0) {
-        try {
-          const o: any = await env.DB.prepare(`SELECT order_number FROM orders WHERE razorpay_order_id=?`).bind(razorpayOrderId).first();
-          if (o?.order_number) {
-            const data = await orderEmailData(env, o.order_number);
-            if (data) await sendOrderEmail(env, 'payment_failed', data);
-          }
-        } catch {}
-      }
     }
   } catch (err) {
     console.error('webhook processing error', err);

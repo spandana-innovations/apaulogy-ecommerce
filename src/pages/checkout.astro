@@ -28,34 +28,17 @@ import Icon from '../components/Icon.astro';
           <div class="grid sm:grid-cols-2 gap-4 mt-3">
             <label class="block sm:col-span-2"><span class="field-label">Address line 1</span><input name="line1" required class="input" autocomplete="address-line1" /><small class="err" data-err></small></label>
             <label class="block sm:col-span-2"><span class="field-label">Address line 2 (optional)</span><input name="line2" class="input" autocomplete="address-line2" /></label>
-            <label class="block"><span class="field-label">PIN / ZIP code</span><input name="postcode" required class="input" autocomplete="postal-code" inputmode="numeric" maxlength="10" /><small class="err" data-err></small><small id="pin-hint" class="pin-hint"></small></label>
             <label class="block"><span class="field-label">City</span><input name="city" required class="input" autocomplete="address-level2" /><small class="err" data-err></small></label>
-            <label class="block"><span class="field-label">State</span>
-              <select name="state" required class="input" id="state-select" autocomplete="address-level1">
-                <option value="" selected disabled>Select state</option>
-                {['Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh','Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka','Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram','Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana','Tripura','Uttar Pradesh','Uttarakhand','West Bengal','Andaman & Nicobar Islands','Chandigarh','Dadra & Nagar Haveli and Daman & Diu','Delhi','Jammu & Kashmir','Ladakh','Lakshadweep','Puducherry'].map((st) => (<option value={st}>{st}</option>))}
-                <option value="Other / Outside India">Other / Outside India</option>
-              </select>
-              <small class="err" data-err></small>
-            </label>
-            <label class="block"><span class="field-label">Country</span>
-              <select name="country" required class="input" id="country-select" autocomplete="country-name">
-                <option value="India" selected>India</option>
-                {['United States','United Kingdom','United Arab Emirates','Canada','Australia','Singapore','Germany','France','Netherlands','New Zealand','Qatar','Saudi Arabia','Kuwait','Oman','Bahrain','Malaysia','Switzerland','Ireland','Sweden','Japan','Other'].map((c) => (<option value={c}>{c}</option>))}
-              </select>
-            </label>
+            <label class="block"><span class="field-label">State</span><input name="state" required class="input" autocomplete="address-level1" /><small class="err" data-err></small></label>
+            <label class="block"><span class="field-label">PIN code</span><input name="postcode" required class="input" autocomplete="postal-code" inputmode="numeric" maxlength="6" /><small class="err" data-err></small></label>
+            <label class="block"><span class="field-label">Country</span><input name="country" value="India" required class="input" autocomplete="country-name" /></label>
           </div>
         </fieldset>
 
         <fieldset class="border border-[var(--color-line-strong)] p-6">
           <legend class="text-2xl px-2 flex items-center gap-2"><Icon name="shield" size={18} /> Payment</legend>
-          <div class="mt-3 space-y-2.5" id="pay-methods" style="font-family:var(--font-sans)">
-            <label class="pay-method" id="pm-razorpay"><input type="radio" name="gateway" value="razorpay" checked /> <span><strong>Card / UPI / Net-banking</strong> — via Razorpay</span></label>
-            <label class="pay-method" id="pm-phonepe"><input type="radio" name="gateway" value="phonepe" /> <span><strong>PhonePe</strong> — UPI &amp; wallets</span></label>
-          </div>
-          <p id="pm-none" class="hidden mt-2 text-sm text-[var(--color-bad,#c23b3b)]" style="font-family:var(--font-sans)">No online payment method is available for the selected country. Please contact us to complete your order.</p>
           <p class="mt-3 flex items-center gap-2.5 text-sm text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">
-            <Icon name="shield" size={16} /> Secure online payment. Instant confirmation.
+            <Icon name="shield" size={16} /> Secure online payment — UPI, cards, net-banking &amp; wallets via Razorpay. Instant confirmation.
           </p>
         </fieldset>
       </div>
@@ -76,16 +59,6 @@ import Icon from '../components/Icon.astro';
           <div class="flex justify-between" id="co-discount-row" hidden><dt>Discount</dt><dd id="co-discount">—</dd></div>
           <div class="flex justify-between"><dt>Shipping</dt><dd id="co-shipping">—</dd></div>
         </dl>
-        <!-- #1 GST invoice option, right by the totals -->
-        <label class="flex items-start gap-2.5 mt-3 pt-3 border-t border-[var(--color-line)] cursor-pointer" style="font-family:var(--font-sans)">
-          <input type="checkbox" id="co-gst" class="mt-0.5 accent-black" />
-          <span class="text-sm">I need a <strong>GST invoice</strong></span>
-        </label>
-        <div id="co-gst-fields" class="mt-3 grid gap-2.5" hidden style="font-family:var(--font-sans)">
-          <input id="co-gstin" class="input !py-2" placeholder="GSTIN (15 characters)" maxlength="15" style="text-transform:uppercase" />
-          <input id="co-gst-name" class="input !py-2" placeholder="Registered business name" />
-        </div>
-
         <div class="flex justify-between text-lg font-medium mt-3 pt-3 border-t border-[var(--color-line)]">
           <span>Total</span><span id="co-total">—</span>
         </div>
@@ -97,8 +70,6 @@ import Icon from '../components/Icon.astro';
   </div>
 
   <style>
-    .pay-method{ display:flex; align-items:center; gap:.6rem; padding:.7rem .9rem; border:1px solid var(--color-line); cursor:pointer; }
-    .pay-method:has(input:checked){ border-color:var(--color-ink); background:#faf9f6; }
     .err { display:none; font-family:var(--font-sans); font-size:.72rem; color:#b00020; margin-top:.3rem; }
     .err.show { display:block; }
     .input.invalid { border-color:#b00020; box-shadow:0 0 0 1px #b00020; }
@@ -160,52 +131,6 @@ import Icon from '../components/Icon.astro';
         return { subtotal, shipping, total };
       }
       await quoteShipping(); let totals=recalc();
-      document.getElementById('co-gst')?.addEventListener('change',(e)=>{ document.getElementById('co-gst-fields')!.hidden = !(e.target as HTMLInputElement).checked; });
-
-      // #8 — auto-fill city/state from an Indian PIN code (India Post public API)
-      const pin = form.querySelector('[name=postcode]') as HTMLInputElement | null;
-      const cityI = form.querySelector('[name=city]') as HTMLInputElement | null;
-      const stateS = form.querySelector('[name=state]') as HTMLSelectElement | null;
-      const countryS = form.querySelector('[name=country]') as HTMLSelectElement | null;
-      const pinHint = document.getElementById('pin-hint');
-      async function lookupPin(){
-        if(!pin || !countryS || countryS.value!=='India') return;
-        const v=pin.value.trim();
-        if(!/^\d{6}$/.test(v)){ if(pinHint) pinHint.textContent=''; return; }
-        if(pinHint){ pinHint.textContent='Looking up…'; pinHint.style.color='var(--color-muted)'; }
-        try{
-          const r=await fetch('https://api.postalpincode.in/pincode/'+v);
-          const d=await r.json();
-          const po=d && d[0] && d[0].Status==='Success' && d[0].PostOffice && d[0].PostOffice[0];
-          if(po){
-            if(cityI && !cityI.value) cityI.value = po.District || po.Block || '';
-            if(stateS && po.State){ for(const o of Array.from(stateS.options)){ if(o.value===po.State){ stateS.value=po.State; break; } } }
-            if(pinHint){ pinHint.textContent='✓ '+(po.District||'')+', '+(po.State||''); pinHint.style.color='#1f6b2e'; }
-          } else if(pinHint){ pinHint.textContent='PIN not found — enter city & state manually.'; pinHint.style.color='var(--color-muted)'; }
-        }catch{ if(pinHint) pinHint.textContent=''; }
-      }
-      pin?.addEventListener('blur', lookupPin);
-      pin?.addEventListener('input', ()=>{ if(pin.value.trim().length===6) lookupPin(); });
-      // international: hide PIN hint & re-quote shipping
-      countryS?.addEventListener('change', async()=>{ if(pinHint) pinHint.textContent=''; updateGateways(); await quoteShipping(); totals=recalc(); });
-      // Payment-gateway availability is admin-driven (enabled + region scope).
-      let payCfg:any = { razorpay:{enabled:true,scope:'both'}, phonepe:{enabled:true,scope:'domestic'} };
-      function scopeOK(scope:string, zone:string){ return scope==='both' || scope===zone; }
-      function curZone(){ const c=(countryS && countryS.value)||''; return (c && !/india/i.test(c)) ? 'international' : 'domestic'; }
-      function updateGateways(){
-        const zone=curZone();
-        const avail:any = { razorpay: !!payCfg.razorpay.enabled && scopeOK(payCfg.razorpay.scope, zone),
-                            phonepe:  !!payCfg.phonepe.enabled  && scopeOK(payCfg.phonepe.scope,  zone) };
-        (['razorpay','phonepe'] as const).forEach(g=>{ const el=document.getElementById('pm-'+g); if(el) (el as HTMLElement).style.display = avail[g] ? 'flex' : 'none'; });
-        const radios=[...document.querySelectorAll('input[name=gateway]')] as HTMLInputElement[];
-        const checked=radios.find(r=>r.checked);
-        if(checked && !avail[checked.value]){ const alt=radios.find(r=>avail[r.value]); if(alt){ alt.checked=true; } else { checked.checked=false; } }
-        else if(!checked){ const first=radios.find(r=>avail[r.value]); if(first) first.checked=true; }
-        const none = !avail.razorpay && !avail.phonepe;
-        document.getElementById('pm-none')?.classList.toggle('hidden', !none);
-        const payBtn=document.getElementById('co-pay') as HTMLButtonElement|null; if(payBtn) payBtn.disabled = none;
-      }
-      fetch('/api/payment-config').then(r=>r.json()).then(c=>{ if(c&&c.razorpay&&c.phonepe) payCfg=c; }).catch(()=>{}).finally(updateGateways);
       document.querySelector('[name=country]')?.addEventListener('change', async()=>{ await quoteShipping(); totals=recalc(); });
 
       document.getElementById('co-apply')?.addEventListener('click', async ()=>{
@@ -233,18 +158,8 @@ import Icon from '../components/Icon.astro';
         payBtn.disabled=true; const orig=payLabel.textContent; payLabel.textContent='Working…';
         const fd=new FormData(form); const customer=Object.fromEntries(fd.entries());
         totals=recalc();
-        const gstWanted=(document.getElementById('co-gst') as HTMLInputElement)?.checked;
-        const gst = gstWanted ? { gstin:(document.getElementById('co-gstin') as HTMLInputElement).value.trim().toUpperCase(), business:(document.getElementById('co-gst-name') as HTMLInputElement).value.trim() } : null;
-        const order={ items:items.map((it:any)=>({slug:it.slug,name:it.name,qty:it.qty,variant:it.variant,price:it.price})), customer, coupon, gst, created:new Date().toISOString() };
-        const gateway=(document.querySelector('input[name=gateway]:checked') as HTMLInputElement)?.value || 'razorpay';
+        const order={ items:items.map((it:any)=>({slug:it.slug,name:it.name,qty:it.qty,variant:it.variant,price:it.price})), customer, coupon, created:new Date().toISOString() };
         try{
-          if(gateway==='phonepe'){
-            try{ localStorage.setItem('apaulogy_last_order', JSON.stringify({...order,subtotal:totals.subtotal,shipping:totals.shipping,total:totals.total})); }catch{}
-            const r=await fetch('/api/phonepe-initiate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:totals.total,email:(customer as any).email,phone:(customer as any).phone,country:(customer as any).country})});
-            const d=await r.json();
-            if(d.ok && d.redirect){ Cart.clear(); window.location.href=d.redirect; return; }
-            throw new Error(d.error||'Could not start PhonePe payment.');
-          }
           const res=await fetch('/api/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)});
           if(!res.ok) throw new Error(((await res.json().catch(()=>({}))) as any).error||'Could not start payment');
           const data=await res.json();
@@ -255,11 +170,7 @@ import Icon from '../components/Icon.astro';
             name:'aPaulogy', description:'Watercolours of a city that was',
             prefill:{ name:(customer as any).name, email:(customer as any).email, contact:(customer as any).phone },
             theme:{ color:'#000000' },
-            handler:async function(resp:any){
-              // Fast-path confirmation: verify the signature server-side so the order
-              // flips to paid (and the confirmation email fires) without waiting for
-              // the webhook. The webhook remains the source of truth. Best-effort.
-              try{ await fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({razorpay_order_id:resp.razorpay_order_id,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature})}); }catch{}
+            handler:function(resp:any){
               try{ localStorage.setItem('apaulogy_last_order', JSON.stringify({...order,subtotal:totals.subtotal,shipping:totals.shipping,total:totals.total,reference:resp.razorpay_payment_id||data.order_id})); }catch{}
               Cart.clear();
               window.location.href='/order-confirmed/?ref='+encodeURIComponent(resp.razorpay_payment_id||data.order_id||'');

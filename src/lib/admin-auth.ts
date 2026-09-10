@@ -7,30 +7,12 @@ const TTL_SECONDS = 60 * 60 * 8; // 8 hours
 
 type Env = Record<string, any>;
 
-function secretOf(env: Env): string {
-  return env.ADMIN_SECRET || 'apaulogy-dev-secret-change-me';
-}
-
-/* Accounts come from (in order): built-in defaults, the single ADMIN_USER/ADMIN_PASS
-   pair, and an optional ADMIN_ACCOUNTS list ("user:pass,user:pass"). Any match logs in. */
-function accounts(env: Env): { user: string; pass: string }[] {
-  const list: { user: string; pass: string }[] = [
-    { user: 'support@spnin.com', pass: '9901812183@SPNIN2026' },
-    { user: 'mmp', pass: 'MMP@QP2X2026' },
-  ];
-  if (env.ADMIN_USER && env.ADMIN_PASS) list.push({ user: env.ADMIN_USER, pass: env.ADMIN_PASS });
-  if (typeof env.ADMIN_ACCOUNTS === 'string') {
-    for (const pair of env.ADMIN_ACCOUNTS.split(',')) {
-      const i = pair.indexOf(':');
-      if (i > 0) list.push({ user: pair.slice(0, i).trim(), pass: pair.slice(i + 1) });
-    }
-  }
-  return list;
-}
-
-// kept for the session/captcha code that only needs the signing secret
 function creds(env: Env) {
-  return { secret: secretOf(env) };
+  return {
+    user: env.ADMIN_USER || 'admin',
+    pass: env.ADMIN_PASS || 'admin123',
+    secret: env.ADMIN_SECRET || 'apaulogy-dev-secret-change-me',
+  };
 }
 
 const enc = new TextEncoder();
@@ -74,7 +56,8 @@ export async function verifySession(token: string | undefined, env: Env): Promis
 }
 
 export function checkCredentials(user: string, pass: string, env: Env): boolean {
-  return accounts(env).some((a) => a.user === user && a.pass === pass);
+  const c = creds(env);
+  return user === c.user && pass === c.pass;
 }
 
 export function readCookie(request: Request, name = COOKIE): string | undefined {
@@ -88,13 +71,6 @@ export function readCookie(request: Request, name = COOKIE): string | undefined 
 
 export function sessionCookie(token: string): string {
   return `${COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${TTL_SECONDS}`;
-}
-// Non-HttpOnly hint so the storefront can show 'admin mode' (no add-to-cart). Not used for auth.
-export function roleHintCookie(): string {
-  return `apaulogy_role=admin; Path=/; Secure; SameSite=Lax; Max-Age=${TTL_SECONDS}`;
-}
-export function clearRoleHint(): string {
-  return `apaulogy_role=; Path=/; Secure; SameSite=Lax; Max-Age=0`;
 }
 export function clearCookie(): string {
   return `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;

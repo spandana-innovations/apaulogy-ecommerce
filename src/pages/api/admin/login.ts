@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
-import { checkCredentials, createSession, sessionCookie, roleHintCookie } from '../../../lib/admin-auth';
+import { checkCredentials, createSession, sessionCookie } from '../../../lib/admin-auth';
+import { verifyCaptcha } from '../../../lib/captcha';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -7,25 +8,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
   let body: any = {};
   try { body = await request.json(); } catch {}
 
-  // Human check: slide-to-verify (non-image). A light friction step for the login form.
-  if (body.verified !== '1') {
-    return new Response(JSON.stringify({ ok: false, error: 'Please complete the slider to verify.' }), { status: 400, headers: { 'Content-Type': 'application/json' } });
+  // Non-text captcha (Paul's artwork) must pass first.
+  const capOk = await verifyCaptcha(env, Number(body.cap_choice), body.cap_nonce, Number(body.cap_exp), body.cap_sig);
+  if (!capOk) {
+    return new Response(JSON.stringify({ ok: false, captcha: true, error: 'Please pick the correct artwork and try again.' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
   }
 
-  const user = (body.user || '').trim();
-  const pass = body.pass || '';
-
-  // Admin credentials -> admin session, routed to the dashboard.
-  if (checkCredentials(user, pass, env)) {
-    const token = await createSession(env);
-    const headers = new Headers({ 'Content-Type': 'application/json' });
-    headers.append('Set-Cookie', sessionCookie(token));
-    headers.append('Set-Cookie', roleHintCookie());
-    return new Response(JSON.stringify({ ok: true, role: 'admin', redirect: '/apaulogy-admin/' }), { status: 200, headers });
+  if (!checkCredentials(body.user || '', body.pass || '', env)) {
+    return new Response(JSON.stringify({ ok: false, error: 'Invalid username or password.' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
   }
-
-  // Not an admin. (Customer accounts are not enabled yet; treat as invalid.)
-  return new Response(JSON.stringify({ ok: false, error: 'Incorrect username or password.' }), {
-    status: 401, headers: { 'Content-Type': 'application/json' },
+  const token = await createSession(env);
+  return new Response(JSON.stringify({ ok: true }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json', 'Set-Cookie': sessionCookie(token) },
   });
 };

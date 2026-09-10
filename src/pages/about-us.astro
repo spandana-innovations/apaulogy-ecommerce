@@ -27,8 +27,8 @@ const jsonld = [
   jsonld={jsonld}
 >
   <div class="container-page py-12 lg:py-16">
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a href="/" class="link-hover">Home</a> <span aria-hidden="true" class="opacity-50">/</span>
+    <nav class="text-xs text-[var(--color-muted)] mb-6 flex items-center gap-1.5" style="font-family:var(--font-sans)" aria-label="Breadcrumb">
+      <a href="/" class="link-hover">Home</a> <Icon name="chevronRight" size={12} class="opacity-40" />
       <span class="text-[var(--color-ink-soft)]">About</span>
     </nav>
 
@@ -80,7 +80,7 @@ const jsonld = [
 
       <!-- Paul + book -->
       <figure class="relative">
-        <div class="relative bg-[var(--color-paper-deep)] border-0">
+        <div class="relative bg-[var(--color-paper-deep)] border border-[var(--color-frame)]">
           <img src="/brand/paul-with-book.webp"
             alt="Paul Fernandes with his book, Bangalore: Swinging in the 70s"
             class="protected w-full h-auto object-contain" width="450" height="436" loading="eager" />

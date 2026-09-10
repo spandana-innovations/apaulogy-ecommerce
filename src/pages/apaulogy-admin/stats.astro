@@ -15,7 +15,7 @@ const maxV = Math.max(1, ...vals);
 const W = 720, H = 140;
 const bw = W / Math.max(1, vals.length);
 ---
-<AdminLayout title="Sales Stats" active="stats" dbBound={base.dbBound}>
+<AdminLayout title="Stats" active="stats" dbBound={base.dbBound}>
   <div class="grid-stats" style="margin-bottom:1.6rem">
     <div class="stat"><div class="k">Lifetime revenue</div><div class="v">{formatINR(s.revenue||0)}</div></div>
     <div class="stat"><div class="k">Paid orders</div><div class="v">{s.paid_orders||0}</div></div>

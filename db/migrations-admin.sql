@@ -13,10 +13,8 @@ CREATE TABLE IF NOT EXISTS orders (
   tracking_number TEXT, tracking_carrier TEXT,
   notes TEXT, source TEXT DEFAULT 'web',
   created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT,
-  deleted_at TEXT                       -- soft-delete: non-NULL = in the Bin
+  updated_at TEXT
 );
-CREATE INDEX IF NOT EXISTS idx_orders_deleted ON orders(deleted_at);
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   order_number TEXT, slug TEXT, name TEXT, variant TEXT,
@@ -114,26 +112,3 @@ CREATE TABLE IF NOT EXISTS free_shipping_products (
 
 -- Extend coupons with an optional per-product constraint (safe if column exists)
 -- (D1 ignores duplicate-column errors on re-run; wrap in a no-op if already added)
-
--- Site analytics: lightweight page-view tracking
-CREATE TABLE IF NOT EXISTS pageviews (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  path TEXT, referrer TEXT, session TEXT, device TEXT,
-  created_at TEXT DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_pv_created ON pageviews(created_at);
-CREATE INDEX IF NOT EXISTS idx_pv_path ON pageviews(path);
-
--- Order status timeline
-CREATE TABLE IF NOT EXISTS order_events (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  order_number TEXT, kind TEXT, detail TEXT,
-  created_at TEXT DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_oe_order ON order_events(order_number);
-
--- Estimated daily read counter for the Status page gauge
-CREATE TABLE IF NOT EXISTS usage_counters (
-  day TEXT PRIMARY KEY,
-  reads INTEGER DEFAULT 0
-);
