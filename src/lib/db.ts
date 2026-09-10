@@ -90,12 +90,17 @@ export async function createPendingOrder(
   return { id: orderId, orderNumber: number };
 }
 
+/**
+ * Mark an order paid. Returns true only when this call actually transitioned a
+ * still-pending order — lets callers (fast-path verify + webhook) fire the
+ * confirmation email exactly once, whichever arrives first.
+ */
 export async function markOrderPaid(
   db: D1Database,
   razorpayOrderId: string,
   razorpayPaymentId: string,
-): Promise<void> {
-  await db
+): Promise<boolean> {
+  const res = await db
     .prepare(
       `UPDATE orders
          SET status = 'paid', razorpay_payment_id = ?, updated_at = datetime('now')
@@ -103,6 +108,7 @@ export async function markOrderPaid(
     )
     .bind(razorpayPaymentId, razorpayOrderId)
     .run();
+  return (res?.meta?.changes ?? 0) > 0;
 }
 
 /** Record a webhook event id; returns false if already seen (idempotency). */

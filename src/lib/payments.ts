@@ -3,7 +3,8 @@ type Env = Record<string, any>;
 
 export async function paymentMode(env: Env): Promise<'test' | 'live'> {
   const m = await getSetting(env, 'payment_mode');
-  return m === 'live' ? 'live' : 'test';   // default to TEST until explicitly set live
+  // The store is live by default; switch to TEST explicitly from Settings → Payment mode.
+  return m === 'test' ? 'test' : 'live';
 }
 
 export async function razorpayKeys(env: Env) {
@@ -20,6 +21,11 @@ export async function razorpayKeys(env: Env) {
     keyId: env.RAZORPAY_KEY_ID || (await getSetting(env, 'razorpay_key_id')) || '',
     keySecret: env.RAZORPAY_KEY_SECRET || (await getSetting(env, 'razorpay_key_secret')) || '',
   };
+}
+
+/** Webhook signing secret — env first, then the value saved in admin Settings. */
+export async function razorpayWebhookSecret(env: Env): Promise<string> {
+  return env.RAZORPAY_WEBHOOK_SECRET || (await getSetting(env, 'razorpay_webhook_secret')) || '';
 }
 
 export async function phonepeConfig(env: Env) {

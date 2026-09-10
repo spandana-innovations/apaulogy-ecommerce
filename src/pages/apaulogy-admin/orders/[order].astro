@@ -34,21 +34,37 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
     <div style="display:grid;gap:1.2rem;align-content:start">
       <div class="card" style="padding:1.2rem">
         <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Customer</h4>
-        <p style="margin:.2rem 0"><strong>{bill.name||o.email}</strong></p>
-        <p class="muted" style="margin:.2rem 0">{o.email}</p>
+        <p style="margin:.2rem 0"><a href={`/apaulogy-admin/customers/${encodeURIComponent(o.email)}/`} class="u"><strong>{bill.name||o.email}</strong></a></p>
+        <p class="muted" style="margin:.2rem 0"><a href={`/apaulogy-admin/customers/${encodeURIComponent(o.email)}/`} class="u">{o.email}</a></p>
         <p class="muted" style="margin:.2rem 0">{o.phone||''}</p>
         {bill.city && <p class="muted" style="margin:.2rem 0">{bill.city}</p>}
+        <a href={`/apaulogy-admin/customers/${encodeURIComponent(o.email)}/`} style="display:inline-block;margin-top:.5rem;font-size:.78rem;text-decoration:underline">View customer &amp; order history →</a>
       </div>
       <div class="card" style="padding:1.2rem">
         <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Fulfilment</h4>
-        <label class="fld">Status
-          <select id="o-status">
-            {['pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'].map((s)=>(<option value={s} selected={s===o.status}>{s}</option>))}
-          </select></label>
+        <div class="fld">Status
+          <div class="status-dd" id="status-dd">
+            <button type="button" class="status-trigger" id="status-trigger" aria-haspopup="listbox" aria-expanded="false">
+              <span class={`pill s-${o.status}`} id="status-current">{o.status}</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <ul class="status-menu" id="status-menu" role="listbox" hidden>
+              {['pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'].map((s)=>(
+                <li class="status-opt" role="option" data-val={s} aria-selected={s===o.status ? 'true' : 'false'}><span class={`pill s-${s}`}>{s}</span></li>
+              ))}
+            </ul>
+            <input type="hidden" id="o-status" value={o.status}/>
+          </div>
+        </div>
         <label class="fld">Tracking number<input id="o-track" value={o.tracking_number||''} placeholder="e.g. EX123456789IN"/></label>
         <label class="fld">Carrier<input id="o-carrier" value={o.tracking_carrier||''} placeholder="e.g. DTDC, India Post"/></label>
+        <label class="notify-row"><input type="checkbox" id="o-notify" checked/> <span>Email the customer about this change</span></label>
         <button class="btn" id="o-save" style="background:#000;color:#fff;justify-content:center;width:100%;margin-top:.5rem">Update order</button>
         <p class="muted" id="o-msg" style="font-size:.75rem;text-align:center;margin-top:.5rem"></p>
+        <div style="border-top:1px solid var(--line);margin-top:.9rem;padding-top:.8rem">
+          <button class="btn" id="o-trash" style="width:100%;justify-content:center;color:var(--bad);border-color:var(--bad)">🗑 Move to bin</button>
+          <p class="muted" id="o-trash-msg" style="font-size:.72rem;text-align:center;margin-top:.4rem">Recoverable from Orders → Bin.</p>
+        </div>
       </div>
       <div class="card" style="padding:1.2rem">
         <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .8rem">Timeline</h4>
@@ -67,16 +83,58 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
     .tl-dot{ position:absolute; left:0; top:5px; width:9px; height:9px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 3px var(--gold-soft); }
     .tl-i strong{ display:block; font-size:.85rem; }
     .tl-t{ font-family:var(--font-sans); font-size:.72rem; color:var(--muted); }
-    .fld{ display:block; margin-bottom:.6rem } .fld input,.fld select{ width:100%; margin-top:.25rem; padding:.45rem .6rem; border:1px solid var(--line); font:inherit }
+    .fld{ display:block; margin-bottom:.6rem } .fld input,.fld select{ width:100%; margin-top:.25rem; padding:.45rem .6rem; border:1px solid var(--line-strong); background:var(--panel-2); color:var(--ink); border-radius:var(--r-sm); font:inherit }
+    /* Themed status dropdown */
+    .status-dd{ position:relative; margin-top:.25rem; }
+    .status-trigger{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+      padding:.45rem .6rem; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:var(--r-sm); color:var(--ink); cursor:pointer; font:inherit; }
+    .status-trigger:hover{ border-color:var(--gold); }
+    .status-trigger svg{ color:var(--muted); transition:transform .15s; flex:none; }
+    .status-dd.open .status-trigger svg{ transform:rotate(180deg); }
+    .status-menu{ position:absolute; z-index:20; top:calc(100% + 4px); left:0; right:0; margin:0; padding:.3rem; list-style:none;
+      background:var(--panel); border:1px solid var(--line-strong); border-radius:var(--r-sm); box-shadow:var(--shadow); max-height:280px; overflow:auto; }
+    .status-opt{ padding:.35rem .4rem; border-radius:6px; cursor:pointer; display:flex; }
+    .status-opt:hover{ background:var(--raise); }
+    .status-opt[aria-selected="true"]{ background:var(--gold-soft); }
+    .notify-row{ display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:var(--ink-soft); margin:.2rem 0 .3rem; cursor:pointer; }
+    .notify-row input{ width:auto; margin:0; accent-color:var(--gold); }
   </style>
   <script is:inline define:vars={{ orderNum: o.order_number }}>window.__order=orderNum;</script>
   <script>
+    /* Themed status dropdown */
+    (function(){
+      const dd=document.getElementById('status-dd'); if(!dd) return;
+      const trigger=document.getElementById('status-trigger'), menu=document.getElementById('status-menu'),
+            current=document.getElementById('status-current'), hidden=document.getElementById('o-status');
+      function open(){ dd.classList.add('open'); menu.hidden=false; trigger.setAttribute('aria-expanded','true'); }
+      function close(){ dd.classList.remove('open'); menu.hidden=true; trigger.setAttribute('aria-expanded','false'); }
+      trigger.addEventListener('click',(e)=>{ e.stopPropagation(); dd.classList.contains('open')?close():open(); });
+      menu.querySelectorAll('.status-opt').forEach((li)=>li.addEventListener('click',()=>{
+        const val=li.dataset.val;
+        hidden.value=val;
+        current.textContent=val; current.className='pill s-'+val;
+        menu.querySelectorAll('.status-opt').forEach(o=>o.setAttribute('aria-selected', o===li ? 'true':'false'));
+        close();
+      }));
+      document.addEventListener('click',(e)=>{ if(!dd.contains(e.target)) close(); });
+      document.addEventListener('keydown',(e)=>{ if(e.key==='Escape') close(); });
+    })();
+
     document.getElementById('o-save').addEventListener('click', async ()=>{
-      const msg=document.getElementById('o-msg'); msg.textContent='Saving…';
+      const msg=document.getElementById('o-msg'); msg.style.color=''; msg.textContent='Saving…';
       const body={ order:(window).__order, status:document.getElementById('o-status').value,
-        tracking_number:document.getElementById('o-track').value, tracking_carrier:document.getElementById('o-carrier').value };
+        tracking_number:document.getElementById('o-track').value, tracking_carrier:document.getElementById('o-carrier').value,
+        notify: document.getElementById('o-notify').checked };
       const r=await fetch('/api/admin/order-update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-      msg.textContent=r.ok?'Updated ✓':'Failed — database connected?';
+      let d={}; try{ d=await r.json(); }catch{}
+      msg.textContent = r.ok ? ('Updated ✓' + (d.emailed ? ' · customer emailed' : '')) : 'Failed — database connected?';
+    });
+
+    document.getElementById('o-trash').addEventListener('click', async ()=>{
+      if(!confirm('Move this order to the bin? You can restore it from Orders → Bin.')) return;
+      const msg=document.getElementById('o-trash-msg'); msg.textContent='Moving…';
+      const r=await fetch('/api/admin/order-delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order:(window).__order,action:'trash'})});
+      if(r.ok){ location.href='/apaulogy-admin/orders/?tab=bin'; } else { msg.textContent='Failed — database connected and migrated?'; }
     });
   </script>
 </AdminLayout>

@@ -56,17 +56,36 @@ export async function recentOrders(env: Env, limit = 8) {
   return (await q(env,
     `SELECT order_number, email, status, total, created_at FROM orders ORDER BY created_at DESC LIMIT ?`, limit)).rows;
 }
-export async function listOrders(env: Env, opts: { status?: string; search?: string; year?: string; page?: number; per?: number; archived?: boolean } = {}) {
+// Whether the orders table has the soft-delete column yet (migration may be
+// pending on older deployments). Cached so we probe at most once per isolate.
+let _hasDeletedAt: boolean | null = null;
+export async function hasSoftDelete(env: Env): Promise<boolean> {
+  if (_hasDeletedAt != null) return _hasDeletedAt;
+  if (!env?.DB) return false;
+  const r = await one<{ n: number }>(env, `SELECT COUNT(*) n FROM pragma_table_info('orders') WHERE name='deleted_at'`);
+  _hasDeletedAt = (r?.n ?? 0) > 0;
+  return _hasDeletedAt;
+}
+
+export async function listOrders(env: Env, opts: { status?: string; search?: string; year?: string; page?: number; per?: number; archived?: boolean; trashed?: boolean } = {}) {
   const per = Math.min(100, opts.per || 10);
   const page = Math.max(1, opts.page || 1);
   const where: string[] = [];
   const bind: any[] = [];
-  // Only the last 3 months are "live". Older orders live in the Archive, and are
-  // only queried when the Archived tab is opened — this keeps everyday reads small.
-  const searching = !!opts.search || (opts.year && opts.year !== 'all');
-  if (!searching) {
-    if (opts.archived) where.push("created_at < date('now','-3 months')");
-    else where.push("created_at >= date('now','-3 months')");
+  const softDel = await hasSoftDelete(env);
+  if (opts.trashed) {
+    // The Bin: only deleted orders, any age. Empty until the migration is run.
+    if (!softDel) return { rows: [], total: 0, page, per, pages: 1 };
+    where.push('deleted_at IS NOT NULL');
+  } else {
+    if (softDel) where.push('deleted_at IS NULL');
+    // Only the last 3 months are "live". Older orders live in the Archive, and are
+    // only queried when the Archived tab is opened — this keeps everyday reads small.
+    const searching = !!opts.search || (opts.year && opts.year !== 'all');
+    if (!searching) {
+      if (opts.archived) where.push("created_at < date('now','-3 months')");
+      else where.push("created_at >= date('now','-3 months')");
+    }
   }
   if (opts.status && opts.status !== 'all') { where.push('status=?'); bind.push(opts.status); }
   if (opts.year && opts.year !== 'all') { where.push("substr(created_at,1,4)=?"); bind.push(opts.year); }
@@ -129,6 +148,31 @@ export async function updateOrder(env: Env, orderNumber: string, fields: Record<
   try {
     await env.DB.prepare(`UPDATE orders SET ${set}, updated_at=datetime('now') WHERE order_number=?`)
       .bind(...cols.map((c) => fields[c]), orderNumber).run();
+    return true;
+  } catch { return false; }
+}
+
+/** Soft-delete: move an order to the Bin (recoverable). */
+export async function trashOrder(env: Env, orderNumber: string) {
+  if (!env?.DB) return false;
+  try { await env.DB.prepare(`UPDATE orders SET deleted_at=datetime('now'), updated_at=datetime('now') WHERE order_number=?`).bind(orderNumber).run(); return true; }
+  catch { return false; }
+}
+/** Restore an order from the Bin. */
+export async function restoreOrder(env: Env, orderNumber: string) {
+  if (!env?.DB) return false;
+  try { await env.DB.prepare(`UPDATE orders SET deleted_at=NULL, updated_at=datetime('now') WHERE order_number=?`).bind(orderNumber).run(); return true; }
+  catch { return false; }
+}
+/** Permanently delete an order and its line items + events. */
+export async function purgeOrder(env: Env, orderNumber: string) {
+  if (!env?.DB) return false;
+  try {
+    await env.DB.batch([
+      env.DB.prepare(`DELETE FROM order_items WHERE order_number=?`).bind(orderNumber),
+      env.DB.prepare(`DELETE FROM order_events WHERE order_number=?`).bind(orderNumber),
+      env.DB.prepare(`DELETE FROM orders WHERE order_number=?`).bind(orderNumber),
+    ]);
     return true;
   } catch { return false; }
 }

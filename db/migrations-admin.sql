@@ -13,8 +13,10 @@ CREATE TABLE IF NOT EXISTS orders (
   tracking_number TEXT, tracking_carrier TEXT,
   notes TEXT, source TEXT DEFAULT 'web',
   created_at TEXT DEFAULT (datetime('now')),
-  updated_at TEXT
+  updated_at TEXT,
+  deleted_at TEXT                       -- soft-delete: non-NULL = in the Bin
 );
+CREATE INDEX IF NOT EXISTS idx_orders_deleted ON orders(deleted_at);
 CREATE TABLE IF NOT EXISTS order_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   order_number TEXT, slug TEXT, name TEXT, variant TEXT,

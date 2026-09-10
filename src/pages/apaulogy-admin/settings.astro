@@ -12,6 +12,8 @@ import { getSiteMode } from '../../lib/admin-data';
 const siteMode = await getSiteMode(env);
 import { paymentMode } from '../../lib/payments';
 const payMode = await paymentMode(env);
+import { EMAIL_TYPES } from '../../lib/email';
+const hasResend = !!(await getSetting(env, 'resend_key'));
 ---
 <AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
   <div class="set-tabs" role="tablist">
@@ -86,6 +88,36 @@ const payMode = await paymentMode(env);
       </div>
     </section>
 
+    <!-- Email preview & test -->
+    <section data-panel="keys" class="card" style="padding:1.4rem;grid-column:1/-1">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Email preview &amp; test</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">
+        Every transactional email the store sends. Pick a type to preview it, enter an order number to preview real order data, and send a test to any inbox.
+        {!hasResend && <span style="color:var(--warn)"> Add and save a Resend key above to enable test sends.</span>}
+      </p>
+      <div class="email-lab">
+        <div class="email-ctl">
+          <label class="fld">Email type
+            <select id="em-type">
+              {EMAIL_TYPES.map((t)=>(<option value={t.id} data-when={t.when}>{t.label}</option>))}
+            </select>
+          </label>
+          <p class="muted" id="em-when" style="font-size:.74rem;margin:.1rem 0 .6rem"></p>
+          <label class="fld">Preview a real order <span class="muted">(optional)</span><input id="em-order" placeholder="e.g. APG-100042"/></label>
+          <button class="btn" id="em-refresh" type="button" style="margin:.4rem 0 1rem">Refresh preview</button>
+          <div style="border-top:1px solid var(--line);padding-top:.9rem">
+            <label class="fld">Send a test to<input id="em-to" type="email" placeholder="you@example.com"/></label>
+            <button class="btn" id="em-send" style="background:var(--gold);color:#0a0f16;font-weight:600;margin-top:.5rem">Send test email</button>
+            <span class="muted" id="em-msg" style="font-size:.78rem;display:block;margin-top:.5rem"></span>
+          </div>
+        </div>
+        <div class="email-view">
+          <div class="email-frame-label">Preview</div>
+          <iframe id="em-frame" title="Email preview" src="/api/admin/email?type=order_confirmation"></iframe>
+        </div>
+      </div>
+    </section>
+
     <!-- Shortcuts -->
     <section data-panel="resources" class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">Store configuration</h2>
@@ -146,6 +178,13 @@ const payMode = await paymentMode(env);
     .mode-opt.on{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-soft); }
     .mode-opt input{ margin-bottom:.3rem; }
     .mode-opt strong{ font-size:.95rem; } .mode-opt span{ font-size:.78rem; color:var(--muted); }
+    /* Email preview & test */
+    .email-lab{ display:grid; grid-template-columns:minmax(240px,1fr) 1.3fr; gap:1.2rem; align-items:start; }
+    .email-ctl .fld input, .email-ctl .fld select{ width:100%; }
+    .email-view{ display:flex; flex-direction:column; gap:.4rem; }
+    .email-frame-label{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+    #em-frame{ width:100%; height:520px; border:1px solid var(--line-strong); border-radius:8px; background:#fff; }
+    @media(max-width:760px){ .email-lab{ grid-template-columns:1fr; } #em-frame{ height:420px; } }
   </style>
   <script>
     (function(){
@@ -192,6 +231,33 @@ const payMode = await paymentMode(env);
     document.querySelectorAll('input[name=site_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked))));
     document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'); });
     document.querySelectorAll('.wh-copy').forEach(function(b){ b.addEventListener('click',function(){ var el=document.getElementById(b.dataset.copy); navigator.clipboard.writeText(el.textContent).then(function(){ b.textContent='Copied ✓'; setTimeout(function(){b.textContent='Copy';},1500); }); }); });
+
+    /* Email preview & test */
+    (function(){
+      var typeSel=document.getElementById('em-type'); if(!typeSel) return;
+      var frame=document.getElementById('em-frame'), orderIn=document.getElementById('em-order'),
+          whenEl=document.getElementById('em-when'), msg=document.getElementById('em-msg');
+      function preview(){
+        var t=typeSel.value, o=(orderIn.value||'').trim();
+        frame.src='/api/admin/email?type='+encodeURIComponent(t)+(o?('&order='+encodeURIComponent(o)):'');
+        var opt=typeSel.options[typeSel.selectedIndex]; whenEl.textContent=opt?('Sent when: '+opt.dataset.when):'';
+      }
+      typeSel.addEventListener('change',preview);
+      document.getElementById('em-refresh').addEventListener('click',preview);
+      orderIn.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); preview(); } });
+      preview();
+      document.getElementById('em-send').addEventListener('click', async function(){
+        var to=(document.getElementById('em-to').value||'').trim();
+        msg.style.color=''; msg.textContent='Sending…';
+        try{
+          var r=await fetch('/api/admin/email',{method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({ type:typeSel.value, to:to, order:(orderIn.value||'').trim() })});
+          var d=await r.json();
+          if(d.ok){ msg.style.color='#2e8b57'; msg.textContent='✓ Test sent to '+to; }
+          else { msg.style.color='#c23b3b'; msg.textContent='✗ '+(d.error||'Could not send'); }
+        }catch(e){ msg.style.color='#c23b3b'; msg.textContent='✗ Could not send'; }
+      });
+    })();
   </script>
 <style is:global>
   .set-tabs{ display:flex; gap:.3rem; border-bottom:1px solid var(--line); margin-bottom:1.4rem; }

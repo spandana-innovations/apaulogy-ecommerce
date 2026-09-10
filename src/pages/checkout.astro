@@ -238,7 +238,11 @@ import Icon from '../components/Icon.astro';
             name:'aPaulogy', description:'Watercolours of a city that was',
             prefill:{ name:(customer as any).name, email:(customer as any).email, contact:(customer as any).phone },
             theme:{ color:'#000000' },
-            handler:function(resp:any){
+            handler:async function(resp:any){
+              // Fast-path confirmation: verify the signature server-side so the order
+              // flips to paid (and the confirmation email fires) without waiting for
+              // the webhook. The webhook remains the source of truth. Best-effort.
+              try{ await fetch('/api/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({razorpay_order_id:resp.razorpay_order_id,razorpay_payment_id:resp.razorpay_payment_id,razorpay_signature:resp.razorpay_signature})}); }catch{}
               try{ localStorage.setItem('apaulogy_last_order', JSON.stringify({...order,subtotal:totals.subtotal,shipping:totals.shipping,total:totals.total,reference:resp.razorpay_payment_id||data.order_id})); }catch{}
               Cart.clear();
               window.location.href='/order-confirmed/?ref='+encodeURIComponent(resp.razorpay_payment_id||data.order_id||'');
