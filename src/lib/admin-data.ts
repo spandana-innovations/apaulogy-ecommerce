@@ -231,3 +231,47 @@ export async function setSetting(env: Env, key: string, value: string) {
   try { await env.DB.prepare(`INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`).bind(key, value).run(); return true; }
   catch { return false; }
 }
+
+/* ---- Site analytics + status + site-mode (restored) ---- */
+export let D1_LIMITED = false;
+export function isD1Limited() { return D1_LIMITED; }
+
+export async function analyticsSummary(env: any, days = 30) {
+  const s = await one<any>(env, `SELECT COUNT(*) views, COUNT(DISTINCT session) visitors, SUM(CASE WHEN device='mobile' THEN 1 ELSE 0 END) mobile FROM pageviews WHERE created_at >= date('now', ?)`, `-${days} days`);
+  return s || { views: 0, visitors: 0, mobile: 0 };
+}
+export async function viewsByDay(env: any, days = 30) {
+  return (await q(env, `SELECT date(created_at) d, COUNT(*) views, COUNT(DISTINCT session) visitors FROM pageviews WHERE created_at >= date('now', ?) GROUP BY d ORDER BY d`, `-${days} days`)).rows;
+}
+export async function topPages(env: any, days = 30, limit = 15) {
+  return (await q(env, `SELECT path, COUNT(*) views, COUNT(DISTINCT session) visitors FROM pageviews WHERE created_at >= date('now', ?) GROUP BY path ORDER BY views DESC LIMIT ?`, `-${days} days`, limit)).rows;
+}
+export async function topReferrers(env: any, days = 30, limit = 10) {
+  return (await q(env, `SELECT CASE WHEN referrer='' THEN 'Direct / none' ELSE referrer END ref, COUNT(*) n FROM pageviews WHERE created_at >= date('now', ?) GROUP BY ref ORDER BY n DESC LIMIT ?`, `-${days} days`, limit)).rows;
+}
+export async function readsToday(env: any): Promise<number> {
+  const day = new Date().toISOString().slice(0, 10);
+  const r = await one<{ reads: number }>(env, `SELECT reads FROM usage_counters WHERE day=?`, day);
+  return r?.reads ?? 0;
+}
+export async function systemStatus(env: any) {
+  const services: any[] = [];
+  let dbok = false, dbnote = 'Not connected';
+  if (env.DB) { try { await env.DB.prepare('SELECT 1').first(); dbok = true; dbnote = 'Operational'; } catch { dbnote = 'Error'; } }
+  services.push({ name: 'Database', ok: dbok, note: dbnote });
+  services.push({ name: 'Media storage (R2)', ok: !!env.MEDIA, note: env.MEDIA ? 'Bound' : 'Not bound' });
+  const rzp = !!(env.RAZORPAY_KEY_ID || (await getSetting(env, 'razorpay_key_id')));
+  services.push({ name: 'Razorpay payments', ok: rzp, note: rzp ? 'Configured' : 'No keys' });
+  const re = !!(await getSetting(env, 'resend_key'));
+  services.push({ name: 'Email (Resend)', ok: re, note: re ? 'Configured' : 'No key' });
+  const pp = !!(await getSetting(env, 'phonepe_merchant_id'));
+  services.push({ name: 'PhonePe payments', ok: pp, note: pp ? 'Configured' : 'No keys' });
+  return { services, d1Limited: D1_LIMITED, missingTables: [] };
+}
+let _modeCache: { at: number; mode: string } | null = null;
+export async function getSiteMode(env: any): Promise<string> {
+  if (_modeCache && Date.now() - _modeCache.at < 300000) return _modeCache.mode;
+  const mode = (await getSetting(env, 'site_mode')) || 'production';
+  _modeCache = { at: Date.now(), mode };
+  return mode;
+}

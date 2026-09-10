@@ -26,3 +26,4 @@ Thumbs.db
 npm-debug.log*
 .vscode/
 .idea/
+d1-full.sql
