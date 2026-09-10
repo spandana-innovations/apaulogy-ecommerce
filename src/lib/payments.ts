@@ -28,6 +28,45 @@ export async function razorpayWebhookSecret(env: Env): Promise<string> {
   return env.RAZORPAY_WEBHOOK_SECRET || (await getSetting(env, 'razorpay_webhook_secret')) || '';
 }
 
+/* ---- Per-gateway availability (enabled + region scope) ------------------- */
+export type Scope = 'domestic' | 'international' | 'both';
+export interface GatewayRule { enabled: boolean; scope: Scope; }
+export interface GatewaySettings { mode: 'test' | 'live'; razorpay: GatewayRule; phonepe: GatewayRule; }
+
+const asScope = (v: any, d: Scope): Scope => (v === 'domestic' || v === 'international' || v === 'both') ? v : d;
+const asBool = (v: any, d: boolean): boolean => v == null ? d : (v === '1' || v === 'true' || v === 1 || v === true);
+
+/** Read enable/scope for every gateway (with sensible defaults). No secrets. */
+export async function gatewaySettings(env: Env): Promise<GatewaySettings> {
+  const [mode, rzE, rzS, ppE, ppS] = await Promise.all([
+    paymentMode(env),
+    getSetting(env, 'razorpay_enabled'),
+    getSetting(env, 'razorpay_scope'),
+    getSetting(env, 'phonepe_enabled'),
+    getSetting(env, 'phonepe_scope'),
+  ]);
+  return {
+    mode,
+    razorpay: { enabled: asBool(rzE, true), scope: asScope(rzS, 'both') },      // default: on, both regions
+    phonepe:  { enabled: asBool(ppE, true), scope: asScope(ppS, 'domestic') },  // default: on, domestic only
+  };
+}
+
+/** 'domestic' for India (or blank), 'international' otherwise. */
+export function zoneOf(country?: string): 'domestic' | 'international' {
+  return (country && !/india/i.test(country)) ? 'international' : 'domestic';
+}
+
+/** Does a gateway's region scope cover this zone? */
+export function scopeAllows(scope: Scope, zone: 'domestic' | 'international'): boolean {
+  return scope === 'both' || scope === zone;
+}
+
+/** Is a gateway usable for this zone right now (enabled + in-scope)? */
+export function gatewayAllowed(rule: GatewayRule, zone: 'domestic' | 'international'): boolean {
+  return rule.enabled && scopeAllows(rule.scope, zone);
+}
+
 export async function phonepeConfig(env: Env) {
   const mode = await paymentMode(env);
   if (mode === 'test') {

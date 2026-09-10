@@ -1,14 +1,21 @@
 import type { APIRoute } from 'astro';
-import { phonepeConfig, sha256hex } from '../../lib/payments';
+import { phonepeConfig, sha256hex, gatewaySettings, gatewayAllowed, zoneOf } from '../../lib/payments';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any)?.runtime?.env ?? {};
+  let b: any = {}; try { b = await request.json(); } catch {}
+
+  // PhonePe must be enabled and cover this region (admin Settings → Payment gateways).
+  const gw = await gatewaySettings(env);
+  if (!gatewayAllowed(gw.phonepe, zoneOf(b.country))) {
+    return json({ error: 'PhonePe is not available for your region.' }, 503);
+  }
+
   const cfg = await phonepeConfig(env);
   if (!cfg.merchantId || !cfg.saltKey) {
     return json({ error: 'PhonePe is not configured.' }, 503);
   }
-  let b: any = {}; try { b = await request.json(); } catch {}
   const amount = Math.round(Number(b.amount) || 0);        // paise
   if (amount <= 0) return json({ error: 'Invalid amount.' }, 400);
 

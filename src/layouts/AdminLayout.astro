@@ -2,7 +2,10 @@
 export interface Props { title: string; active: string; dbBound?: boolean; }
 const { title, active, dbBound = true } = Astro.props;
 import { isD1Limited } from '../lib/admin-data';
+import { paymentMode } from '../lib/payments';
 const d1Limited = isD1Limited();
+const _env = (Astro.locals as any)?.runtime?.env ?? {};
+let payMode = 'live'; try { payMode = await paymentMode(_env); } catch {}
 import '@fontsource-variable/inter';
 const nav = [
   { section: 'Store' },
@@ -98,8 +101,16 @@ const ICONS: Record<string,string> = {
     /* Main */
     main{ padding:1.9rem 2.6rem 1.2rem; max-width:1360px; width:100%; display:flex; flex-direction:column; min-height:100vh; }
     main > .top ~ *:last-of-type{ } .adm-footer{ margin-top:auto !important; }
-    .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1.8rem; }
+    .top{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.8rem; }
     .top h1{ font-family:var(--font-display); font-weight:700; font-size:1.9rem; letter-spacing:-.02em; margin:0; line-height:1.1; color:var(--ink); }
+    /* Payment mode toggle (top-right) */
+    .mode-switch{ display:inline-flex; align-items:center; gap:.4rem; padding:.28rem; background:var(--panel-2); border:1px solid var(--line-strong); border-radius:999px; flex:none; }
+    .mode-switch .ms-label{ font-size:.66rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); padding:0 .3rem 0 .5rem; }
+    .mode-switch .ms-opt{ border:0; background:none; color:var(--muted); cursor:pointer; font:inherit; font-size:.76rem; font-weight:600; padding:.32rem .8rem; border-radius:999px; transition:all .13s; }
+    .mode-switch .ms-opt:hover{ color:var(--ink); }
+    .mode-switch[data-mode="test"] .ms-opt[data-set="test"]{ background:var(--warn-bg); color:var(--warn); }
+    .mode-switch[data-mode="live"] .ms-opt[data-set="live"]{ background:var(--ok-bg); color:var(--ok); }
+    @media (max-width:560px){ .mode-switch .ms-label{ display:none; } }
 
     /* Buttons */
     .btn{ display:inline-flex; align-items:center; gap:.45rem; border:1px solid var(--line-strong); background:var(--raise); color:var(--ink);
@@ -198,6 +209,11 @@ const ICONS: Record<string,string> = {
     <main>
       <div class="top">
         <h1>{title}</h1>
+        <div class="mode-switch" data-mode={payMode} role="group" aria-label="Payment mode" title="Payment mode — Test uses sandbox keys, Live charges real customers">
+          <span class="ms-label">Payments</span>
+          <button type="button" class="ms-opt" data-set="test">Test</button>
+          <button type="button" class="ms-opt" data-set="live">Live</button>
+        </div>
       </div>
       {d1Limited && (
         <div class="banner" style="background:var(--bad-bg);border-color:var(--bad);color:var(--bad)">
@@ -229,6 +245,20 @@ const ICONS: Record<string,string> = {
       await fetch('/api/admin/logout', { method: 'POST' });
       location.href = '/';
     });
+
+    // Payment mode toggle (Test ⇄ Live)
+    document.querySelectorAll('.mode-switch .ms-opt').forEach((b) => b.addEventListener('click', async () => {
+      const el = b as HTMLButtonElement;
+      const target = el.dataset.set;
+      const sw = el.closest('.mode-switch') as HTMLElement;
+      const cur = sw.getAttribute('data-mode');
+      if (target === cur) return;
+      if (target === 'live' && !confirm('Switch to LIVE payments? Real customers will be charged real money. Make sure your live keys are saved and tested.')) return;
+      sw.setAttribute('data-mode', target!);   // optimistic
+      const r = await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ payment_mode: target }) });
+      if (!r.ok) { sw.setAttribute('data-mode', cur!); alert('Could not switch payment mode — is the database connected?'); return; }
+      location.reload();
+    }));
   </script>
 </body>
 </html>

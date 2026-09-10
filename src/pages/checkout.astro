@@ -50,9 +50,10 @@ import Icon from '../components/Icon.astro';
         <fieldset class="border border-[var(--color-line-strong)] p-6">
           <legend class="text-2xl px-2 flex items-center gap-2"><Icon name="shield" size={18} /> Payment</legend>
           <div class="mt-3 space-y-2.5" id="pay-methods" style="font-family:var(--font-sans)">
-            <label class="pay-method"><input type="radio" name="gateway" value="razorpay" checked /> <span><strong>Card / UPI / Net-banking</strong> — via Razorpay</span></label>
+            <label class="pay-method" id="pm-razorpay"><input type="radio" name="gateway" value="razorpay" checked /> <span><strong>Card / UPI / Net-banking</strong> — via Razorpay</span></label>
             <label class="pay-method" id="pm-phonepe"><input type="radio" name="gateway" value="phonepe" /> <span><strong>PhonePe</strong> — UPI &amp; wallets</span></label>
           </div>
+          <p id="pm-none" class="hidden mt-2 text-sm text-[var(--color-bad,#c23b3b)]" style="font-family:var(--font-sans)">No online payment method is available for the selected country. Please contact us to complete your order.</p>
           <p class="mt-3 flex items-center gap-2.5 text-sm text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">
             <Icon name="shield" size={16} /> Secure online payment. Instant confirmation.
           </p>
@@ -186,9 +187,25 @@ import Icon from '../components/Icon.astro';
       pin?.addEventListener('blur', lookupPin);
       pin?.addEventListener('input', ()=>{ if(pin.value.trim().length===6) lookupPin(); });
       // international: hide PIN hint & re-quote shipping
-      countryS?.addEventListener('change', async()=>{ if(pinHint) pinHint.textContent=''; togglePhonePe(); await quoteShipping(); totals=recalc(); });
-      function togglePhonePe(){ const intl = countryS && !/india/i.test(countryS.value); const pm=document.getElementById('pm-phonepe'); if(pm){ pm.style.display = intl?'none':'flex'; if(intl){ const r=pm.querySelector('input') as HTMLInputElement; if(r.checked){ (document.querySelector('input[name=gateway][value=razorpay]') as HTMLInputElement).checked=true; } } } }
-      togglePhonePe();
+      countryS?.addEventListener('change', async()=>{ if(pinHint) pinHint.textContent=''; updateGateways(); await quoteShipping(); totals=recalc(); });
+      // Payment-gateway availability is admin-driven (enabled + region scope).
+      let payCfg:any = { razorpay:{enabled:true,scope:'both'}, phonepe:{enabled:true,scope:'domestic'} };
+      function scopeOK(scope:string, zone:string){ return scope==='both' || scope===zone; }
+      function curZone(){ const c=(countryS && countryS.value)||''; return (c && !/india/i.test(c)) ? 'international' : 'domestic'; }
+      function updateGateways(){
+        const zone=curZone();
+        const avail:any = { razorpay: !!payCfg.razorpay.enabled && scopeOK(payCfg.razorpay.scope, zone),
+                            phonepe:  !!payCfg.phonepe.enabled  && scopeOK(payCfg.phonepe.scope,  zone) };
+        (['razorpay','phonepe'] as const).forEach(g=>{ const el=document.getElementById('pm-'+g); if(el) (el as HTMLElement).style.display = avail[g] ? 'flex' : 'none'; });
+        const radios=[...document.querySelectorAll('input[name=gateway]')] as HTMLInputElement[];
+        const checked=radios.find(r=>r.checked);
+        if(checked && !avail[checked.value]){ const alt=radios.find(r=>avail[r.value]); if(alt){ alt.checked=true; } else { checked.checked=false; } }
+        else if(!checked){ const first=radios.find(r=>avail[r.value]); if(first) first.checked=true; }
+        const none = !avail.razorpay && !avail.phonepe;
+        document.getElementById('pm-none')?.classList.toggle('hidden', !none);
+        const payBtn=document.getElementById('co-pay') as HTMLButtonElement|null; if(payBtn) payBtn.disabled = none;
+      }
+      fetch('/api/payment-config').then(r=>r.json()).then(c=>{ if(c&&c.razorpay&&c.phonepe) payCfg=c; }).catch(()=>{}).finally(updateGateways);
       document.querySelector('[name=country]')?.addEventListener('change', async()=>{ await quoteShipping(); totals=recalc(); });
 
       document.getElementById('co-apply')?.addEventListener('click', async ()=>{
@@ -223,7 +240,7 @@ import Icon from '../components/Icon.astro';
         try{
           if(gateway==='phonepe'){
             try{ localStorage.setItem('apaulogy_last_order', JSON.stringify({...order,subtotal:totals.subtotal,shipping:totals.shipping,total:totals.total})); }catch{}
-            const r=await fetch('/api/phonepe-initiate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:totals.total,email:(customer as any).email,phone:(customer as any).phone})});
+            const r=await fetch('/api/phonepe-initiate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:totals.total,email:(customer as any).email,phone:(customer as any).phone,country:(customer as any).country})});
             const d=await r.json();
             if(d.ok && d.redirect){ Cart.clear(); window.location.href=d.redirect; return; }
             throw new Error(d.error||'Could not start PhonePe payment.');

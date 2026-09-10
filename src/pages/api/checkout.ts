@@ -5,7 +5,7 @@ import { createPendingOrder, type CartLine } from '../../lib/db';
 import { activeDiscounts, getCoupon, computeDiscount } from '../../lib/discounts';
 import { cartWeight, getRates, shippingFor, freeShippingSlugs } from '../../lib/shipping';
 import { getSetting, getSiteMode } from '../../lib/admin-data';
-import { razorpayKeys } from '../../lib/payments';
+import { razorpayKeys, gatewaySettings, gatewayAllowed } from '../../lib/payments';
 import { verifySession, readCookie, ADMIN_COOKIE } from '../../lib/admin-auth';
 
 export const prerender = false;
@@ -75,6 +75,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const { discount, freeShipping } = computeDiscount(discountLines, subtotal, discs, coupon);
 
   const zone = (customer.country && !/india/i.test(customer.country)) ? 'international' : 'domestic';
+
+  // Razorpay must be enabled and cover this region (admin Settings → Payment gateways).
+  const gw = await gatewaySettings(env);
+  if (!gatewayAllowed(gw.razorpay, zone)) {
+    return json({ error: 'Card / online payment is not available for your region right now.' }, 503);
+  }
   const weight = cartWeight(rawItems.map((it) => ({ slug: it.slug, qty: it.qty })));
   const rates = await getRates(env, zone);
   const freeSlugs = await freeShippingSlugs(env);

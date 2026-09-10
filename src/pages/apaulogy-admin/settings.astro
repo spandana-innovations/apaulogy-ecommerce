@@ -10,8 +10,8 @@ const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razor
 const origin = env.SITE_URL || 'https://apaulogy.com';
 import { getSiteMode } from '../../lib/admin-data';
 const siteMode = await getSiteMode(env);
-import { paymentMode } from '../../lib/payments';
-const payMode = await paymentMode(env);
+import { gatewaySettings } from '../../lib/payments';
+const gw = await gatewaySettings(env);
 import { EMAIL_TYPES } from '../../lib/email';
 const hasResend = !!(await getSetting(env, 'resend_key'));
 ---
@@ -23,20 +23,43 @@ const hasResend = !!(await getSetting(env, 'resend_key'));
     <button class="set-tab" data-tab="admins" type="button">Admin users</button>
   </div>
   <div class="settings-grid">
-    <!-- Payment mode -->
+    <!-- Payment gateways overview -->
     <section data-panel="keys" class="card" style="padding:1.4rem;grid-column:1/-1">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Payment mode</h2>
-      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Test mode uses sandbox keys and never charges real money. Switch to Live only when you're ready to accept real payments.</p>
-      <div class="mode-grid">
-        <label class={`mode-opt ${payMode==='test'?'on':''}`}><input type="radio" name="pay_mode" value="test" checked={payMode==='test'}/><strong>Test mode</strong><span>Sandbox — safe to trial checkout.</span></label>
-        <label class={`mode-opt ${payMode==='live'?'on':''}`}><input type="radio" name="pay_mode" value="live" checked={payMode==='live'}/><strong>Live mode</strong><span>Real payments from real customers.</span></label>
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Payment gateways</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Turn each gateway on or off and choose which customers it serves. The overall <strong>Test / Live</strong> switch is at the top-right of every page. Region is decided by the customer's country at checkout (India = domestic).</p>
+      <div class="gw-grid">
+        <div class="gw-row">
+          <div class="gw-name">Razorpay <span class="muted">— cards, UPI, net-banking</span></div>
+          <label class="switch"><input type="checkbox" id="rz-enabled" checked={gw.razorpay.enabled}/><span class="track"></span><span class="switch-txt">Enabled</span></label>
+          <label class="gw-scope">Serves
+            <select id="rz-scope">
+              <option value="both" selected={gw.razorpay.scope==='both'}>Domestic &amp; International</option>
+              <option value="domestic" selected={gw.razorpay.scope==='domestic'}>Domestic only</option>
+              <option value="international" selected={gw.razorpay.scope==='international'}>International only</option>
+            </select>
+          </label>
+        </div>
+        <div class="gw-row">
+          <div class="gw-name">PhonePe <span class="muted">— UPI &amp; wallets</span></div>
+          <label class="switch"><input type="checkbox" id="pp-enabled" checked={gw.phonepe.enabled}/><span class="track"></span><span class="switch-txt">Enabled</span></label>
+          <label class="gw-scope">Serves
+            <select id="pp-scope">
+              <option value="both" selected={gw.phonepe.scope==='both'}>Domestic &amp; International</option>
+              <option value="domestic" selected={gw.phonepe.scope==='domestic'}>Domestic only</option>
+              <option value="international" selected={gw.phonepe.scope==='international'}>International only</option>
+            </select>
+          </label>
+        </div>
       </div>
-      <div style="margin-top:1rem"><button class="btn" id="paymode-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply payment mode</button> <span class="muted" id="paymode-msg" style="font-size:.78rem"></span></div>
+      <div style="margin-top:1rem"><button class="btn" id="gw-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Save gateway settings</button> <span class="muted" id="gw-msg" style="font-size:.78rem"></span></div>
     </section>
 
     <!-- Razorpay -->
-    <section data-panel="keys" class="card" style="padding:1.4rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Razorpay payment keys</h2>
+    <section data-panel="keys" class="card" data-lockcard style="padding:1.4rem">
+      <div class="lock-head">
+        <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0">Razorpay payment keys</h2>
+        <button type="button" class="lock-btn" aria-pressed="false" title="Unlock to edit"></button>
+      </div>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">
         Enter your live or test keys from the Razorpay dashboard. Stored in your database and used at checkout.
         {rzpIdEnv && ' Environment keys are set and take priority over these.'}
@@ -58,8 +81,11 @@ const hasResend = !!(await getSetting(env, 'resend_key'));
     </section>
 
     <!-- PhonePe -->
-    <section data-panel="keys" class="card" style="padding:1.4rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">PhonePe payment keys</h2>
+    <section data-panel="keys" class="card" data-lockcard style="padding:1.4rem">
+      <div class="lock-head">
+        <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0">PhonePe payment keys</h2>
+        <button type="button" class="lock-btn" aria-pressed="false" title="Unlock to edit"></button>
+      </div>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Domestic customers can pay via PhonePe. International orders always use Razorpay.</p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
         <label class="fld">Merchant ID<input id="pp-mid" placeholder="e.g. M22XXXXXXXX"/></label>
@@ -78,8 +104,11 @@ const hasResend = !!(await getSetting(env, 'resend_key'));
     </section>
 
     <!-- Email (Resend) -->
-    <section data-panel="keys" class="card" style="padding:1.4rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Email (Resend)</h2>
+    <section data-panel="keys" class="card" data-lockcard style="padding:1.4rem">
+      <div class="lock-head">
+        <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0">Email (Resend)</h2>
+        <button type="button" class="lock-btn" aria-pressed="false" title="Unlock to edit"></button>
+      </div>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Order confirmations and shipping updates are sent through Resend.</p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
         <label class="fld">Resend API key<input id="re-key" type="password" placeholder="re_… (leave blank to keep)"/></label>
@@ -185,6 +214,28 @@ const hasResend = !!(await getSetting(env, 'resend_key'));
     .email-frame-label{ font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
     #em-frame{ width:100%; height:520px; border:1px solid var(--line-strong); border-radius:8px; background:#fff; }
     @media(max-width:760px){ .email-lab{ grid-template-columns:1fr; } #em-frame{ height:420px; } }
+    /* Payment gateways overview */
+    .gw-grid{ display:grid; gap:.7rem; }
+    .gw-row{ display:flex; align-items:center; gap:1rem; flex-wrap:wrap; padding:.85rem 1rem; border:1px solid var(--line-strong); border-radius:10px; }
+    .gw-name{ font-weight:600; font-size:.95rem; flex:1; min-width:180px; }
+    .gw-scope{ display:flex; align-items:center; gap:.5rem; font-size:.8rem; color:var(--muted); }
+    .gw-scope select{ padding:.4rem .55rem; }
+    /* toggle switch */
+    .switch{ display:inline-flex; align-items:center; gap:.5rem; cursor:pointer; user-select:none; }
+    .switch input{ position:absolute; opacity:0; width:0; height:0; }
+    .switch .track{ width:38px; height:22px; border-radius:22px; background:var(--line-strong); position:relative; transition:background .15s; flex:none; }
+    .switch .track::after{ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .15s; box-shadow:0 1px 2px rgba(0,0,0,.4); }
+    .switch input:checked + .track{ background:var(--ok); }
+    .switch input:checked + .track::after{ transform:translateX(16px); }
+    .switch input:focus-visible + .track{ box-shadow:0 0 0 3px var(--gold-soft); }
+    .switch-txt{ font-size:.8rem; color:var(--ink-soft); min-width:52px; }
+    /* lock/unlock credential cards */
+    .lock-head{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin:0 0 .8rem; }
+    .lock-btn{ display:inline-flex; align-items:center; gap:.4rem; padding:.35rem .7rem; border:1px solid var(--line-strong); background:var(--panel-2); color:var(--ink-soft); border-radius:var(--r-sm); cursor:pointer; font:inherit; font-size:.76rem; }
+    .lock-btn:hover{ border-color:var(--gold); }
+    .lock-btn.unlocked{ color:var(--ok); border-color:var(--ok); }
+    [data-lockcard].locked{ position:relative; }
+    [data-lockcard].locked input:disabled{ opacity:.55; cursor:not-allowed; }
   </style>
   <script>
     (function(){
@@ -225,12 +276,32 @@ const hasResend = !!(await getSetting(env, 'resend_key'));
     });
     async function saveSettings(body, msgId){ const m=document.getElementById(msgId); m.textContent='Saving…'; const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); m.textContent=r.ok?'Saved ✓':'Failed — database connected?'; }
     document.getElementById('pp-save').addEventListener('click',()=>{ if(document.getElementById('pp-salt').value && !ppOK){ const m=document.getElementById('pp-msg'); m.style.color='#c23b3b'; m.textContent='Please test PhonePe details before saving.'; return; } saveSettings({phonepe_merchant_id:document.getElementById('pp-mid').value.trim(),phonepe_salt_key:document.getElementById('pp-salt').value,phonepe_salt_index:document.getElementById('pp-index').value.trim(),phonepe_test_merchant_id:document.getElementById('pp-test-mid').value.trim(),phonepe_test_salt_key:document.getElementById('pp-test-salt').value,phonepe_test_salt_index:document.getElementById('pp-test-index').value.trim()},'pp-msg'); });
-    document.getElementById('paymode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=pay_mode]:checked'); saveSettings({payment_mode:m?m.value:'test'},'paymode-msg'); document.querySelectorAll('input[name=pay_mode]').forEach(r=>r.closest('.mode-opt').classList.toggle('on', r.checked)); });
-    document.querySelectorAll('input[name=pay_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('input[name=pay_mode]').forEach(x=>x.closest('.mode-opt').classList.toggle('on', x.checked))));
+    document.getElementById('gw-save')?.addEventListener('click',()=>{ saveSettings({
+      razorpay_enabled: document.getElementById('rz-enabled').checked,
+      razorpay_scope: document.getElementById('rz-scope').value,
+      phonepe_enabled: document.getElementById('pp-enabled').checked,
+      phonepe_scope: document.getElementById('pp-scope').value },'gw-msg'); });
     document.getElementById('mode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=site_mode]:checked'); saveSettings({site_mode:m?m.value:'production'},'mode-msg'); document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked)); });
     document.querySelectorAll('input[name=site_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked))));
     document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'); });
     document.querySelectorAll('.wh-copy').forEach(function(b){ b.addEventListener('click',function(){ var el=document.getElementById(b.dataset.copy); navigator.clipboard.writeText(el.textContent).then(function(){ b.textContent='Copied ✓'; setTimeout(function(){b.textContent='Copy';},1500); }); }); });
+
+    /* Lock/unlock credential fields — start locked to prevent accidental edits */
+    var LOCK='🔒 Locked', UNLOCK='🔓 Editing';
+    document.querySelectorAll('[data-lockcard]').forEach(function(card){
+      var btn=card.querySelector('.lock-btn');
+      var inputs=card.querySelectorAll('input');
+      function set(locked){
+        card.classList.toggle('locked', locked);
+        inputs.forEach(function(i){ i.disabled=locked; });
+        btn.classList.toggle('unlocked', !locked);
+        btn.setAttribute('aria-pressed', String(!locked));
+        btn.innerHTML = locked ? LOCK : UNLOCK;
+        btn.title = locked ? 'Unlock to edit' : 'Click to lock';
+      }
+      set(true);
+      btn.addEventListener('click', function(){ set(!card.classList.contains('locked')); });
+    });
 
     /* Email preview & test */
     (function(){
