@@ -23,16 +23,15 @@ const shelves = [
 
 const featured = getFeaturedProducts(10);
 
-// #8 — the ways the art comes: choose your medium
-const mediums = [{"icon": "frame", "name": "Mounted Prints", "desc": "Watercolour prints on paper, mounted and ready to frame.", "href": "/category/wall-art/", "ex": [{"slug": "pensioner", "name": "Pensioner", "img": "/uploads/2017/03/Pensioner-WITHWatermark1.webp"}, {"slug": "jackals-wedding", "name": "Jackals Wedding", "img": "/uploads/2017/03/apaulogyJackalsWedding-WITHWatermar.webp"}, {"slug": "plaza-theatre", "name": "Plaza Theatre", "img": "/uploads/2017/03/apaulogyPlaza-WITHWatermark.webp"}]}, {"icon": "tile", "name": "On Tile", "desc": "Favourite scenes transferred onto tile — lean or hang.", "href": "/category/illustrations-on-tile/", "ex": [{"slug": "parade-cafe-framed-tile", "name": "Parade Cafe Framed Tile", "img": "/uploads/2017/08/Koshys-F.webp"}, {"slug": "bangalore-club-framed-tile", "name": "Bangalore Club Framed Tile", "img": "/uploads/2017/08/BangClub-F-1.webp"}, {"slug": "russel-market-framed-tile", "name": "Russel Market Framed Tile", "img": "/uploads/2017/08/Russel-F.webp"}]}, {"icon": "plaque", "name": "Plaques", "desc": "Compact wall plaques of the best-loved corners.", "href": "/category/plaques/", "ex": [{"slug": "bangalore-morphed-series-mounted", "name": "Bangalore Morphed Series Mounted", "img": "/uploads/2017/03/Morphing-ALLRevised.webp"}, {"slug": "channa-sing-wallah-plaque", "name": "Channa Sing Wallah Plaque", "img": "/uploads/2017/03/Channa-Sing-Wallah-new.webp"}, {"slug": "amby-plaques-full-series", "name": "Amby Plaques Full Series", "img": "/uploads/2017/03/Ambyallplaque.webp"}]}, {"icon": "scroll", "name": "Posters", "desc": "Large-format posters of the classics.", "href": "/category/posters/", "ex": [{"slug": "amchi-mumbai", "name": "Amchi Mumbai", "img": "/uploads/2017/03/AmchiMumbaiPoster.webp"}, {"slug": "shineboards-1", "name": "Shineboards 1", "img": "/uploads/2017/03/Shineboard1-Top.webp"}, {"slug": "shineboards-2", "name": "Shineboards 2", "img": "/uploads/2017/03/A5.webp"}]}, {"icon": "book", "name": "Books", "desc": "Coffee-table books to drift through, cover to cover.", "href": "/category/coffee-table-books/", "ex": [{"slug": "bangalore-swinging-in-the-70s", "name": "Bangalore: Swinging in the 70s", "img": "/uploads/2017/03/swingingcov.webp"}, {"slug": "shineboard-arts-for-tamepass", "name": "Shineboard Arts: For Tamepass", "img": "/uploads/2017/03/Tamepass-Bookcover.webp"}, {"slug": "on-a-high-note", "name": "On a High Note", "img": "/uploads/2017/03/Highnote.webp"}]}, {"icon": "bag", "name": "Carriables & Gifts", "desc": "Bags, coasters, paperweights and small delights.", "href": "/category/merchandise/", "ex": [{"slug": "parade-cafe-slingbag", "name": "Parade Cafe Slingbag", "img": "/uploads/2017/03/KoshysFinal3.webp"}, {"slug": "jackals-wedding-slingbag", "name": "Jackals Wedding Slingbag", "img": "/uploads/2017/03/JacklsweddingFinal3.webp"}, {"slug": "good-manners-slingbag", "name": "Good Manners Slingbag", "img": "/uploads/2017/03/GoodmannersFinal3.webp"}]}];
 const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
 ---
 
 <BaseLayout title="Paul Fernandes Watercolour Art Prints of Old Bangalore, Mumbai & Goa" description="aPaulogy — the gallery of cartoonist Paul Fernandes. Buy watercolour art prints, plaques, tiles, books and gifts of old Bangalore, vintage Mumbai and Goa. Shipped across India & worldwide." preloadImage="/uploads/banner/goodegg-poster.webp" imageAlt="A Bangalore bungalow morning by Paul Fernandes" jsonld={jsonld}>
-  <!-- HERO: wide animated banner from the aPaulogy gallery -->
-  <section class="container-page pt-8 pb-6">
+  <!-- HERO: full-bleed animated banner from the aPaulogy gallery -->
+  <section class="w-full block">
     <div class="art-guard">
       <video
+        id="hero-video"
         class="w-full h-auto block"
         autoplay muted loop playsinline
         poster="/uploads/banner/goodegg-poster.webp"
@@ -44,8 +43,17 @@ const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
       </video>
     </div>
   </section>
-    </div>
-  </section>
+  <script is:inline>
+    /* Play the hero banner at 30% speed */
+    (function(){
+      var v = document.getElementById('hero-video'); if(!v) return;
+      var RATE = 0.3;
+      function slow(){ try { v.playbackRate = RATE; } catch(e){} }
+      v.addEventListener('loadedmetadata', slow);
+      v.addEventListener('play', slow);
+      slow();
+    })();
+  </script>
 
   <!-- TRUST STRIP -->
   <section class="bg-black text-white mt-8">
@@ -57,52 +65,6 @@ const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
       <span class="flex items-center gap-2"><Icon name="shield" size={15} /> Secure checkout</span>
     </div>
   </section>
-
-  <!-- SHOP BY MEDIUM -->
-  <section class="container-page pt-14 pb-4">
-    <div class="text-center max-w-xl mx-auto">
-      <p class="eyebrow">Choose your medium</p>
-      <h2 class="text-4xl sm:text-5xl mt-2">The art, your way</h2>
-      <p class="mt-4 text-[var(--color-ink-soft)]">The same curious illustrations, at home on paper, tile, plaque and more.</p>
-    </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-5 mt-10">
-      {mediums.map((m) => (
-        <a href={m.href} class="group border border-[var(--color-line)] hover:border-[var(--color-ink)] transition-colors p-6 flex flex-col items-start gap-3">
-          <span class="w-12 h-12 grid place-items-center border border-[var(--color-ink)] group-hover:bg-black group-hover:text-white transition-colors">
-            <Icon name={m.icon} size={24} stroke={1.3} />
-          </span>
-          <span class="text-2xl" style="font-family:var(--font-display)">{m.name}</span>
-          <span class="text-sm text-[var(--color-muted)]" style="font-family:var(--font-sans)">{m.desc}</span>
-          {m.ex && m.ex.length > 0 && (
-            <span class="medium-ex mt-1 w-full aspect-[16/9] overflow-hidden bg-white relative" data-count={m.ex.length}>
-              {m.ex.map((e, i) => (
-                <img src={e.img} alt={e.name} loading="lazy"
-                  class="medium-ex-img absolute inset-0 w-full h-full object-contain"
-                  style={`opacity:${i === 0 ? 1 : 0}`} />
-              ))}
-            </span>
-          )}
-          <span class="mt-auto pt-1 inline-flex items-center gap-1.5 text-[0.7rem] uppercase tracking-[0.14em] font-semibold" style="font-family:var(--font-sans)">Browse <Icon name="arrowRight" size={13} /></span>
-        </a>
-      ))}
-    </div>
-    <script is:inline>(function(){
-      function cycle(){
-        document.querySelectorAll('.medium-ex').forEach(function(box, k){
-          var imgs = box.querySelectorAll('.medium-ex-img'); if(imgs.length<2) return;
-          var idx = 0;
-          setInterval(function(){
-            imgs[idx].style.opacity = '0';
-            idx = (idx+1) % imgs.length;
-            imgs[idx].style.opacity = '1';
-          }, 2600 + k*450); /* out of sync per card */
-        });
-      }
-      if(document.readyState!=='loading') cycle(); else document.addEventListener('DOMContentLoaded', cycle);
-      document.addEventListener('astro:page-load', cycle);
-    })();</script>
-  </section>
-
 
   <!-- Best loved -->
   <ProductSlider title="Best loved" href="/store/" icon="frame" products={featured} />
