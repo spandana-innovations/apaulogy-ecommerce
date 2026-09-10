@@ -231,3 +231,71 @@ export async function setSetting(env: Env, key: string, value: string) {
   try { await env.DB.prepare(`INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`).bind(key, value).run(); return true; }
   catch { return false; }
 }
+
+/* ---- Restored analytics/status/site-mode functions ---- */
+export let D1_LIMITED = false;
+export function isD1Limited() { return D1_LIMITED; }
+
+export async function analyticsSummary(env: any, days = 30) {
+  const s = await one<any>(env, `SELECT COUNT(*) views, COUNT(DISTINCT session) visitors, SUM(CASE WHEN device='mobile' THEN 1 ELSE 0 END) mobile FROM pageviews WHERE created_at >= date('now', ?)`, `-${days} days`);
+  return s || { views: 0, visitors: 0, mobile: 0 };
+}
+export async function viewsByDay(env: any, days = 30) {
+  return (await q(env, `SELECT date(created_at) d, COUNT(*) views, COUNT(DISTINCT session) visitors FROM pageviews WHERE created_at >= date('now', ?) GROUP BY d ORDER BY d`, `-${days} days`)).rows;
+}
+export async function topPages(env: any, days = 30, limit = 15) {
+  return (await q(env, `SELECT path, COUNT(*) views, COUNT(DISTINCT session) visitors FROM pageviews WHERE created_at >= date('now', ?) GROUP BY path ORDER BY views DESC LIMIT ?`, `-${days} days`, limit)).rows;
+}
+export async function topReferrers(env: any, days = 30, limit = 10) {
+  return (await q(env, `SELECT CASE WHEN referrer='' THEN 'Direct / none' ELSE referrer END ref, COUNT(*) n FROM pageviews WHERE created_at >= date('now', ?) GROUP BY ref ORDER BY n DESC LIMIT ?`, `-${days} days`, limit)).rows;
+}
+export async function readsToday(env: any): Promise<number> {
+  const day = new Date().toISOString().slice(0, 10);
+  const r = await one<{ reads: number }>(env, `SELECT reads FROM usage_counters WHERE day=?`, day);
+  return r?.reads ?? 0;
+}
+export async function bumpReads(env: any, n: number) {
+  if (!env?.DB) return;
+  const day = new Date().toISOString().slice(0, 10);
+  try { await env.DB.prepare(`INSERT INTO usage_counters (day, reads) VALUES (?, ?) ON CONFLICT(day) DO UPDATE SET reads = reads + ?`).bind(day, n, n).run(); } catch {}
+}
+export async function systemStatus(env: any) {
+  const services: any[] = [];
+  let d1ok = false, d1note = 'Not connected';
+  if (env.DB) { try { await env.DB.prepare('SELECT 1').first(); d1ok = true; d1note = 'Operational'; } catch { d1note = 'Error'; } }
+  services.push({ name: 'Database', ok: d1ok, note: d1note });
+  services.push({ name: 'Media storage (R2)', ok: !!env.MEDIA, note: env.MEDIA ? 'Bound' : 'Not bound' });
+  return { services, d1Limited: D1_LIMITED, missingTables: [] };
+}
+export async function orderEvents(env: any, orderNumber: string) {
+  return (await q(env, `SELECT kind, detail, created_at FROM order_events WHERE order_number=? ORDER BY created_at`, orderNumber)).rows;
+}
+export async function logOrderEvent(env: any, orderNumber: string, kind: string, detail = '') {
+  if (!env?.DB) return;
+  try { await env.DB.prepare(`INSERT INTO order_events (order_number, kind, detail) VALUES (?,?,?)`).bind(orderNumber, kind, detail).run(); } catch {}
+}
+let _modeCache: { at: number; mode: string } | null = null;
+export async function getSiteMode(env: any): Promise<string> {
+  if (_modeCache && Date.now() - _modeCache.at < 300000) return _modeCache.mode;
+  const mode = (await getSetting(env, 'site_mode')) || 'production';
+  _modeCache = { at: Date.now(), mode };
+  return mode;
+}
+
+/* ---- Order soft-delete (trash / restore / purge) ---- */
+export async function trashOrder(env: any, orderNumber: string) {
+  if (!env?.DB) return false;
+  try { await env.DB.prepare(`UPDATE orders SET deleted_at = datetime('now') WHERE order_number=?`).bind(orderNumber).run(); return true; } catch { return false; }
+}
+export async function restoreOrder(env: any, orderNumber: string) {
+  if (!env?.DB) return false;
+  try { await env.DB.prepare(`UPDATE orders SET deleted_at = NULL WHERE order_number=?`).bind(orderNumber).run(); return true; } catch { return false; }
+}
+export async function purgeOrder(env: any, orderNumber: string) {
+  if (!env?.DB) return false;
+  try {
+    await env.DB.prepare(`DELETE FROM order_items WHERE order_number=?`).bind(orderNumber).run();
+    await env.DB.prepare(`DELETE FROM orders WHERE order_number=?`).bind(orderNumber).run();
+    return true;
+  } catch { return false; }
+}

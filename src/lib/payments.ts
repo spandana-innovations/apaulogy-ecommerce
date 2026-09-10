@@ -47,3 +47,19 @@ export async function sha256hex(input: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+/* ---- Public gateway config for the checkout page (no secrets) ---- */
+export async function gatewaySettings(env: any) {
+  const mode = await paymentMode(env);
+  const rzpId = mode === 'test'
+    ? (await getSetting(env, 'razorpay_test_key_id'))
+    : (env.RAZORPAY_KEY_ID || (await getSetting(env, 'razorpay_key_id')));
+  const ppMid = mode === 'test'
+    ? (await getSetting(env, 'phonepe_test_merchant_id'))
+    : (await getSetting(env, 'phonepe_merchant_id'));
+  return {
+    mode,
+    razorpay: { enabled: !!rzpId, scope: 'all' },        // Razorpay: domestic + international
+    phonepe:  { enabled: !!ppMid, scope: 'domestic' },   // PhonePe: India only
+  };
+}
