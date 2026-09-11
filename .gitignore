@@ -26,4 +26,8 @@ Thumbs.db
 npm-debug.log*
 .vscode/
 .idea/
+
+# never commit DB dumps (may contain secrets)
 d1-full.sql
+*.sql.dump
+*-dump.sql

@@ -9,7 +9,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const path = url.pathname.replace(/\/$/, '') || '/';
   const env = (context.locals as any)?.runtime?.env ?? {};
 
-  // Database: prefer Turso when configured (D1-compatible shim), else keep D1.
+  // Database: use Turso when configured (D1-compatible shim); else fall back to D1.
   try { if (tursoConfigured(env) && !env.__dbInjected) { env.DB = tursoDB(env); env.__dbInjected = true; } } catch {}
 
   const guarded = path.startsWith('/apaulogy-admin') || path.startsWith('/api/admin');
