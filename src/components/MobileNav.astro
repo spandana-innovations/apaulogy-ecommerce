@@ -1,0 +1,51 @@
+---
+// Modern mobile bottom tab bar — thumb-reachable, gallery-styled.
+import Icon from './Icon.astro';
+const tabs = [
+  { label: 'Home',   href: '/',            icon: 'home' },
+  { label: 'Shop',   href: '/store/',      icon: 'grid' },
+  { label: 'Map',    href: '/map/',        icon: 'pin' },
+  { label: 'Account',href: '/apaulogy-admin/', icon: 'user', id: 'mnav-account' },
+];
+---
+<nav class="mobile-tabbar lg:hidden" aria-label="Primary">
+  {tabs.map((t) => (
+    <a href={t.href} class="mtab" data-href={t.href} id={t.id}>
+      <span class="mtab-ico"><Icon name={t.icon} size={21} stroke={1.5} /></span>
+      <span class="mtab-label">{t.label}</span>
+    </a>
+  ))}
+  <button class="mtab" id="mnav-cart" aria-label="Open cart">
+    <span class="mtab-ico">
+      <Icon name="cart" size={21} stroke={1.5} />
+      <span class="mtab-badge" data-cart-count hidden>0</span>
+    </span>
+    <span class="mtab-label">Cart</span>
+  </button>
+</nav>
+
+<script>
+  function initMobileTabs() {
+    // highlight the active tab
+    const path = location.pathname;
+    document.querySelectorAll<HTMLElement>('.mobile-tabbar .mtab[data-href]').forEach((a) => {
+      const href = a.dataset.href!;
+      const on = href === '/' ? path === '/' : path.startsWith(href);
+      a.classList.toggle('on', on);
+    });
+    // cart tab opens the cart sheet
+    const cartBtn = document.getElementById('mnav-cart');
+    if (cartBtn && !cartBtn.dataset.bound) {
+      cartBtn.dataset.bound = '1';
+      cartBtn.addEventListener('click', () => {
+        document.getElementById('cart-toggle')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+    }
+    // reflect logged-in state on the Account tab (role hint cookie)
+    const acct = document.getElementById('mnav-account');
+    if (acct && document.cookie.includes('apaulogy_role=admin')) acct.classList.add('is-auth');
+  }
+  initMobileTabs();
+  document.addEventListener('astro:page-load', initMobileTabs);
+  document.addEventListener('astro:after-swap', initMobileTabs);
+</script>

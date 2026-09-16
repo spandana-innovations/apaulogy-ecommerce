@@ -1,20 +1,13 @@
 /* Turso (libSQL) adapter mimicking the Cloudflare D1 interface, so all existing
- * env.DB.prepare(...).bind(...).all()/.first()/.run() code works unchanged.
- * Uses the HTTP web client, which runs on Cloudflare Pages Functions. */
+ * env.DB.prepare(...).bind(...).all()/.first()/.run() code works unchanged. */
 import { createClient, type Client } from '@libsql/client/web';
-
 type Env = Record<string, any>;
-let _client: Client | null = null;
-let _url = '';
+let _client: Client | null = null; let _url = '';
 function client(env: Env): Client {
   if (_client && _url === env.TURSO_URL) return _client;
-  _url = env.TURSO_URL;
-  _client = createClient({ url: env.TURSO_URL, authToken: env.TURSO_AUTH_TOKEN });
-  return _client;
+  _url = env.TURSO_URL; _client = createClient({ url: env.TURSO_URL, authToken: env.TURSO_AUTH_TOKEN }); return _client;
 }
-function rowMapper(columns: string[]) {
-  return (row: any) => { const o: Record<string, any> = {}; for (let i = 0; i < columns.length; i++) o[columns[i]] = row[i]; return o; };
-}
+function rowMapper(cols: string[]) { return (row: any) => { const o: Record<string, any> = {}; for (let i = 0; i < cols.length; i++) o[cols[i]] = row[i]; return o; }; }
 function statement(env: Env, sql: string, args: any[] = []) {
   const c = () => client(env);
   return {
@@ -26,10 +19,8 @@ function statement(env: Env, sql: string, args: any[] = []) {
   };
 }
 export function tursoDB(env: Env) {
-  return {
-    prepare(sql: string) { return statement(env, sql); },
+  return { prepare(sql: string) { return statement(env, sql); },
     async exec(sql: string) { await client(env).executeMultiple(sql); return { count: 0, duration: 0 }; },
-    async batch(stmts: any[]) { return Promise.all(stmts.map((s) => (typeof s?.all === 'function' ? s.all() : s))); },
-  };
+    async batch(stmts: any[]) { return Promise.all(stmts.map((s) => (typeof s?.all === 'function' ? s.all() : s))); } };
 }
 export function tursoConfigured(env: Env): boolean { return !!(env?.TURSO_URL && env?.TURSO_AUTH_TOKEN); }

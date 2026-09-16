@@ -54,7 +54,7 @@ const jsonld = [breadcrumbSchema([{ name: 'Home', url: '/' }, { name: 'Store', u
 
     <p id="store-count" class="sr-only" aria-live="polite"></p>
 
-    <div id="store-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+    <div id="store-grid" class="product-grid grid gap-6 lg:gap-8">
       {products.map((p, i) => (
         <div class="store-item" data-cats={productMeta[i].tops} data-name={productMeta[i].name}>
           <ProductCard product={p} showKind={mixedKinds} />

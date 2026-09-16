@@ -1,0 +1,52 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getStats, analyticsSummary, viewsByDay, topPages, topReferrers } from '../../lib/admin-data';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const base = await getStats(env);
+const sum = await analyticsSummary(env, 30);
+const byDay = await viewsByDay(env, 30);
+const pages = await topPages(env, 30, 15);
+const refs = await topReferrers(env, 30, 10);
+const vals = byDay.map((r:any)=>Number(r.views)||0);
+const maxV = Math.max(1, ...vals);
+const W=760, H=120, bw=W/Math.max(1,vals.length);
+const mobilePct = sum.views ? Math.round((sum.mobile/sum.views)*100) : 0;
+---
+<AdminLayout title="Site analytics" active="analytics" dbBound={base.dbBound}>
+  <div class="grid-stats" style="margin-bottom:1.6rem">
+    <div class="stat"><div class="k">Page views · 30d</div><div class="v">{(sum.views||0).toLocaleString()}</div></div>
+    <div class="stat"><div class="k">Visitors · 30d</div><div class="v">{(sum.visitors||0).toLocaleString()}</div></div>
+    <div class="stat"><div class="k">Mobile share</div><div class="v">{mobilePct}%</div></div>
+    <div class="stat"><div class="k">Views / visitor</div><div class="v">{sum.visitors?(sum.views/sum.visitors).toFixed(1):'0'}</div></div>
+  </div>
+
+  <div class="card" style="padding:1.3rem;margin-bottom:1.6rem">
+    <strong style="font-size:1.05rem">Traffic · last 30 days</strong>
+    {vals.length ? (
+      <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="140" style="margin-top:1rem;overflow:visible">
+        {vals.map((v:number,i:number)=>(<rect x={i*bw+2} y={H-(v/maxV)*(H-10)} width={bw-4} height={(v/maxV)*(H-10)} rx="2" fill="var(--gold)" opacity="0.85"><title>{byDay[i].d}: {v} views</title></rect>))}
+      </svg>
+    ) : (<p class="muted" style="margin-top:1rem">No traffic recorded yet — data appears as visitors browse the live site.</p>)}
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:1.6rem;align-items:start">
+    <section>
+      <h2 style="font-size:1.15rem;font-weight:700;margin:0 0 .7rem">Top pages</h2>
+      <div class="card" style="overflow:hidden">
+        <table><thead><tr><th>Path</th><th style="text-align:right">Views</th><th style="text-align:right">Visitors</th></tr></thead>
+          <tbody>{pages.map((p:any)=>(<tr><td><code>{p.path}</code></td><td style="text-align:right">{p.views}</td><td style="text-align:right">{p.visitors}</td></tr>))}
+          {!pages.length && <tr><td colspan="3" class="empty">No data yet.</td></tr>}</tbody></table>
+      </div>
+    </section>
+    <section>
+      <h2 style="font-size:1.15rem;font-weight:700;margin:0 0 .7rem">Where visitors come from</h2>
+      <div class="card" style="overflow:hidden">
+        <table><thead><tr><th>Source</th><th style="text-align:right">Views</th></tr></thead>
+          <tbody>{refs.map((r:any)=>(<tr><td class="muted" style="max-width:220px;overflow:hidden;text-overflow:ellipsis">{r.ref}</td><td style="text-align:right">{r.n}</td></tr>))}
+          {!refs.length && <tr><td colspan="2" class="empty">No data yet.</td></tr>}</tbody></table>
+      </div>
+    </section>
+  </div>
+  <p class="muted" style="font-size:.78rem;margin-top:1.5rem">Privacy-friendly, cookieless tracking (anonymous session id only). Heatmaps &amp; per-customer journeys need the customer-accounts module.</p>
+</AdminLayout>

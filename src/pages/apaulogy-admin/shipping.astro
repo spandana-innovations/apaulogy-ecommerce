@@ -10,11 +10,6 @@ const domestic = await getRates(env, 'domestic');
 const intl = await getRates(env, 'international');
 ---
 <AdminLayout title="Shipping" active="shipping" dbBound={stats.dbBound}>
-  <p class="muted" style="font-family:var(--font-sans);font-size:.85rem;max-width:640px;margin-bottom:1.4rem">
-    Weight-based shipping. An order's total weight (from each product's weight) is matched to the first bracket
-    it fits under; the last bracket (no upper limit) can add a per-kg surcharge. Imported from your WooCommerce
-    APG weight rules.
-  </p>
   {['domestic','international'].map((zone) => {
     const rows = zone==='domestic'?domestic:intl;
     return (

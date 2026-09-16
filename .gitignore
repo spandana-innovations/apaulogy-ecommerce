@@ -29,5 +29,4 @@ npm-debug.log*
 
 # never commit DB dumps (may contain secrets)
 d1-full.sql
-*.sql.dump
 *-dump.sql

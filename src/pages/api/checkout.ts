@@ -4,7 +4,9 @@ import { createRazorpayOrder } from '../../lib/razorpay';
 import { createPendingOrder, type CartLine } from '../../lib/db';
 import { activeDiscounts, getCoupon, computeDiscount } from '../../lib/discounts';
 import { cartWeight, getRates, shippingFor, freeShippingSlugs } from '../../lib/shipping';
-import { getSetting } from '../../lib/admin-data';
+import { getSetting, getSiteMode } from '../../lib/admin-data';
+import { razorpayKeys } from '../../lib/payments';
+import { verifySession, readCookie, ADMIN_COOKIE } from '../../lib/admin-auth';
 
 export const prerender = false;
 
@@ -24,6 +26,14 @@ function fallbackRef(): string {
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const _env0 = (locals as any)?.runtime?.env ?? {};
+  // admin_no_order: signed-in admins cannot place orders
+  if ((await getSiteMode(_env0)) === 'paused') {
+    return new Response(JSON.stringify({ error: 'Orders are temporarily paused. Please check back soon.' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+  }
+  if (await verifySession(readCookie(request, ADMIN_COOKIE), _env0)) {
+    return new Response(JSON.stringify({ error: 'Admin accounts cannot place orders. Please use a customer account.' }), { status: 403, headers: { 'Content-Type': 'application/json' } });
+  }
   const env = locals?.runtime?.env ?? ({} as Record<string, any>);
 
   let body: {
@@ -87,8 +97,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // ---- Online payment via Razorpay. ----------------------------------------
   // Keys come from env (most secure) or fall back to admin Settings in D1.
-  const keyId = env.RAZORPAY_KEY_ID || (await getSetting(env, 'razorpay_key_id')) || '';
-  const keySecret = env.RAZORPAY_KEY_SECRET || (await getSetting(env, 'razorpay_key_secret')) || '';
+  const rk = await razorpayKeys(env);
+  const keyId = rk.keyId; const keySecret = rk.keySecret;
   if (!keyId || !keySecret) {
     return json({ error: 'Online payments are not configured yet. Please try again later.' }, 503);
   }
