@@ -26,8 +26,8 @@ const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.
 ---
 
 <BaseLayout
-  title={category.name}
-  description={category.description || `Shop the ${category.name} collection from aPaulogy — watercolour prints and merchandise by Paul Fernandes of old Bangalore, Mumbai and Goa.`}
+  title={(category as any).meta_title || category.name}
+  description={(category as any).meta_description || category.description || `Shop the ${category.name} collection from aPaulogy — watercolour prints and merchandise by Paul Fernandes of old Bangalore, Mumbai and Goa.`}
   image={catImage || '/og-default.png'}
   imageAlt={`${category.name} — aPaulogy`}
   jsonld={jsonld}

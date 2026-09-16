@@ -175,3 +175,17 @@ export function breadcrumbSchema(
     })),
   };
 }
+
+/** Person schema for the artist (About page). */
+export function personSchema(site: URL | string | undefined) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: 'Paul Fernandes',
+    jobTitle: 'Artist & Cartoonist',
+    description: 'Bengaluru-based watercolour artist and cartoonist known for nostalgic illustrations of old Bangalore, vintage Mumbai and Goa.',
+    worksFor: { '@type': 'Organization', name: SITE_NAME },
+    knowsAbout: ['Watercolour painting', 'Illustration', 'Bangalore history', 'Cartooning'],
+    url: abs('/about-us/', site),
+  };
+}
