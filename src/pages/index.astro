@@ -32,18 +32,46 @@ const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
   <!-- HERO: wide animated banner from the aPaulogy gallery -->
   <section class="container-page pt-8 pb-6">
     <div class="art-guard">
-      <video
+      <video id="hero-video"
         class="w-full h-auto block"
-        autoplay muted loop playsinline
+        autoplay muted loop playsinline webkit-playsinline preload="auto" disablepictureinpicture disableremoteplayback x5-playsinline
         poster="/uploads/banner/goodegg-poster.webp"
         width="1400" height="565"
         aria-label="A Bangalore bungalow morning — animated watercolour by Paul Fernandes">
-        <source src="/uploads/banner/goodegg.webm" type="video/webm" />
         <source src="/uploads/banner/goodegg.mp4" type="video/mp4" />
+        <source src="/uploads/banner/goodegg.webm" type="video/webm" />
         <img src="/uploads/banner/goodegg-poster.webp" alt="A Bangalore bungalow morning by Paul Fernandes" class="w-full h-auto" />
       </video>
     </div>
   </section>
+  <script is:inline>
+    (function(){
+      var DEFAULT_SPEED = 0.6;   // calmer default
+      function apply(v, sp){ try{ v.playbackRate = sp; v.defaultPlaybackRate = sp; }catch(e){} }
+      function play(v){ v.muted = true; v.setAttribute('muted',''); var p = v.play(); if(p && p.catch) p.catch(function(){}); }
+      function init(){
+        var v = document.getElementById('hero-video'); if(!v) return;
+        v.muted = true;                      // ensure muted before any play attempt (iOS)
+        apply(v, DEFAULT_SPEED);
+        play(v);
+        v.addEventListener('loadedmetadata', function(){ apply(v, v.__sp || DEFAULT_SPEED); play(v); });
+        v.addEventListener('canplay', function(){ play(v); });
+        // retry on the first user interaction — covers iOS Low-Power Mode / blocked autoplay
+        var kicked=false;
+        function kick(){ if(kicked) return; kicked=true; play(v); }
+        ['touchstart','pointerdown','click','scroll'].forEach(function(ev){
+          document.addEventListener(ev, kick, { once:true, passive:true });
+        });
+        // apply the admin-configured speed if set
+        fetch('/api/site-mode').then(function(r){return r.json();}).then(function(d){
+          var sp = (d && d.heroSpeed) ? Number(d.heroSpeed) : DEFAULT_SPEED;
+          v.__sp = sp; apply(v, sp);
+        }).catch(function(){});
+      }
+      if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
+      document.addEventListener('astro:page-load', init);
+    })();
+  </script>
     </div>
   </section>
 
