@@ -19,3 +19,19 @@ export function toPaise(rupees: number | string): number {
 export function formatINRRange(minPaise: number, maxPaise: number): string {
   return `${formatINR(minPaise)} – ${formatINR(maxPaise)}`;
 }
+
+/** Human "member since" duration from an ISO date to now: "2y 3m 5d". */
+export function since(iso?: string): string {
+  if (!iso) return '—';
+  const start = new Date((iso || '').replace(' ', 'T'));
+  if (isNaN(start.getTime())) return '—';
+  const now = new Date();
+  let y = now.getFullYear() - start.getFullYear();
+  let m = now.getMonth() - start.getMonth();
+  let d = now.getDate() - start.getDate();
+  if (d < 0) { m -= 1; d += new Date(now.getFullYear(), now.getMonth(), 0).getDate(); }
+  if (m < 0) { y -= 1; m += 12; }
+  const parts = [] as string[];
+  if (y) parts.push(`${y}y`); if (m) parts.push(`${m}m`); parts.push(`${d}d`);
+  return parts.join(' ');
+}

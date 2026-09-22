@@ -20,11 +20,15 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ ok: false, error: `Resend returned ${r.status}.` });
     }
     if (provider === 'phonepe') {
-      if (!b.merchant_id || !b.salt_key) return json({ ok: false, error: 'Enter Merchant ID and Salt Key.' });
-      // PhonePe has no simple ping; validate format (real verification happens on first live payment).
-      const okFmt = /^[A-Za-z0-9_-]{4,}$/.test(b.merchant_id) && b.salt_key.length >= 8;
-      return okFmt ? json({ ok: true, message: 'PhonePe details look valid (verified on first payment).' })
-                   : json({ ok: false, error: 'Merchant ID / Salt Key format looks off.' });
+      if (!b.client_id || !b.client_secret) return json({ ok: false, error: 'Enter Client ID and Secret.' });
+      // Sandbox OAuth token check (safe, no charge).
+      try {
+        const body = new URLSearchParams({ client_id: b.client_id, client_version: String(b.client_version || '1'), client_secret: b.client_secret, grant_type: 'client_credentials' });
+        const r = await fetch('https://api-preprod.phonepe.com/apis/pg-sandbox/v1/oauth/token', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() });
+        const d: any = await r.json();
+        if (r.ok && d.access_token) return json({ ok: true, message: 'PhonePe credentials valid (sandbox token issued).' });
+        return json({ ok: false, error: d.message || d.code || 'PhonePe auth failed — check Client ID/Secret.' });
+      } catch (e: any) { return json({ ok: false, error: 'Could not reach PhonePe: ' + (e?.message || e) }); }
     }
     return json({ ok: false, error: 'Unknown provider.' });
   } catch (e: any) {

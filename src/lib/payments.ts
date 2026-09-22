@@ -27,19 +27,46 @@ export async function phonepeConfig(env: Env) {
   if (mode === 'test') {
     return {
       mode,
-      host: 'https://api-preprod.phonepe.com/apis/pg-sandbox',
-      merchantId: (await getSetting(env, 'phonepe_test_merchant_id')) || 'PGTESTPAYUAT',
-      saltKey: (await getSetting(env, 'phonepe_test_salt_key')) || '',
-      saltIndex: (await getSetting(env, 'phonepe_test_salt_index')) || '1',
+      // v2 Standard Checkout — Sandbox
+      authHost: 'https://api-preprod.phonepe.com/apis/pg-sandbox',
+      payHost: 'https://api-preprod.phonepe.com/apis/pg-sandbox',
+      clientId: (await getSetting(env, 'phonepe_test_client_id')) || '',
+      clientSecret: (await getSetting(env, 'phonepe_test_client_secret')) || '',
+      clientVersion: (await getSetting(env, 'phonepe_test_client_version')) || '1',
     };
   }
   return {
     mode,
-    host: 'https://api.phonepe.com/apis/hermes',
-    merchantId: (await getSetting(env, 'phonepe_merchant_id')) || '',
-    saltKey: (await getSetting(env, 'phonepe_salt_key')) || '',
-    saltIndex: (await getSetting(env, 'phonepe_salt_index')) || '1',
+    // v2 Standard Checkout — Production (auth + pay live on different hosts)
+    authHost: 'https://api.phonepe.com/apis/identity-manager',
+    payHost: 'https://api.phonepe.com/apis/pg',
+    clientId: env.PHONEPE_CLIENT_ID || (await getSetting(env, 'phonepe_client_id')) || '',
+    clientSecret: env.PHONEPE_CLIENT_SECRET || (await getSetting(env, 'phonepe_client_secret')) || '',
+    clientVersion: (await getSetting(env, 'phonepe_client_version')) || '1',
   };
+}
+
+// --- OAuth token (v2). Cached in module scope until shortly before expiry. ---
+let _ppToken: { token: string; exp: number; key: string } | null = null;
+export async function phonepeToken(env: Env, cfg: any): Promise<string> {
+  const key = cfg.clientId + '|' + cfg.mode;
+  if (_ppToken && _ppToken.key === key && Date.now() < _ppToken.exp - 60000) return _ppToken.token;
+  const body = new URLSearchParams({
+    client_id: cfg.clientId,
+    client_version: String(cfg.clientVersion || '1'),
+    client_secret: cfg.clientSecret,
+    grant_type: 'client_credentials',
+  });
+  const r = await fetch(cfg.authHost + '/v1/oauth/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: body.toString(),
+  });
+  const d: any = await r.json();
+  if (!r.ok || !d?.access_token) throw new Error(d?.message || d?.code || `PhonePe auth failed (${r.status})`);
+  const expMs = d.expires_at ? d.expires_at * 1000 : Date.now() + 600000;
+  _ppToken = { token: d.access_token, exp: expMs, key };
+  return d.access_token;
 }
 
 // SHA256 hex (Web Crypto) — used for PhonePe X-VERIFY checksums.

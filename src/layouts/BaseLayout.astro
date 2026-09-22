@@ -4,6 +4,8 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import SearchOverlay from '../components/SearchOverlay.astro';
 import CartDrawer from '../components/CartDrawer.astro';
+import MobileNav from '../components/MobileNav.astro';
+import LoginModal from '../components/LoginModal.astro';
 import { SITE_NAME, SITE_DESCRIPTION } from '../lib/seo';
 
 export interface Props {
@@ -101,6 +103,8 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
 
     <SearchOverlay />
     <CartDrawer />
+    <MobileNav />
+    <LoginModal />
 
     <script src="../scripts/cart.ts"></script>
     <script>
@@ -124,6 +128,28 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
       guardImages();
       document.addEventListener('astro:after-swap', guardImages);
       document.addEventListener('astro:page-load', guardImages);
+    </script>
+      <script>
+      (function(){
+        function sid(){ try{ var k='apg_sid'; var v=localStorage.getItem(k); if(!v){ v=Math.random().toString(36).slice(2)+Date.now().toString(36); localStorage.setItem(k,v); } return v; }catch(e){ return ''; } }
+        function hit(){ try{ navigator.sendBeacon ? navigator.sendBeacon('/api/track', new Blob([JSON.stringify({path:location.pathname, referrer:document.referrer||'', session:sid()})],{type:'application/json'})) : fetch('/api/track',{method:'POST',keepalive:true,headers:{'Content-Type':'application/json'},body:JSON.stringify({path:location.pathname, referrer:document.referrer||'', session:sid()})}); }catch(e){} }
+        hit(); document.addEventListener('astro:page-load', hit);
+      })();
+    </script>
+      <script>
+      (function(){
+        fetch('/api/site-mode').then(function(r){return r.json();}).then(function(d){
+          if(d && d.mode==='paused'){
+            document.documentElement.setAttribute('data-paused','1');
+            var bar=document.createElement('div');
+            bar.setAttribute('style','position:sticky;top:0;z-index:60;background:#8a1f1f;color:#fff;text-align:center;padding:.55rem 1rem;font-family:var(--font-sans),sans-serif;font-size:.82rem;letter-spacing:.02em');
+            bar.textContent='Ordering is temporarily paused — you can browse the gallery, checkout will reopen soon.';
+            document.body.insertBefore(bar, document.body.firstChild);
+            // disable checkout entry points
+            document.querySelectorAll('a[href="/checkout/"], a[href="/checkout"]').forEach(function(a){ a.setAttribute('aria-disabled','true'); a.style.pointerEvents='none'; a.style.opacity='.5'; });
+          }
+        }).catch(function(){});
+      })();
     </script>
   </body>
 </html>
