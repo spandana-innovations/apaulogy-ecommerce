@@ -48,6 +48,10 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
         <label class="fld">Tracking number<input id="o-track" value={o.tracking_number||''} placeholder="e.g. EX123456789IN"/></label>
         <label class="fld">Carrier<input id="o-carrier" value={o.tracking_carrier||''} placeholder="e.g. DTDC, India Post"/></label>
         <button class="btn" id="o-save" style="background:#000;color:#fff;justify-content:center;width:100%;margin-top:.5rem">Update order</button>
+        {(o as any).phonepe_order_id && (
+          <button type="button" class="btn" id="pp-check" style="justify-content:center;width:100%;margin-top:.5rem">Check PhonePe status</button>
+        )}
+        <p class="muted" id="pp-status-msg" style="font-size:.75rem;text-align:center;margin-top:.4rem"></p>
         <p class="muted" id="o-msg" style="font-size:.75rem;text-align:center;margin-top:.5rem"></p>
       </div>
       <div class="card" style="padding:1.2rem">
@@ -69,7 +73,15 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
     .tl-t{ font-family:var(--font-sans); font-size:.72rem; color:var(--muted); }
     .fld{ display:block; margin-bottom:.6rem } .fld input,.fld select{ width:100%; margin-top:.25rem; padding:.45rem .6rem; border:1px solid var(--line); font:inherit }
   </style>
-  <script is:inline define:vars={{ orderNum: o.order_number }}>window.__order=orderNum;</script>
+  <script is:inline define:vars={{ orderNum: o.order_number }}>window.__order=orderNum;  document.getElementById('pp-check')?.addEventListener('click', async function(){
+    var m=document.getElementById('pp-status-msg'); m.textContent='Checking PhonePe…';
+    try{ var r=await fetch('/api/admin/phonepe-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order:(window).__order})});
+      var d=await r.json();
+      if(d.ok){ m.style.color='#2e8b57'; m.textContent='PhonePe: '+d.state; setTimeout(function(){location.reload();},900); }
+      else { m.style.color='#c23b3b'; m.textContent=d.error||'Failed'; }
+    }catch(e){ m.style.color='#c23b3b'; m.textContent='Request failed'; }
+  });
+</script>
   <script>
     document.getElementById('o-save').addEventListener('click', async ()=>{
       const msg=document.getElementById('o-msg'); msg.textContent='Saving…';

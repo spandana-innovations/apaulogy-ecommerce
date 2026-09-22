@@ -143,3 +143,7 @@ CREATE TABLE IF NOT EXISTS email_log (
   created_at TEXT DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_email_created ON email_log(created_at);
+
+-- PhonePe order reference (v2)
+ALTER TABLE orders ADD COLUMN phonepe_order_id TEXT;
+CREATE INDEX IF NOT EXISTS idx_orders_pp ON orders(phonepe_order_id);

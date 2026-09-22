@@ -1,49 +1,49 @@
 import type { APIRoute } from 'astro';
 import { phonepeConfig, phonepeToken } from '../../lib/payments';
+import { createPendingOrder } from '../../lib/db';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any)?.runtime?.env ?? {};
   const cfg = await phonepeConfig(env);
-  if (!cfg.clientId || !cfg.clientSecret) {
-    return json({ error: 'PhonePe is not configured (client id/secret missing).' }, 503);
-  }
+  if (!cfg.clientId || !cfg.clientSecret) return json({ error: 'PhonePe is not configured (client id/secret missing).' }, 503);
+
   let b: any = {}; try { b = await request.json(); } catch {}
-  const amount = Math.round(Number(b.amount) || 0);      // paise
+  const amount = Math.round(Number(b.amount) || 0);   // paise
   if (amount < 100) return json({ error: 'Invalid amount.' }, 400);
 
   const origin = env.SITE_URL || new URL(request.url).origin;
   const merchantOrderId = 'APG' + Date.now() + Math.random().toString(36).slice(2, 7);
 
+  // Persist a pending order (so it appears in admin + can be status-checked), mirroring the Razorpay flow.
+  let orderNumber = '';
+  if (env.DB && Array.isArray(b.items) && b.items.length) {
+    try {
+      const rec = await createPendingOrder(env.DB, {
+        email: b.email || '', phone: b.phone || '',
+        items: b.items, subtotal: b.subtotal ?? (amount - (b.shipping || 0)), shipping: b.shipping ?? 0, total: amount,
+        billing: b.billing || null, shipping_address: b.billing || null,
+        phonepe_order_id: merchantOrderId, payment_method: 'phonepe',
+      });
+      orderNumber = rec.orderNumber;
+    } catch (e) { console.error('phonepe order record failed', e); }
+  }
+
   const payload = {
-    merchantOrderId,
-    amount,
-    expireAfter: 1200,
-    paymentFlow: {
-      type: 'PG_CHECKOUT',
-      merchantUrls: { redirectUrl: `${origin}/api/phonepe-callback?order=${merchantOrderId}` },
-    },
-    metaInfo: {
-      udf1: (b.email || '').slice(0, 256),
-      udf2: (b.phone || '').slice(0, 256),
-    },
+    merchantOrderId, amount, expireAfter: 1200,
+    paymentFlow: { type: 'PG_CHECKOUT', merchantUrls: { redirectUrl: `${origin}/api/phonepe-callback?order=${merchantOrderId}` } },
+    metaInfo: { udf1: (b.email || '').slice(0, 256), udf2: orderNumber },
   };
 
   try {
     const token = await phonepeToken(env, cfg);
     const r = await fetch(cfg.payHost + '/checkout/v2/pay', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `O-Bearer ${token}`,
-        accept: 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json', Authorization: `O-Bearer ${token}`, accept: 'application/json' },
       body: JSON.stringify(payload),
     });
     const d: any = await r.json();
-    if (r.ok && d?.redirectUrl) {
-      return json({ ok: true, redirect: d.redirectUrl, order: merchantOrderId, orderId: d.orderId });
-    }
+    if (r.ok && d?.redirectUrl) return json({ ok: true, redirect: d.redirectUrl, order: merchantOrderId, order_number: orderNumber });
     return json({ error: d?.message || d?.code || 'PhonePe initiation failed.', detail: d }, 502);
   } catch (e: any) {
     return json({ error: 'Could not reach PhonePe: ' + (e?.message || e) }, 502);

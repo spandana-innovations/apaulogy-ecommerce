@@ -223,7 +223,7 @@ import Icon from '../components/Icon.astro';
         try{
           if(gateway==='phonepe'){
             try{ localStorage.setItem('apaulogy_last_order', JSON.stringify({...order,subtotal:totals.subtotal,shipping:totals.shipping,total:totals.total})); }catch{}
-            const r=await fetch('/api/phonepe-initiate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:totals.total,email:(customer as any).email,phone:(customer as any).phone})});
+            const r=await fetch('/api/phonepe-initiate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:totals.total,subtotal:totals.subtotal,shipping:totals.shipping,email:(customer as any).email,phone:(customer as any).phone,billing:customer,items:items.map((it:any)=>({slug:it.slug,name:it.name,variant:it.variant,quantity:it.qty,price:it.price}))})});
             const d=await r.json();
             if(d.ok && d.redirect){ Cart.clear(); window.location.href=d.redirect; return; }
             throw new Error(d.error||'Could not start PhonePe payment.');

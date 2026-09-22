@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { phonepeConfig, phonepeToken } from '../../lib/payments';
+import { markPhonePePaid } from '../../lib/db';
 export const prerender = false;
 
 async function handle(request: Request, env: any) {
@@ -18,11 +19,13 @@ async function handle(request: Request, env: any) {
     const d: any = await r.json();
     const state = d?.state || d?.payload?.state;
     if (r.ok && state === 'COMPLETED') {
+      try { if (env.DB) await markPhonePePaid(env.DB, merchantOrderId, 'paid'); } catch {}
       return Response.redirect(`${origin}/order-confirmed/?ref=${encodeURIComponent(merchantOrderId)}&via=phonepe`, 302);
     }
     if (state === 'PENDING') {
       return Response.redirect(`${origin}/checkout/?pp=pending&order=${encodeURIComponent(merchantOrderId)}`, 302);
     }
+    try { if (env.DB && state && state!=='PENDING') await markPhonePePaid(env.DB, merchantOrderId, 'failed'); } catch {}
     return Response.redirect(`${origin}/checkout/?pp=failed`, 302);
   } catch {
     return Response.redirect(`${origin}/checkout/?pp=error`, 302);

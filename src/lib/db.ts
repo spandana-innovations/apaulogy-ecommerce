@@ -32,7 +32,8 @@ export interface CreateOrderInput {
   billing?: Address;
   shipping_address?: Address;
   razorpay_order_id?: string | null;
-  payment_method?: string; // 'razorpay' | 'bank'
+  phonepe_order_id?: string | null;
+  payment_method?: string; // 'razorpay' | 'phonepe' | 'bank'
 }
 
 function orderNumber(): string {
@@ -50,8 +51,8 @@ export async function createPendingOrder(
     .prepare(
       `INSERT INTO orders
         (order_number, email, phone, status, currency, subtotal, shipping, total,
-         billing_json, shipping_json, razorpay_order_id, notes, source)
-       VALUES (?, ?, ?, 'pending', 'INR', ?, ?, ?, ?, ?, ?, ?, 'web')`,
+         billing_json, shipping_json, razorpay_order_id, phonepe_order_id, notes, source)
+       VALUES (?, ?, ?, 'pending', 'INR', ?, ?, ?, ?, ?, ?, ?, ?, 'web')`,
     )
     .bind(
       number,
@@ -63,6 +64,7 @@ export async function createPendingOrder(
       input.billing ? JSON.stringify(input.billing) : null,
       input.shipping_address ? JSON.stringify(input.shipping_address) : null,
       input.razorpay_order_id ?? null,
+      input.phonepe_order_id ?? null,
       input.payment_method ? `payment_method:${input.payment_method}` : null,
     )
     .run();
@@ -103,6 +105,10 @@ export async function markOrderPaid(
     )
     .bind(razorpayPaymentId, razorpayOrderId)
     .run();
+}
+
+export async function markPhonePePaid(db: D1Database, phonepeOrderId: string, status: 'paid' | 'failed'): Promise<void> {
+  await db.prepare(`UPDATE orders SET status = ?, updated_at = datetime('now') WHERE phonepe_order_id = ? AND status = 'pending'`).bind(status, phonepeOrderId).run();
 }
 
 /** Record a webhook event id; returns false if already seen (idempotency). */
