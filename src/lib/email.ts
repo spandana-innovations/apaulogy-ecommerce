@@ -45,9 +45,8 @@ function shell(site, title, kicker, body) {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff"><tr><td align="center" style="padding:40px 16px">
   <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border:1px solid #111111">
     <!-- masthead -->
-    <tr><td style="padding:38px 44px 0;text-align:center">
-      <div style="font-family:Georgia,serif;font-size:30px;font-weight:400;color:#000000;letter-spacing:.02em">aPaulogy</div>
-      <div style="font-size:10px;letter-spacing:.38em;text-transform:uppercase;color:#767676;margin-top:6px">Curious Illustration</div>
+    <tr><td style="padding:36px 44px 4px;text-align:center">
+      <img src="${site}/brand/logo-black.png" alt="aPaulogy — Curious Illustration" width="200" style="width:200px;max-width:64%;height:auto;display:inline-block" />
     </td></tr>
     <tr><td style="padding:26px 44px 0"><div style="border-top:1px solid #e3e3e3"></div></td></tr>
     <!-- title -->

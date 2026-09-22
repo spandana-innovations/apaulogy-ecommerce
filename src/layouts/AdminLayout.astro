@@ -47,6 +47,8 @@ const ICONS: Record<string,string> = {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex,nofollow" />
   <title>{title} · aPaulogy Admin</title>
+    <link rel="icon" href="/favicon.svg?v=5" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico?v=5" sizes="any" />
   <style is:global>
     :root{
       --bg:#060f1a; --panel:#0e1b2b; --panel-2:#0a1523; --raise:#122238;
@@ -150,7 +152,8 @@ const ICONS: Record<string,string> = {
     .stat .v{ font-family:var(--font-display); font-weight:700; font-size:1.9rem; letter-spacing:-.02em; margin-top:.35rem; line-height:1; color:var(--ink); }
 
     /* Forms */
-    input,select,textarea{ font:inherit; font-size:.88rem; padding:.6rem .75rem; border:1px solid var(--line-strong); border-radius:var(--r-sm); background:var(--panel-2); color:var(--ink); transition:border-color .13s, box-shadow .13s; }
+    input,select,textarea,button{ font-family:var(--font-sans); font-size:.86rem; }
+    input,select,textarea{ padding:.6rem .75rem; border:1px solid var(--line-strong); border-radius:var(--r-sm); background:var(--panel-2); color:var(--ink); transition:border-color .13s, box-shadow .13s; }
     input::placeholder,textarea::placeholder{ color:var(--muted); }
     input:focus,select:focus,textarea:focus{ outline:none; border-color:var(--gold); box-shadow:0 0 0 3px var(--gold-soft); }
     select option{ background:var(--panel); color:var(--ink); }

@@ -38,8 +38,36 @@ const varWeights = (() => { try { return ov.variations_json ? Object.fromEntries
       <div class="card" style="padding:1.2rem">
         <h3 style="font-family:var(--font-display);font-size:1.3rem;margin:0 0 .8rem">{p.title}</h3>
         <label class="fld">Title<input id="f-title" value={p.title}/></label>
-        <label class="fld">Short description (HTML)<textarea id="f-short" rows="2">{p.short_html}</textarea></label>
-        <label class="fld">Full description (HTML)<textarea id="f-desc" rows="6">{p.description_html}</textarea></label>
+        <div class="fld"><label>Short description</label>
+          <div class="wys" data-for="f-short">
+            <div class="wys-tools">
+              <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+              <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+              <button type="button" data-cmd="insertUnorderedList" title="Bullet list">•</button>
+              <button type="button" data-cmd="createLink" title="Link">🔗</button>
+              <button type="button" class="wys-html" title="Toggle HTML">&lt;/&gt;</button>
+            </div>
+            <div class="wys-edit" contenteditable="true" set:html={p.short_html}></div>
+            <textarea class="wys-src" hidden rows="4">{p.short_html}</textarea>
+          </div>
+          <textarea id="f-short" hidden>{p.short_html}</textarea>
+        </div>
+        <div class="fld"><label>Full description</label>
+          <div class="wys" data-for="f-desc">
+            <div class="wys-tools">
+              <button type="button" data-cmd="bold" title="Bold"><b>B</b></button>
+              <button type="button" data-cmd="italic" title="Italic"><i>I</i></button>
+              <button type="button" data-cmd="formatBlock:h3" title="Heading">H</button>
+              <button type="button" data-cmd="insertUnorderedList" title="Bullet list">•</button>
+              <button type="button" data-cmd="insertOrderedList" title="Numbered list">1.</button>
+              <button type="button" data-cmd="createLink" title="Link">🔗</button>
+              <button type="button" class="wys-html" title="Toggle HTML">&lt;/&gt;</button>
+            </div>
+            <div class="wys-edit" contenteditable="true" set:html={p.description_html}></div>
+            <textarea class="wys-src" hidden rows="10">{p.description_html}</textarea>
+          </div>
+          <textarea id="f-desc" hidden>{p.description_html}</textarea>
+        </div>
       </div>
 
       <div class="card" style="padding:1.2rem">
@@ -115,6 +143,14 @@ const varWeights = (() => { try { return ov.variations_json ? Object.fromEntries
 
   <style is:global>
     .fld{ display:block; margin-bottom:.7rem } .fld input,.fld textarea{ width:100%; margin-top:.25rem }
+    .wys{ border:1px solid var(--line-strong); border-radius:8px; overflow:hidden; margin-top:.25rem; background:var(--panel-2) }
+    .wys-tools{ display:flex; gap:2px; padding:.35rem; border-bottom:1px solid var(--line); background:var(--panel) }
+    .wys-tools button{ min-width:30px; height:28px; border:1px solid transparent; border-radius:6px; background:none; color:var(--ink); cursor:pointer; font-size:.82rem }
+    .wys-tools button:hover{ background:var(--raise) } .wys-tools button.on{ background:var(--gold-soft); border-color:var(--gold) }
+    .wys-tools .wys-html{ margin-left:auto; font-family:ui-monospace,monospace }
+    .wys-edit{ padding:.7rem .8rem; min-height:70px; color:var(--ink); font-family:var(--font-serif); font-size:.95rem; line-height:1.6; outline:none }
+    .wys-edit:empty:before{ content:"Write here…"; color:var(--muted) }
+    .wys-src{ width:100%; border:0; background:var(--panel-2); color:var(--ink); font-family:ui-monospace,monospace; font-size:.8rem; padding:.7rem .8rem; resize:vertical }
     #editor input,#editor textarea,#editor select{ font:inherit; padding:.5rem .65rem; border:1px solid var(--line-strong); border-radius:8px; background:var(--panel-2); color:var(--ink) }
     @media(max-width:900px){ #editor{ grid-template-columns:1fr !important } }
   </style>
@@ -124,6 +160,29 @@ const varWeights = (() => { try { return ov.variations_json ? Object.fromEntries
   </script>
   <script>
     const slug=(window).__slug; const type=(window).__type;
+
+    // WYSIWYG editors (contenteditable + HTML toggle)
+    document.querySelectorAll('.wys').forEach(function(w){
+      var edit=w.querySelector('.wys-edit'), src=w.querySelector('.wys-src'), hidden=document.getElementById(w.dataset.for);
+      function syncFromEdit(){ var html=edit.innerHTML; src.value=html; if(hidden) hidden.value=html; }
+      function syncFromSrc(){ edit.innerHTML=src.value; if(hidden) hidden.value=src.value; }
+      edit.addEventListener('input', syncFromEdit); src.addEventListener('input', function(){ if(hidden) hidden.value=src.value; });
+      syncFromEdit();
+      w.querySelectorAll('.wys-tools button[data-cmd]').forEach(function(b){
+        b.addEventListener('click', function(e){ e.preventDefault(); edit.focus();
+          var cmd=b.dataset.cmd;
+          if(cmd==='createLink'){ var url=prompt('Link URL:'); if(url) document.execCommand('createLink',false,url); }
+          else if(cmd.indexOf('formatBlock:')===0){ document.execCommand('formatBlock',false,cmd.split(':')[1]); }
+          else document.execCommand(cmd,false,null);
+          syncFromEdit();
+        });
+      });
+      w.querySelector('.wys-html').addEventListener('click', function(e){ e.preventDefault();
+        if(!src.hidden){ syncFromSrc(); src.hidden=true; edit.hidden=false; this.classList.remove('on'); }
+        else { syncFromEdit(); edit.hidden=true; src.hidden=false; this.classList.add('on'); }
+      });
+    });
+
     let images = Array.from(document.querySelectorAll('#imgs img')).map((i)=>i.dataset.url);
 
     // remove image

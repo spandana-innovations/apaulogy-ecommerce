@@ -31,7 +31,7 @@ crumbs.push({ name: product.name, url: `/product/${product.slug}/` });
 const jsonld = [productSchema(product, Astro.site, abs(ogImage, Astro.site)), breadcrumbSchema(crumbs, Astro.site)];
 
 const plain = (product.short_html || product.description_html || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-const metaDesc = (plain ? plain.slice(0, 155) : `${product.name} — a watercolour illustration by Paul Fernandes${primaryCat ? `, from the ${primaryCat.name} collection` : ''}.`).replace(/\s+\S*$/, plain.length > 155 ? '…' : '');
+const metaDesc = (product as any).meta_description || (plain ? plain.slice(0, 155) : `${product.name} — a watercolour illustration by Paul Fernandes${primaryCat ? `, from the ${primaryCat.name} collection` : ''}.`).replace(/\s+\S*$/, plain.length > 155 ? '…' : '');
 
 const variations = product.variations.filter((v) => v.price != null);
 // Parse inch dimensions (w" x h") from each variation label for the scale figure.
@@ -58,7 +58,7 @@ const PX_PER_INCH = 2.3;            // runner ≈ 69in → ~158px tall
 const MAN_INCHES = 69;
 ---
 
-<BaseLayout title={product.name} description={metaDesc} image={ogImage} imageAlt={`${product.name} — aPaulogy`} type="product" jsonld={jsonld}>
+<BaseLayout title={(product as any).meta_title || product.name} description={metaDesc} image={ogImage} imageAlt={`${product.name} — aPaulogy`} type="product" jsonld={jsonld}>
   <div class="container-page py-10">
     <nav class="breadcrumb" aria-label="Breadcrumb">
       <a href="/" class="link-hover">Home</a> <span aria-hidden="true" class="opacity-50">/</span>
@@ -67,7 +67,8 @@ const MAN_INCHES = 69;
       <span class="text-[var(--color-ink-soft)]">{product.name}</span>
     </nav>
 
-    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+    <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start" style="position:relative">
+      <div id="rank-badge" class="rank-badge" data-name={product.name.toLowerCase().trim()} hidden></div>
       <!-- Gallery -->
       <div class="lg:sticky lg:top-24">
         <div id="zoom-box" class="frame art-guard zoom-wrap" role="button" tabindex="0" aria-label="Zoom image in place">
@@ -233,6 +234,28 @@ const MAN_INCHES = 69;
     )}
   </div>
 
+<style>
+    .rank-badge{ position:absolute; top:0; right:0; z-index:5; background:#000; color:#fff; font-family:var(--font-sans);
+      font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; padding:.5rem .8rem; border-radius:0 0 0 10px; }
+    .rank-badge.gold{ background:#b8973f; color:#000; }
+    @media(max-width:1024px){ .rank-badge{ border-radius:0 0 0 8px } }
+  </style>
+  <script>
+    (function(){
+      var el=document.getElementById('rank-badge'); if(!el) return;
+      var name=el.dataset.name;
+      fetch('/api/bestsellers').then(function(r){return r.json();}).then(function(ranks){
+        var rank=ranks[name]; if(!rank) return;
+        var label='';
+        if(rank===1){ label='★ #1 Bestseller'; el.classList.add('gold'); }
+        else if(rank===2){ label='#2 Bestseller'; el.classList.add('gold'); }
+        else if(rank===3){ label='#3 Bestseller'; el.classList.add('gold'); }
+        else if(rank<=10){ label='Top 10 Bestseller · #'+rank; }
+        else return;
+        el.textContent=label; el.hidden=false;
+      }).catch(function(){});
+    })();
+  </script>
 </BaseLayout>
 
 <script>

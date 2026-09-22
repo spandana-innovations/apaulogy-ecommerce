@@ -3,7 +3,7 @@ export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getStats } from '../../../lib/admin-data';
 import { formatINR, statusLabel } from '../../../lib/format';
-const { email } = Astro.params;
+const email = decodeURIComponent(Astro.params.email || '');
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
 let cust:any=null, orders:any[]=[];
