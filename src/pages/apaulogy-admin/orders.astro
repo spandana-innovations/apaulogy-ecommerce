@@ -44,13 +44,27 @@ function qs(over: Record<string,string>) {
     <span class="muted count">{total.toLocaleString()} orders</span>
   </form>
 
+  <div id="bulk-bar" class="bulk-bar" hidden>
+    <span id="bulk-count" class="bulk-count">0 selected</span>
+    <select id="bulk-status" class="bulk-input">
+      <option value="">Set status…</option>
+      <option value="processing">Processing</option><option value="on-hold">On hold</option>
+      <option value="shipped">Shipped</option><option value="completed">Completed</option>
+      <option value="cancelled">Cancelled</option><option value="refunded">Refunded</option>
+    </select>
+    <button class="btn" id="bulk-apply" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply</button>
+    <button class="btn" id="bulk-archive">Archive</button>
+    <button class="btn" id="bulk-clear">Clear</button>
+    <span class="muted" id="bulk-msg" style="font-size:.78rem"></span>
+  </div>
   <div class="card" style="overflow:hidden">
     {rows.length ? (
       <table>
-        <thead><tr><th>Order</th><th>Customer</th><th>Payment</th><th>Status</th><th>Tracking</th><th style="text-align:right">Total</th><th>Date</th></tr></thead>
+        <thead><tr><th style="width:32px"><input type="checkbox" id="sel-all" aria-label="Select all"/></th><th>Order</th><th>Customer</th><th>Payment</th><th>Status</th><th>Tracking</th><th style="text-align:right">Total</th><th>Date</th></tr></thead>
         <tbody>
           {rows.map((o: any) => (
             <tr>
+              <td><input type="checkbox" class="row-sel" value={o.order_number} aria-label={`Select ${o.order_number}`}/></td>
               <td><a href={`/apaulogy-admin/orders/${o.order_number}/`} class="u"><strong>{o.order_number}</strong></a></td>
               <td>{o.email}<br/><span class="muted" style="font-size:.72rem">{o.phone||''}</span></td>
               <td class="muted">{/bank/i.test(o.notes||'') ? 'Bank transfer' : (o.notes||'Online')}</td>
@@ -86,3 +100,38 @@ function qs(over: Record<string,string>) {
   .ord-tab.on{ color:var(--ink); border-bottom-color:var(--gold); }
   .ord-tab:hover{ color:var(--ink); }
 </style>
+
+<style is:global>
+  .bulk-bar{ display:flex; align-items:center; gap:.7rem; margin-bottom:1rem; padding:.7rem 1rem;
+    background:var(--gold-soft); border:1px solid var(--gold); border-radius:8px; flex-wrap:wrap; }
+  .bulk-count{ font-family:var(--font-sans); font-weight:600; font-size:.85rem; }
+  .bulk-input{ padding:.45rem .6rem; }
+  .row-sel, #sel-all{ width:16px; height:16px; cursor:pointer; accent-color:var(--gold); }
+</style>
+<script is:inline>
+  (function(){
+    function init(){
+      var all=document.getElementById('sel-all');
+      var bar=document.getElementById('bulk-bar');
+      var count=document.getElementById('bulk-count');
+      var msg=document.getElementById('bulk-msg');
+      if(!bar) return;
+      function selected(){ return Array.prototype.slice.call(document.querySelectorAll('.row-sel:checked')).map(function(c){return c.value;}); }
+      function refresh(){ var n=selected().length; count.textContent=n+' selected'; bar.hidden=(n===0); if(all){ var total=document.querySelectorAll('.row-sel').length; all.checked=(n>0&&n===total); all.indeterminate=(n>0&&n<total);} }
+      document.querySelectorAll('.row-sel').forEach(function(c){ c.addEventListener('change',refresh); });
+      if(all){ all.addEventListener('change',function(){ document.querySelectorAll('.row-sel').forEach(function(c){ c.checked=all.checked; }); refresh(); }); }
+      document.getElementById('bulk-clear')?.addEventListener('click',function(){ document.querySelectorAll('.row-sel').forEach(function(c){c.checked=false;}); if(all)all.checked=false; refresh(); });
+      async function bulk(body){ var orders=selected(); if(!orders.length) return; msg.textContent='Applying to '+orders.length+'…';
+        var r=await fetch('/api/admin/orders-bulk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.assign({orders:orders},body))});
+        var d=await r.json().catch(function(){return{};});
+        if(d.ok){ msg.textContent='✓ '+d.done+' updated'+(d.failed?(' · '+d.failed+' failed'):''); setTimeout(function(){location.reload();},700); }
+        else { msg.style.color='#c23b3b'; msg.textContent='✗ '+(d.error||'Failed'); }
+      }
+      document.getElementById('bulk-apply')?.addEventListener('click',function(){ var st=document.getElementById('bulk-status').value; if(!st){ msg.textContent='Choose a status first.'; return; } bulk({action:'status',status:st}); });
+      document.getElementById('bulk-archive')?.addEventListener('click',function(){ if(confirm('Archive '+selected().length+' order(s)?')) bulk({action:'archive'}); });
+      refresh();
+    }
+    if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
+    document.addEventListener('astro:page-load',init);
+  })();
+</script>

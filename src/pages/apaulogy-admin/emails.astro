@@ -1,0 +1,73 @@
+---
+export const prerender = false;
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getStats, getSetting } from '../../lib/admin-data';
+import { TEMPLATES, renderTemplate } from '../../lib/email';
+const env = (Astro.locals as any)?.runtime?.env ?? {};
+const base = await getStats(env);
+const site = env.SITE_URL || 'https://apaulogy.com';
+const hasKey = !!(env.RESEND_KEY || (await getSetting(env, 'resend_key')));
+const fromEmail = (await getSetting(env, 'from_email')) || '(not set)';
+const sample = {
+  order_number: 'APG-5221', name: 'Carissa Dsouza',
+  items: [{ name: 'Coastline', quantity: 1, price: 280000 }, { name: 'Amchi Mumbai', quantity: 2, price: 35000 }],
+  subtotal: 350000, shipping: 19500, total: 369500,
+  tracking_number: 'EX123456789IN', tracking_carrier: 'DTDC',
+};
+// pre-render each template's HTML for preview
+const previews = TEMPLATES.map((t) => ({ ...t, html: renderTemplate(t.id, site, sample).html, subject: renderTemplate(t.id, site, sample).subject }));
+---
+<AdminLayout title="Emails" active="emails" dbBound={base.dbBound}>
+  {!hasKey && (
+    <div class="banner">Email sending isn't active yet — add your <strong>Resend API key</strong> in <a href="/apaulogy-admin/settings/" style="color:inherit;text-decoration:underline">Settings → Email</a>. Templates below still preview.</div>
+  )}
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:1.6rem;align-items:start">
+    <div class="card" style="padding:1rem">
+      <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem">Templates</div>
+      {previews.map((t, i) => (
+        <button class="tmpl-btn" data-tmpl={t.id} data-i={i}>
+          <strong>{t.name}</strong>
+          <span class="muted" style="font-size:.76rem;display:block">{t.desc}</span>
+        </button>
+      ))}
+      <hr style="border:0;border-top:1px solid var(--line);margin:1rem 0" />
+      <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Send a test</div>
+      <input id="test-to" placeholder="you@example.com" style="width:100%;margin-bottom:.5rem" />
+      <button class="btn" id="send-test" style="background:var(--gold);color:#0a0f16;font-weight:600;width:100%">Send test email</button>
+      <p class="muted" id="test-msg" style="font-size:.75rem;margin-top:.5rem"></p>
+      <p class="muted" style="font-size:.72rem;margin-top:.8rem">From: {fromEmail}</p>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:.7rem 1rem;border-bottom:1px solid var(--line);font-family:var(--font-sans);font-size:.82rem">
+        <span class="muted">Subject:</span> <span id="pv-subject"></span>
+      </div>
+      <iframe id="pv-frame" style="width:100%;height:640px;border:0;background:#fff"></iframe>
+    </div>
+  </div>
+  {previews.map((t, i) => (<script type="application/json" class="tmpl-data" data-i={i} set:html={JSON.stringify({ html: t.html, subject: t.subject })}></script>))}
+  <style is:global>
+    .tmpl-btn{ display:block; width:100%; text-align:left; padding:.7rem .8rem; margin-bottom:.4rem; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); color:var(--ink); cursor:pointer; }
+    .tmpl-btn.on{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-soft); }
+  </style>
+  <script is:inline>
+    (function(){
+      function init(){
+        var data=[]; document.querySelectorAll('.tmpl-data').forEach(function(el){ data[Number(el.dataset.i)]=JSON.parse(el.textContent); });
+        var frame=document.getElementById('pv-frame'); var subj=document.getElementById('pv-subject');
+        function show(i){ var d=data[i]; if(!d)return; frame.srcdoc=d.html; subj.textContent=d.subject;
+          document.querySelectorAll('.tmpl-btn').forEach(function(b){ b.classList.toggle('on', Number(b.dataset.i)===i); }); }
+        document.querySelectorAll('.tmpl-btn').forEach(function(b){ b.addEventListener('click',function(){ show(Number(b.dataset.i)); window.__tmpl=b.dataset.tmpl; }); });
+        show(0); window.__tmpl=document.querySelector('.tmpl-btn')?.dataset.tmpl;
+        document.getElementById('send-test')?.addEventListener('click',async function(){
+          var to=document.getElementById('test-to').value.trim(); var m=document.getElementById('test-msg');
+          if(!to){ m.textContent='Enter an email address.'; return; } m.textContent='Sending…';
+          var r=await fetch('/api/admin/send-test-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:to,template:window.__tmpl})});
+          var d=await r.json().catch(function(){return{};});
+          m.style.color=d.ok?'#2e8b57':'#c23b3b'; m.textContent=d.ok?('✓ Sent to '+to):('✗ '+(d.error||'Failed'));
+        });
+      }
+      if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
+      document.addEventListener('astro:page-load',init);
+    })();
+  </script>
+</AdminLayout>

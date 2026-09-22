@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
-import { updateOrder, logOrderEvent } from '../../../lib/admin-data';
+import { updateOrder, logOrderEvent, getOrder } from '../../../lib/admin-data';
+import { sendEmail, shippingUpdateEmail, emailConfig } from '../../../lib/email';
 export const prerender = false;
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any)?.runtime?.env ?? {};
@@ -13,7 +14,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const ok = await updateOrder(env, b.order, fields);
   if (ok) {
     if (fields.status) await logOrderEvent(env, b.order, 'status', String(fields.status));
-    if (fields.tracking_number) await logOrderEvent(env, b.order, 'tracking', `${fields.tracking_carrier || ''} ${fields.tracking_number}`.trim());
+    if (fields.tracking_number) {
+      await logOrderEvent(env, b.order, 'tracking', `${fields.tracking_carrier || ''} ${fields.tracking_number}`.trim());
+      try {
+        const o: any = await getOrder(env, b.order);
+        const bill = o?.billing_json ? JSON.parse(o.billing_json) : {};
+        if (o?.email) { const cfg = await emailConfig(env); const t = shippingUpdateEmail(cfg.site, { order_number: b.order, name: bill.name, tracking_number: fields.tracking_number, tracking_carrier: fields.tracking_carrier }); await sendEmail(env, o.email, t.subject, t.html); }
+      } catch {}
+    }
   }
   return new Response(JSON.stringify({ ok }), { status: ok?200:500, headers:{'Content-Type':'application/json'} });
 };
