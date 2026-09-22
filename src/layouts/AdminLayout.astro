@@ -101,7 +101,9 @@ const ICONS: Record<string,string> = {
     /* Main */
     main{ padding:1.9rem 2.6rem 1.2rem; max-width:1360px; width:100%; display:flex; flex-direction:column; min-height:100vh; }
     main > .top ~ *:last-of-type{ } .adm-footer{ margin-top:auto !important; }
-    .top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:1.8rem; }
+    .top{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1.8rem; }
+    .test-pill{ font-family:var(--font-sans); font-size:.6rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase;
+      background:var(--warn-bg); color:var(--warn); border:1px solid var(--warn); padding:.28rem .6rem; border-radius:20px; white-space:nowrap; }
     .top h1{ font-family:var(--font-display); font-weight:700; font-size:1.9rem; letter-spacing:-.02em; margin:0; line-height:1.1; color:var(--ink); }
 
     /* Buttons */
@@ -200,16 +202,17 @@ const ICONS: Record<string,string> = {
     </aside>
     <main>
       <div class="top">
-        <h1>{title} {payMode==='test' && <span class="test-pill">TEST MODE</span>}</h1>
+        <h1>{title}</h1>
+        {payMode==='test' && <span class="test-pill" title="Payments are in Test / sandbox mode">TEST MODE</span>}
       </div>
       {d1Limited && (
         <div class="banner" style="background:var(--bad-bg);border-color:var(--bad);color:var(--bad)">
-          <strong>Database read limit reached.</strong> Live data is paused until the free-tier quota resets (midnight UTC).
+          <strong>Database read limit reached.</strong> Live data is paused until the Turso monthly quota resets.
           <a href="/apaulogy-admin/status/" style="text-decoration:underline;color:inherit">See Status →</a>
         </div>
       )}
       {!dbBound && (
-        <div class="banner"><strong>Live data isn't connected to this deployment yet.</strong> On your Cloudflare project → Settings → Bindings, confirm <code>DB</code> → <code>apaulogyecomm</code>, then <em>redeploy</em> (bindings only attach to new deployments). If the database is bound but empty, run the <code>db/import-*.sql</code> files in the D1 Console.</div>
+        <div class="banner"><strong>Live data isn't connected to this deployment yet.</strong> Confirm the <code>TURSO_URL</code> and <code>TURSO_AUTH_TOKEN</code> secrets are set on your Cloudflare Pages project, then redeploy.</div>
       )}
       <slot />
 

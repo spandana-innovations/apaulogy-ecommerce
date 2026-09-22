@@ -6,7 +6,18 @@ const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
 const rzpIdEnv = !!env.RAZORPAY_KEY_ID;
 const rzpId = (await getSetting(env, 'razorpay_key_id')) || '';
+const rzpTestId = (await getSetting(env, 'razorpay_test_key_id')) || '';
 const hasSecret = !!(env.RAZORPAY_KEY_SECRET) || !!(await getSetting(env, 'razorpay_key_secret'));
+const hasTestSecret = !!(await getSetting(env, 'razorpay_test_key_secret'));
+// PhonePe (v2) — pre-fill non-secret fields so they persist visibly
+const ppCid = (await getSetting(env, 'phonepe_client_id')) || '';
+const ppCver = (await getSetting(env, 'phonepe_client_version')) || '';
+const ppHasSecret = !!(await getSetting(env, 'phonepe_client_secret'));
+const ppTestCid = (await getSetting(env, 'phonepe_test_client_id')) || '';
+const ppTestCver = (await getSetting(env, 'phonepe_test_client_version')) || '';
+const ppHasTestSecret = !!(await getSetting(env, 'phonepe_test_client_secret'));
+const reFrom = (await getSetting(env, 'from_email')) || '';
+const reHasKey = !!(await getSetting(env, 'resend_key'));
 const origin = env.SITE_URL || 'https://apaulogy.com';
 import { getSiteMode } from '../../lib/admin-data';
 const siteMode = await getSiteMode(env);
@@ -24,12 +35,14 @@ const payMode = await paymentMode(env);
     <!-- Payment mode -->
     <section data-panel="keys" class="card" style="padding:1.4rem;grid-column:1/-1">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Payment mode</h2>
-      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Test mode uses sandbox keys and never charges real money. Switch to Live only when you're ready to accept real payments.</p>
-      <div class="mode-grid">
-        <label class={`mode-opt ${payMode==='test'?'on':''}`}><input type="radio" name="pay_mode" value="test" checked={payMode==='test'}/><strong>Test mode</strong><span>Sandbox — safe to trial checkout.</span></label>
-        <label class={`mode-opt ${payMode==='live'?'on':''}`}><input type="radio" name="pay_mode" value="live" checked={payMode==='live'}/><strong>Live mode</strong><span>Real payments from real customers.</span></label>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Test uses sandbox keys (no real charges). Live accepts real payments.</p>
+      <div class="pay-toggle">
+        <span class={payMode==='test' ? 'pt-lbl on' : 'pt-lbl'}>Test</span>
+        <button type="button" id="pay-switch" class={`pt-switch ${payMode==='live' ? 'live' : ''}`} role="switch" aria-checked={payMode==='live'} aria-label="Toggle live/test payments"><span class="pt-knob"></span></button>
+        <span class={payMode==='live' ? 'pt-lbl on live' : 'pt-lbl'}>Live</span>
+        <input type="hidden" id="pay-mode-val" value={payMode} />
+        <span class="muted" id="paymode-msg" style="font-size:.78rem;margin-left:.8rem"></span>
       </div>
-      <div style="margin-top:1rem"><button class="btn" id="paymode-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply payment mode</button> <span class="muted" id="paymode-msg" style="font-size:.78rem"></span></div>
     </section>
 
     <!-- Razorpay -->
@@ -43,7 +56,7 @@ const payMode = await paymentMode(env);
         <label class="fld">Key ID<input id="rzp-id" value={rzpId} placeholder="rzp_live_… or rzp_test_…"/></label>
         <label class="fld">Key Secret<input id="rzp-secret" type="password" placeholder={hasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter key secret'}/></label>
         <div style="border-top:1px solid var(--line);margin:.6rem 0;padding-top:.6rem"></div>
-        <label class="fld">Test Key ID <span class="muted">(rzp_test_…)</span><input id="rzp-test-id" placeholder="rzp_test_…"/></label>
+        <label class="fld">Test Key ID <span class="muted">(rzp_test_…)</span><input id="rzp-test-id" value={rzpTestId} placeholder="rzp_test_…"/></label>
         <label class="fld">Test Key Secret<input id="rzp-test-secret" type="password" placeholder="Leave blank to keep"/></label>
         <label class="fld">Webhook Secret <span class="muted">(optional)</span><input id="rzp-webhook" type="password" placeholder="Leave blank to keep"/></label>
         <div class="webhook-row"><span class="wh-label">Webhook URL — paste into Razorpay Dashboard → Webhooks</span>
@@ -60,13 +73,13 @@ const payMode = await paymentMode(env);
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">PhonePe payment keys</h2>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">PhonePe v2 Standard Checkout (OAuth). Find your Client ID &amp; Secret in the PhonePe Business Dashboard → Developer Settings. Domestic customers can pay via PhonePe; international orders always use Razorpay.</p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
-        <label class="fld">Client ID<input id="pp-cid" placeholder="e.g. SU2XXXXXXXXXXX"/></label>
-        <label class="fld">Client Secret<input id="pp-csecret" type="password" placeholder="Leave blank to keep"/></label>
-        <label class="fld">Client Version<input id="pp-cver" placeholder="1"/></label>
+        <label class="fld">Client ID<input id="pp-cid" value={ppCid} placeholder="e.g. SU2XXXXXXXXXXX"/></label>
+        <label class="fld">Client Secret<input id="pp-csecret" type="password" placeholder={ppHasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter client secret'}/></label>
+        <label class="fld">Client Version<input id="pp-cver" value={ppCver} placeholder="from your PhonePe credentials email"/></label>
         <div style="border-top:1px solid var(--line);margin:.6rem 0;padding-top:.6rem"></div>
-        <label class="fld">Test Client ID <span class="muted">(sandbox)</span><input id="pp-test-cid" placeholder="Sandbox client id"/></label>
-        <label class="fld">Test Client Secret<input id="pp-test-csecret" type="password" placeholder="Leave blank to keep"/></label>
-        <label class="fld">Test Client Version<input id="pp-test-cver" placeholder="1"/></label>
+        <label class="fld">Test Client ID <span class="muted">(sandbox)</span><input id="pp-test-cid" value={ppTestCid} placeholder="Sandbox client id"/></label>
+        <label class="fld">Test Client Secret<input id="pp-test-csecret" type="password" placeholder={ppHasTestSecret ? '•••••••• (saved)' : 'Sandbox client secret'}/></label>
+        <label class="fld">Test Client Version<input id="pp-test-cver" value={ppTestCver} placeholder="1"/></label>
         <div class="webhook-row"><span class="wh-label">Redirect / Callback URL — set in PhonePe Dashboard</span>
           <code class="wh-url" id="pp-wh">{origin}/api/phonepe-callback</code>
           <button type="button" class="btn wh-copy" data-copy="pp-wh">Copy</button>
@@ -142,6 +155,13 @@ const payMode = await paymentMode(env);
     .cfg{display:flex;justify-content:space-between;padding:.7rem .9rem;border:1px solid var(--line);text-decoration:none;color:var(--ink)}
     .cfg:hover{background:var(--paper-deep)}
     .mode-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:.8rem; }
+    .pay-toggle{ display:flex; align-items:center; gap:.7rem; }
+    .pt-lbl{ font-family:var(--font-sans); font-size:.85rem; font-weight:600; color:var(--muted); }
+    .pt-lbl.on{ color:var(--ink); } .pt-lbl.on.live{ color:var(--gold); }
+    .pt-switch{ width:46px; height:26px; border-radius:20px; border:1px solid var(--line-strong); background:var(--panel-2); position:relative; cursor:pointer; padding:0; transition:background .15s; }
+    .pt-switch.live{ background:var(--gold); border-color:var(--gold); }
+    .pt-knob{ position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:var(--ink); transition:transform .18s; }
+    .pt-switch.live .pt-knob{ transform:translateX(20px); background:#0a0f16; }
     .mode-opt{ display:flex; flex-direction:column; gap:.2rem; padding:1rem; border:1px solid var(--line-strong); border-radius:8px; cursor:pointer; }
     .mode-opt.on{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-soft); }
     .mode-opt input{ margin-bottom:.3rem; }
@@ -186,7 +206,17 @@ const payMode = await paymentMode(env);
     });
     async function saveSettings(body, msgId){ const m=document.getElementById(msgId); m.textContent='Saving…'; const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); m.textContent=r.ok?'Saved ✓':'Failed — database connected?'; }
     document.getElementById('pp-save').addEventListener('click',()=>{ if(document.getElementById('pp-csecret').value && !ppOK){ const m=document.getElementById('pp-msg'); m.style.color='#c23b3b'; m.textContent='Please test PhonePe details before saving.'; return; } saveSettings({phonepe_client_id:document.getElementById('pp-cid').value.trim(),phonepe_client_secret:document.getElementById('pp-csecret').value,phonepe_client_version:document.getElementById('pp-cver').value.trim(),phonepe_test_client_id:document.getElementById('pp-test-cid').value.trim(),phonepe_test_client_secret:document.getElementById('pp-test-csecret').value,phonepe_test_client_version:document.getElementById('pp-test-cver').value.trim()},'pp-msg'); });
-    document.getElementById('paymode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=pay_mode]:checked'); saveSettings({payment_mode:m?m.value:'test'},'paymode-msg'); document.querySelectorAll('input[name=pay_mode]').forEach(r=>r.closest('.mode-opt').classList.toggle('on', r.checked)); });
+    (function(){
+      var sw=document.getElementById('pay-switch');
+      if(sw){ sw.addEventListener('click', function(){
+        var nowLive = sw.classList.toggle('live');
+        sw.setAttribute('aria-checked', String(nowLive));
+        document.querySelectorAll('.pay-toggle .pt-lbl').forEach(function(l){ l.classList.remove('on','live'); });
+        var lbls=document.querySelectorAll('.pay-toggle .pt-lbl');
+        if(nowLive){ lbls[1].classList.add('on','live'); } else { lbls[0].classList.add('on'); }
+        saveSettings({payment_mode: nowLive?'live':'test'},'paymode-msg');
+      }); }
+    })();
     document.querySelectorAll('input[name=pay_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('input[name=pay_mode]').forEach(x=>x.closest('.mode-opt').classList.toggle('on', x.checked))));
     document.getElementById('mode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=site_mode]:checked'); saveSettings({site_mode:m?m.value:'production'},'mode-msg'); document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked)); });
     document.querySelectorAll('input[name=site_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked))));
