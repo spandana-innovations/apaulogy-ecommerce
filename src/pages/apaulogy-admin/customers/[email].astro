@@ -2,15 +2,15 @@
 export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getStats } from '../../../lib/admin-data';
-import { formatINR } from '../../../lib/format';
+import { formatINR, statusLabel } from '../../../lib/format';
 const { email } = Astro.params;
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
 let cust:any=null, orders:any[]=[];
 if (env.DB) {
   try {
-    cust = await env.DB.prepare(`SELECT email,name,phone,created_at FROM customers WHERE email=?`).bind(email).first();
-    orders = ((await env.DB.prepare(`SELECT order_number,status,total,created_at FROM orders WHERE email=? ORDER BY created_at DESC LIMIT 50`).bind(email).all()).results)||[];
+    cust = await env.DB.prepare(`SELECT email,name,phone,created_at FROM customers WHERE LOWER(email)=LOWER(?)`).bind(email).first();
+    orders = ((await env.DB.prepare(`SELECT order_number,status,total,created_at FROM orders WHERE LOWER(email)=LOWER(?) ORDER BY created_at DESC LIMIT 50`).bind(email).all()).results)||[];
   } catch {}
 }
 if (!cust) cust = { email, name:'', phone:'' };
@@ -37,7 +37,7 @@ const spent = orders.filter((o:any)=>['completed','processing','shipped'].includ
         <table><thead><tr><th>Order</th><th>Status</th><th style="text-align:right">Total</th><th>Date</th></tr></thead>
           <tbody>{orders.map((o:any)=>(<tr>
             <td><a href={`/apaulogy-admin/orders/${o.order_number}/`} style="text-decoration:underline"><strong>{o.order_number}</strong></a></td>
-            <td><span class={`pill s-${o.status}`}>{o.status}</span></td>
+            <td><span class={`pill s-${statusLabel(o.status)}`}>{statusLabel(o.status)}</span></td>
             <td style="text-align:right">{formatINR(o.total)}</td><td class="muted">{(o.created_at||'').slice(0,10)}</td>
           </tr>))}</tbody></table>
       ) : (<p class="muted">No orders on record.</p>)}

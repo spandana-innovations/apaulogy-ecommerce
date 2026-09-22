@@ -2,7 +2,7 @@
 export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getStats, getOrder, orderEvents } from '../../../lib/admin-data';
-import { formatINR } from '../../../lib/format';
+import { formatINR, statusLabel } from '../../../lib/format';
 const { order } = Astro.params;
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
@@ -43,7 +43,7 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
         <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Fulfilment</h4>
         <label class="fld">Status
           <select id="o-status">
-            {['pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'].map((s)=>(<option value={s} selected={s===o.status}>{s}</option>))}
+            {['pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'].map((s)=>(<option value={s} selected={s===o.status}>{statusLabel(s)}</option>))}
           </select></label>
         <label class="fld">Tracking number<input id="o-track" value={o.tracking_number||''} placeholder="e.g. EX123456789IN"/></label>
         <label class="fld">Carrier<input id="o-carrier" value={o.tracking_carrier||''} placeholder="e.g. DTDC, India Post"/></label>

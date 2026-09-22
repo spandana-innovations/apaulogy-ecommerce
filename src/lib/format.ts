@@ -35,3 +35,18 @@ export function since(iso?: string): string {
   if (y) parts.push(`${y}y`); if (m) parts.push(`${m}m`); parts.push(`${d}d`);
   return parts.join(' ');
 }
+
+/** Human-friendly order status labels. */
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending Payment',
+  'on-hold': 'On Hold',
+  processing: 'Processing',
+  completed: 'Completed',
+  shipped: 'Shipped',
+  cancelled: 'Cancelled',
+  refunded: 'Refunded',
+  failed: 'Payment Failed',
+};
+export function statusLabel(s: string): string {
+  return STATUS_LABELS[s] || (s || '').replace(/\b\w/g, (c) => c.toUpperCase());
+}

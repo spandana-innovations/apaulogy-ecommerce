@@ -2,7 +2,7 @@
 export const prerender = false;
 import AdminLayout from '../../layouts/AdminLayout.astro';
 import { getStats, listOrders, orderYears } from '../../lib/admin-data';
-import { formatINR } from '../../lib/format';
+import { formatINR, statusLabel } from '../../lib/format';
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
 const url = Astro.url;
@@ -68,7 +68,7 @@ function qs(over: Record<string,string>) {
               <td><a href={`/apaulogy-admin/orders/${o.order_number}/`} class="u"><strong>{o.order_number}</strong></a></td>
               <td>{o.email}<br/><span class="muted" style="font-size:.72rem">{o.phone||''}</span></td>
               <td class="muted">{/bank/i.test(o.notes||'') ? 'Bank transfer' : (o.notes||'Online')}</td>
-              <td><span class={`pill s-${o.status}`}>{o.status}</span></td>
+              <td><span class={`pill s-${o.status}`}>{statusLabel(o.status)}</span></td>
               <td class="muted" style="font-size:.78rem">{o.tracking_number||'—'}</td>
               <td style="text-align:right">{formatINR(o.total)}</td>
               <td class="muted">{(o.created_at||'').slice(0,10)}</td>
@@ -102,8 +102,9 @@ function qs(over: Record<string,string>) {
 </style>
 
 <style is:global>
-  .bulk-bar{ display:flex; align-items:center; gap:.7rem; margin-bottom:1rem; padding:.7rem 1rem;
-    background:var(--gold-soft); border:1px solid var(--gold); border-radius:8px; flex-wrap:wrap; }
+  .bulk-bar{ display:flex; align-items:center; gap:.7rem; margin-bottom:1rem; padding:.55rem .85rem;
+    background:var(--panel-2); border:1px solid var(--line-strong); border-radius:8px; flex-wrap:wrap; }
+  .bulk-bar[hidden]{ display:none !important; }
   .bulk-count{ font-family:var(--font-sans); font-weight:600; font-size:.85rem; }
   .bulk-input{ padding:.45rem .6rem; }
   .row-sel, #sel-all{ width:16px; height:16px; cursor:pointer; accent-color:var(--gold); }
