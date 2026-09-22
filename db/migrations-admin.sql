@@ -135,3 +135,11 @@ CREATE TABLE IF NOT EXISTS usage_counters (
   day TEXT PRIMARY KEY,
   reads INTEGER DEFAULT 0
 );
+
+-- Sent-email archive
+CREATE TABLE IF NOT EXISTS email_log (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  to_addr TEXT, subject TEXT, template TEXT, status TEXT, provider_id TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_email_created ON email_log(created_at);

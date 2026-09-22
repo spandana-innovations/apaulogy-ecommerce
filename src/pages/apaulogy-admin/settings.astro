@@ -18,10 +18,18 @@ const ppTestCver = (await getSetting(env, 'phonepe_test_client_version')) || '';
 const ppHasTestSecret = !!(await getSetting(env, 'phonepe_test_client_secret'));
 const reFrom = (await getSetting(env, 'from_email')) || '';
 const reHasKey = !!(await getSetting(env, 'resend_key'));
+const rzpVerified = (await getSetting(env, 'razorpay_verified'))==='1';
+const ppVerified = (await getSetting(env, 'phonepe_verified'))==='1';
+const reVerified = (await getSetting(env, 'resend_verified'))==='1';
 const origin = env.SITE_URL || 'https://apaulogy.com';
 import { getSiteMode } from '../../lib/admin-data';
 const siteMode = await getSiteMode(env);
 import { paymentMode } from '../../lib/payments';
+import { systemStatus, readsToday } from '../../lib/admin-data';
+const sys = await systemStatus(env);
+const readsMo = await readsToday(env);
+const TURSO_READS = 500_000_000;
+const usagePct = Math.min(100, Math.round((readsMo / TURSO_READS) * 100));
 const payMode = await paymentMode(env);
 ---
 <AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
@@ -30,6 +38,7 @@ const payMode = await paymentMode(env);
     <button class="set-tab" data-tab="modes" type="button">Site modes</button>
     <button class="set-tab" data-tab="resources" type="button">Resources</button>
     <button class="set-tab" data-tab="admins" type="button">Admin users</button>
+    <button class="set-tab" data-tab="status" type="button">Status</button>
   </div>
   <div class="settings-grid">
     <!-- Payment mode -->
@@ -47,18 +56,18 @@ const payMode = await paymentMode(env);
 
     <!-- Razorpay -->
     <section data-panel="keys" class="card" style="padding:1.4rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Razorpay payment keys</h2>
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Razorpay payment keys {rzpId ? <span class={rzpVerified?'key-badge ok':'key-badge'}>{rzpVerified?'✓ Live keys verified':'Keys present · not tested'}</span> : ''}</h2>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">
         Enter your live or test keys from the Razorpay dashboard. Stored in your database and used at checkout.
         {rzpIdEnv && ' Environment keys are set and take priority over these.'}
       </p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
-        <label class="fld">Key ID<input id="rzp-id" value={rzpId} placeholder="rzp_live_… or rzp_test_…"/></label>
-        <label class="fld">Key Secret<input id="rzp-secret" type="password" placeholder={hasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter key secret'}/></label>
+        <label class="fld">Key ID<input id="rzp-id" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" value={rzpId} placeholder="rzp_live_… or rzp_test_…"/></label>
+        <label class="fld">Key Secret<input id="rzp-secret" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" type="password" placeholder={hasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter key secret'}/></label>
         <div style="border-top:1px solid var(--line);margin:.6rem 0;padding-top:.6rem"></div>
-        <label class="fld">Test Key ID <span class="muted">(rzp_test_…)</span><input id="rzp-test-id" value={rzpTestId} placeholder="rzp_test_…"/></label>
-        <label class="fld">Test Key Secret<input id="rzp-test-secret" type="password" placeholder="Leave blank to keep"/></label>
-        <label class="fld">Webhook Secret <span class="muted">(optional)</span><input id="rzp-webhook" type="password" placeholder="Leave blank to keep"/></label>
+        <label class="fld">Test Key ID <span class="muted">(rzp_test_…)</span><input id="rzp-test-id" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" value={rzpTestId} placeholder="rzp_test_…"/></label>
+        <label class="fld">Test Key Secret<input id="rzp-test-secret" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" type="password" placeholder="Leave blank to keep"/></label>
+        <label class="fld">Webhook Secret <span class="muted">(optional)</span><input id="rzp-webhook" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" type="password" placeholder="Leave blank to keep"/></label>
         <div class="webhook-row"><span class="wh-label">Webhook URL — paste into Razorpay Dashboard → Webhooks</span>
           <code class="wh-url" id="rzp-wh">{origin}/api/razorpay-webhook</code>
           <button type="button" class="btn wh-copy" data-copy="rzp-wh">Copy</button>
@@ -70,16 +79,16 @@ const payMode = await paymentMode(env);
 
     <!-- PhonePe -->
     <section data-panel="keys" class="card" style="padding:1.4rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">PhonePe payment keys</h2>
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">PhonePe payment keys {ppCid ? <span class={ppVerified?'key-badge ok':'key-badge'}>{ppVerified?'✓ Live keys verified':'Keys present · not tested'}</span> : ''}</h2>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">PhonePe v2 Standard Checkout (OAuth). Find your Client ID &amp; Secret in the PhonePe Business Dashboard → Developer Settings. Domestic customers can pay via PhonePe; international orders always use Razorpay.</p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
-        <label class="fld">Client ID<input id="pp-cid" value={ppCid} placeholder="e.g. SU2XXXXXXXXXXX"/></label>
-        <label class="fld">Client Secret<input id="pp-csecret" type="password" placeholder={ppHasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter client secret'}/></label>
-        <label class="fld">Client Version<input id="pp-cver" value={ppCver} placeholder="from your PhonePe credentials email"/></label>
+        <label class="fld">Client ID<input id="pp-cid" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" value={ppCid} placeholder="e.g. SU2XXXXXXXXXXX"/></label>
+        <label class="fld">Client Secret<input id="pp-csecret" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" type="password" placeholder={ppHasSecret ? '•••••••• (saved — leave blank to keep)' : 'Enter client secret'}/></label>
+        <label class="fld">Client Version<input id="pp-cver" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" value={ppCver} placeholder="from your PhonePe credentials email"/></label>
         <div style="border-top:1px solid var(--line);margin:.6rem 0;padding-top:.6rem"></div>
-        <label class="fld">Test Client ID <span class="muted">(sandbox)</span><input id="pp-test-cid" value={ppTestCid} placeholder="Sandbox client id"/></label>
-        <label class="fld">Test Client Secret<input id="pp-test-csecret" type="password" placeholder={ppHasTestSecret ? '•••••••• (saved)' : 'Sandbox client secret'}/></label>
-        <label class="fld">Test Client Version<input id="pp-test-cver" value={ppTestCver} placeholder="1"/></label>
+        <label class="fld">Test Client ID <span class="muted">(sandbox)</span><input id="pp-test-cid" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" value={ppTestCid} placeholder="Sandbox client id"/></label>
+        <label class="fld">Test Client Secret<input id="pp-test-csecret" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" type="password" placeholder={ppHasTestSecret ? '•••••••• (saved)' : 'Sandbox client secret'}/></label>
+        <label class="fld">Test Client Version<input id="pp-test-cver" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" value={ppTestCver} placeholder="1"/></label>
         <div class="webhook-row"><span class="wh-label">Redirect / Callback URL — set in PhonePe Dashboard</span>
           <code class="wh-url" id="pp-wh">{origin}/api/phonepe-callback</code>
           <button type="button" class="btn wh-copy" data-copy="pp-wh">Copy</button>
@@ -90,11 +99,11 @@ const payMode = await paymentMode(env);
 
     <!-- Email (Resend) -->
     <section data-panel="keys" class="card" style="padding:1.4rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Email (Resend)</h2>
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Email (Resend) {reHasKey ? <span class={reVerified?'key-badge ok':'key-badge'}>{reVerified?'✓ Verified':'Key present · not tested'}</span> : ''}</h2>
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Order confirmations and shipping updates are sent through Resend.</p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
-        <label class="fld">Resend API key<input id="re-key" type="password" placeholder="re_… (leave blank to keep)"/></label>
-        <label class="fld">From address<input id="re-from" placeholder="orders@apaulogy.com"/></label>
+        <label class="fld">Resend API key<input id="re-key" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" type="password" placeholder="re_… (leave blank to keep)"/></label>
+        <label class="fld">From address<input id="re-from" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" placeholder="orders@apaulogy.com"/></label>
         <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="re-test">Test connection</button><button class="btn" id="re-save" style="background:#000;color:#fff">Save email</button> <span class="muted" id="re-msg" style="font-size:.78rem"></span></div>
       </div>
     </section>
@@ -155,6 +164,16 @@ const payMode = await paymentMode(env);
     .cfg{display:flex;justify-content:space-between;padding:.7rem .9rem;border:1px solid var(--line);text-decoration:none;color:var(--ink)}
     .cfg:hover{background:var(--paper-deep)}
     .mode-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:.8rem; }
+    .svc-list{ list-style:none; margin:0; padding:0; }
+    .svc-list li{ display:flex; align-items:center; gap:.7rem; padding:.6rem 0; border-bottom:1px solid var(--line); }
+    .svc-list li:last-child{ border-bottom:0; }
+    .sdot{ width:9px; height:9px; border-radius:50%; }
+    .sdot.up{ background:#39d98a; box-shadow:0 0 0 3px rgba(57,217,138,.14); } .sdot.down{ background:#ff7a7a; box-shadow:0 0 0 3px rgba(255,122,122,.14); }
+    .sname{ font-weight:500; } .snote{ margin-left:auto; font-size:.8rem; }
+    .ugauge{ height:12px; background:var(--panel-2); border:1px solid var(--line); border-radius:20px; overflow:hidden; }
+    .ugauge span{ display:block; height:100%; background:var(--gold); border-radius:20px; }
+    .key-badge{ font-family:var(--font-sans); font-size:.62rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; vertical-align:middle; margin-left:.6rem; padding:.22rem .55rem; border-radius:20px; background:var(--panel-2); color:var(--muted); border:1px solid var(--line-strong); }
+    .key-badge.ok{ background:rgba(57,217,138,.14); color:#39d98a; border-color:rgba(57,217,138,.5); }
     .pay-toggle{ display:flex; align-items:center; gap:.7rem; }
     .pt-lbl{ font-family:var(--font-sans); font-size:.85rem; font-weight:600; color:var(--muted); }
     .pt-lbl.on{ color:var(--ink); } .pt-lbl.on.live{ color:var(--gold); }
@@ -209,11 +228,20 @@ const payMode = await paymentMode(env);
     (function(){
       var sw=document.getElementById('pay-switch');
       if(sw){ sw.addEventListener('click', function(){
+        var goingLive = !sw.classList.contains('live');
+        if(goingLive){
+          var typed = window.prompt('You are switching to LIVE payments — real customers will be charged real money.\n\nType "live" to confirm:');
+          if((typed||'').trim().toLowerCase() !== 'live'){ return; }  // abort if not confirmed
+        }
         var nowLive = sw.classList.toggle('live');
         sw.setAttribute('aria-checked', String(nowLive));
-        document.querySelectorAll('.pay-toggle .pt-lbl').forEach(function(l){ l.classList.remove('on','live'); });
         var lbls=document.querySelectorAll('.pay-toggle .pt-lbl');
+        lbls.forEach(function(l){ l.classList.remove('on','live'); });
         if(nowLive){ lbls[1].classList.add('on','live'); } else { lbls[0].classList.add('on'); }
+        // update the header TEST MODE pill live (no reload)
+        var pill=document.querySelector('.test-pill');
+        if(nowLive){ if(pill) pill.style.display='none'; }
+        else { if(pill) pill.style.display=''; else { var top=document.querySelector('.top'); if(top){ var s=document.createElement('span'); s.className='test-pill'; s.textContent='TEST MODE'; top.appendChild(s);} } }
         saveSettings({payment_mode: nowLive?'live':'test'},'paymode-msg');
       }); }
     })();
@@ -233,7 +261,8 @@ const payMode = await paymentMode(env);
   .settings-grid.show-keys [data-panel="keys"],
   .settings-grid.show-modes [data-panel="modes"],
   .settings-grid.show-resources [data-panel="resources"],
-  .settings-grid.show-admins [data-panel="admins"]{ display:block; }
+  .settings-grid.show-admins [data-panel="admins"],
+  .settings-grid.show-status [data-panel="status"]{ display:block; }
   .settings-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.4rem; align-items:start; max-width:1100px; }
   .settings-grid > section:first-child{ grid-column:1 / -1; }   /* Razorpay spans top */
   .settings-grid > section:last-child{ grid-column:1 / -1; }    /* System spans bottom */
