@@ -48,64 +48,26 @@ const jsonld = [organizationSchema(Astro.site), websiteSchema(Astro.site)];
   </section>
 
   <!-- TRUST STRIP -->
-  <section class="bg-black text-white mt-8">
-    <div class="container-page py-3.5 flex flex-wrap justify-center items-center gap-x-8 gap-y-1.5 text-[0.68rem] tracking-[0.18em] uppercase" style="font-family:var(--font-sans)">
-      <span class="flex items-center gap-2"><Icon name="truck" size={15} /> Shipped across India &amp; worldwide</span>
-      <span class="opacity-40" aria-hidden="true">/</span>
-      <span class="flex items-center gap-2"><Icon name="frame" size={15} /> From aPaulogy Gallery</span>
-      <span class="opacity-40" aria-hidden="true">/</span>
-      <span class="flex items-center gap-2"><Icon name="shield" size={15} /> Secure checkout</span>
+  <section class="trust-strip mt-8">
+    <div class="container-page flex flex-wrap justify-center items-center gap-x-10 gap-y-2">
+      <span class="ts-item"><Icon name="truck" size={16} stroke={1.4} /> Shipped across India &amp; worldwide</span>
+      <span class="ts-dot" aria-hidden="true"></span>
+      <span class="ts-item"><Icon name="frame" size={16} stroke={1.4} /> From aPaulogy Gallery</span>
+      <span class="ts-dot" aria-hidden="true"></span>
+      <span class="ts-item"><Icon name="shield" size={16} stroke={1.4} /> Secure checkout</span>
     </div>
   </section>
-
-  <!-- SHOP BY MEDIUM -->
-  <section class="container-page pt-14 pb-4">
-    <div class="text-center max-w-xl mx-auto">
-      <p class="eyebrow">Choose your medium</p>
-      <h2 class="text-4xl sm:text-5xl mt-2">The art, your way</h2>
-      <p class="mt-4 text-[var(--color-ink-soft)]">The same curious illustrations, at home on paper, tile, plaque and more.</p>
-    </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-5 mt-10">
-      {mediums.map((m) => (
-        <a href={m.href} class="group border border-[var(--color-line)] hover:border-[var(--color-ink)] transition-colors p-6 flex flex-col items-start gap-3">
-          <span class="w-12 h-12 grid place-items-center border border-[var(--color-ink)] group-hover:bg-black group-hover:text-white transition-colors">
-            <Icon name={m.icon} size={24} stroke={1.3} />
-          </span>
-          <span class="text-2xl" style="font-family:var(--font-display)">{m.name}</span>
-          <span class="text-sm text-[var(--color-muted)]" style="font-family:var(--font-sans)">{m.desc}</span>
-          {m.ex && m.ex.length > 0 && (
-            <span class="medium-ex mt-1 w-full aspect-[16/9] overflow-hidden bg-white relative" data-count={m.ex.length}>
-              {m.ex.map((e, i) => (
-                <img src={e.img} alt={e.name} loading="lazy"
-                  class="medium-ex-img absolute inset-0 w-full h-full object-contain"
-                  style={`opacity:${i === 0 ? 1 : 0}`} />
-              ))}
-            </span>
-          )}
-          <span class="mt-auto pt-1 inline-flex items-center gap-1.5 text-[0.7rem] uppercase tracking-[0.14em] font-semibold" style="font-family:var(--font-sans)">Browse <Icon name="arrowRight" size={13} /></span>
-        </a>
-      ))}
-    </div>
-    <script is:inline>(function(){
-      function cycle(){
-        document.querySelectorAll('.medium-ex').forEach(function(box, k){
-          var imgs = box.querySelectorAll('.medium-ex-img'); if(imgs.length<2) return;
-          var idx = 0;
-          setInterval(function(){
-            imgs[idx].style.opacity = '0';
-            idx = (idx+1) % imgs.length;
-            imgs[idx].style.opacity = '1';
-          }, 2600 + k*450); /* out of sync per card */
-        });
-      }
-      if(document.readyState!=='loading') cycle(); else document.addEventListener('DOMContentLoaded', cycle);
-      document.addEventListener('astro:page-load', cycle);
-    })();</script>
+  <style>
+    .trust-strip{ background:var(--color-paper, #faf8f3); border-top:1px solid var(--color-line); border-bottom:1px solid var(--color-line); padding:1.1rem 0; }
+    .trust-strip .ts-item{ display:inline-flex; align-items:center; gap:.55rem; font-family:var(--font-sans);
+      font-size:.7rem; letter-spacing:.2em; text-transform:uppercase; color:var(--color-ink-soft); font-weight:500; }
+    .trust-strip .ts-item :global(svg){ color:var(--color-ink); opacity:.75; }
+    .trust-strip .ts-dot{ width:3px; height:3px; border-radius:50%; background:var(--color-muted); opacity:.6; }
+  </style>
   </section>
 
 
-  <!-- Best loved -->
-  <ProductSlider title="Best loved" href="/store/" icon="frame" products={featured} />
+
 
   <!-- Collection shelves (match the WordPress homepage grids) -->
   {shelves.map((s) => (
