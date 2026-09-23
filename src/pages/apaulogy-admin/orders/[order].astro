@@ -47,7 +47,13 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
             {['pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'].map((s)=>(<option value={s} selected={s===o.status}>{statusLabel(s)}</option>))}
           </select></label>
         <label class="fld">Tracking number<input id="o-track" value={o.tracking_number||''} placeholder="e.g. EX123456789IN"/></label>
-        <label class="fld">Carrier<input id="o-carrier" value={o.tracking_carrier||''} placeholder="e.g. DTDC, India Post"/></label>
+        <label class="fld">Carrier<input id="o-carrier" list="courier-list" value={o.tracking_carrier||''} placeholder="Search couriers…" autocomplete="off"/></label>
+        <datalist id="courier-list">
+          <option value="India Post" /><option value="DTDC" /><option value="Blue Dart" /><option value="Delhivery" />
+          <option value="DHL" /><option value="FedEx" /><option value="Ekart" /><option value="XpressBees" />
+          <option value="Shadowfax" /><option value="The Professional Couriers" /><option value="Trackon" /><option value="Gati" />
+          <option value="Aramex" /><option value="Ecom Express" /><option value="Speed Post" /><option value="Porter" /><option value="Dunzo" /><option value="Shiprocket" />
+        </datalist>
         <button class="btn" id="o-save" style="background:#000;color:#fff;justify-content:center;width:100%;margin-top:.5rem">Update order</button>
         {(o as any).phonepe_order_id && (
           <button type="button" class="btn" id="pp-check" style="justify-content:center;width:100%;margin-top:.5rem">Check PhonePe status</button>

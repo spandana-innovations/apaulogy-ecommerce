@@ -1,14 +1,36 @@
 ---
 export const prerender = false;
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { getStats, statsSummary, revenueByMonth, topProducts, topCustomers } from '../../lib/admin-data';
+import { getStats, statsSummary, revenueByMonth, topProducts, topCustomers, salesInRange, topProductsInRange } from '../../lib/admin-data';
 import { formatINR } from '../../lib/format';
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const base = await getStats(env);
 const s = await statsSummary(env);
 const rev = await revenueByMonth(env, 24);
-const products = await topProducts(env, 12);
 const customers = await topCustomers(env, 12);
+
+// Period filter
+const url = new URL(Astro.request.url);
+const period = url.searchParams.get('period') || 'this_month';
+function ymd(d:Date){ return d.toISOString().slice(0,10); }
+const now = new Date();
+let from = url.searchParams.get('from') || '';
+let to = url.searchParams.get('to') || ymd(now);
+if (period !== 'custom' || !from) {
+  const start = new Date(now);
+  if (period==='this_month') start.setDate(1);
+  else if (period==='3m') start.setMonth(now.getMonth()-3);
+  else if (period==='6m') start.setMonth(now.getMonth()-6);
+  else if (period==='ytd') { start.setMonth(0); start.setDate(1); }
+  else if (period==='year') { start.setFullYear(now.getFullYear()-1); }
+  from = ymd(start); to = ymd(now);
+}
+const range = await salesInRange(env, from, to);
+const products = await topProductsInRange(env, from, to, 12);
+// best months (by revenue) from the 24-month series
+const bestMonths = [...rev].sort((a:any,b:any)=> b.total - a.total).slice(0,3);
+const maxRev = Math.max(1, ...rev.map((r:any)=>r.total));
+const PERIODS = [['this_month','This month'],['3m','3 months'],['6m','6 months'],['ytd','Year to date'],['year','Last 12 mo']];
 
 const vals = rev.map((r: any) => Number(r.total) || 0);
 const maxV = Math.max(1, ...vals);
@@ -16,6 +38,34 @@ const W = 720, H = 140;
 const bw = W / Math.max(1, vals.length);
 ---
 <AdminLayout title="Sales Stats" active="stats" dbBound={base.dbBound}>
+  <!-- Period filter -->
+  <div class="period-bar">
+    {PERIODS.map(([val,label]:any)=>(
+      <a href={`/apaulogy-admin/stats/?period=${val}`} class={period===val ? 'per on' : 'per'}>{label}</a>
+    ))}
+    <form method="get" class="per-custom">
+      <input type="hidden" name="period" value="custom" />
+      <input type="date" name="from" value={from} />
+      <span class="muted">→</span>
+      <input type="date" name="to" value={to} />
+      <button class="btn" type="submit">Apply</button>
+    </form>
+  </div>
+  <!-- Range summary -->
+  <div class="stats-grid" style="margin-bottom:1.6rem">
+    <div class="stat hi"><div class="k">Revenue · selected period</div><div class="v">{formatINR(range.revenue||0)}</div></div>
+    <div class="stat"><div class="k">Paid orders · period</div><div class="v">{range.paid_orders||0}</div></div>
+    <div class="stat"><div class="k">Avg order · period</div><div class="v">{formatINR(range.paid_orders? Math.round(range.revenue/range.paid_orders):0)}</div></div>
+    <div class="stat"><div class="k">Days</div><div class="v" style="font-size:1rem">{from} → {to}</div></div>
+  </div>
+  <style>
+    .period-bar{ display:flex; gap:.4rem; flex-wrap:wrap; align-items:center; margin-bottom:1.3rem; }
+    .period-bar .per{ padding:.45rem .85rem; border:1px solid var(--line); border-radius:20px; font-family:var(--font-sans); font-size:.82rem; color:var(--muted); text-decoration:none; }
+    .period-bar .per.on{ background:var(--ink); color:var(--panel); border-color:var(--ink); }
+    .period-bar .per-custom{ display:flex; gap:.4rem; align-items:center; margin-left:auto; }
+    .period-bar input[type=date]{ font-size:.8rem; }
+    .stat.hi{ border-color:var(--gold); }
+  </style>
   <div class="grid-stats" style="margin-bottom:1.6rem">
     <div class="stat"><div class="k">Lifetime revenue</div><div class="v">{formatINR(s.revenue||0)}</div></div>
     <div class="stat"><div class="k">Paid orders</div><div class="v">{s.paid_orders||0}</div></div>
@@ -24,7 +74,7 @@ const bw = W / Math.max(1, vals.length);
   </div>
 
   <div class="card" style="padding:1.3rem;margin-bottom:1.6rem">
-    <strong style="font-family:var(--font-display);font-size:1.2rem">Revenue · last 24 months</strong>
+    <strong style="font-family:var(--font-display);font-size:1.2rem">Revenue trend · last 24 months</strong>
     {vals.length ? (
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="150" style="margin-top:1rem;overflow:visible">
         {vals.map((v:number,i:number)=>(
@@ -32,11 +82,22 @@ const bw = W / Math.max(1, vals.length);
         ))}
       </svg>
     ) : (<p class="muted" style="margin-top:1rem">No paid orders yet.</p>)}
+    {bestMonths.length ? (
+      <div style="display:flex;gap:1.4rem;flex-wrap:wrap;margin-top:1.2rem;padding-top:1rem;border-top:1px solid var(--line)">
+        <span class="muted" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;align-self:center">Best months</span>
+        {bestMonths.map((m:any,i:number)=>(
+          <div style="display:flex;align-items:baseline;gap:.5rem">
+            <span style="font-family:var(--font-display);font-size:1.1rem;color:var(--gold)">#{i+1}</span>
+            <span><strong>{m.m}</strong> <span class="muted" style="font-size:.82rem">· {formatINR(m.total)}</span></span>
+          </div>
+        ))}
+      </div>
+    ) : ''}
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.6rem;align-items:start">
     <section>
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .7rem">Most-loved pieces</h2>
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .7rem">Top products · selected period</h2>
       <div class="card" style="overflow:hidden">
         <table>
           <thead><tr><th>Artwork</th><th style="text-align:right">Sold</th><th style="text-align:right">Revenue</th></tr></thead>

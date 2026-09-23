@@ -399,3 +399,21 @@ export async function purgeOrders(env: Env, orderNumbers: string[]) {
   for (const on of orderNumbers) { try { await env.DB.prepare(`DELETE FROM order_items WHERE order_number=?`).bind(on).run(); await env.DB.prepare(`DELETE FROM orders WHERE order_number=? AND deleted_at IS NOT NULL`).bind(on).run(); n++; } catch {} }
   return n;
 }
+
+
+/** Sales summary for an explicit date range (YYYY-MM-DD). */
+export async function salesInRange(env: Env, from: string, to: string) {
+  const r = await one<any>(env,
+    `SELECT COALESCE(SUM(CASE WHEN ${PAID} THEN total END),0) revenue,
+            SUM(CASE WHEN ${PAID} THEN 1 ELSE 0 END) paid_orders,
+            COUNT(*) orders
+     FROM orders WHERE created_at >= ? AND created_at < date(?, '+1 day')`, from, to);
+  return r || { revenue: 0, paid_orders: 0, orders: 0 };
+}
+export async function topProductsInRange(env: Env, from: string, to: string, limit = 10) {
+  return (await q(env,
+    `SELECT name, SUM(quantity) qty, SUM(price*quantity) revenue
+     FROM order_items oi JOIN orders o ON o.order_number=oi.order_number
+     WHERE o.${PAID} AND o.created_at >= ? AND o.created_at < date(?, '+1 day')
+     GROUP BY name ORDER BY revenue DESC LIMIT ?`, from, to, limit)).rows;
+}

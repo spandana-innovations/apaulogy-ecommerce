@@ -50,8 +50,15 @@ const previews = TEMPLATES.map((t) => ({ ...t, html: renderTemplate(t.id, site, 
     </div>
   </div>
   <div class="em-panel" data-epanel="sent" hidden>
+    <div style="display:flex;gap:.6rem;margin-bottom:1rem;align-items:center">
+      <input id="em-search" placeholder="Search recipient, subject, template…" style="flex:1;max-width:420px" />
+      <span class="muted" id="em-count" style="font-size:.82rem"></span>
+    </div>
     <div class="card" style="overflow:hidden">
-      <table><thead><tr><th>Sent</th><th>To</th><th>Subject</th><th>Template</th><th>Status</th></tr></thead>
+      <table id="em-table"><thead><tr>
+        <th class="em-sort" data-k="0">Sent ▲▼</th><th class="em-sort" data-k="1">To</th>
+        <th class="em-sort" data-k="2">Subject</th><th class="em-sort" data-k="3">Template</th><th class="em-sort" data-k="4">Status</th>
+      </tr></thead>
         <tbody>
           {sentEmails.map((e:any)=>(<tr>
             <td class="muted" style="font-size:.78rem;white-space:nowrap">{(e.created_at||'').replace('T',' ').slice(0,16)}</td>
@@ -84,6 +91,21 @@ const previews = TEMPLATES.map((t) => ({ ...t, html: renderTemplate(t.id, site, 
           document.querySelectorAll('.tmpl-btn').forEach(function(b){ b.classList.toggle('on', Number(b.dataset.i)===i); }); }
         document.querySelectorAll('.tmpl-btn').forEach(function(b){ b.addEventListener('click',function(){ show(Number(b.dataset.i)); window.__tmpl=b.dataset.tmpl; }); });
         show(0); window.__tmpl=document.querySelector('.tmpl-btn')?.dataset.tmpl;
+        // Sent archive: search + sort
+        var tbl=document.getElementById('em-table');
+        if(tbl){
+          var tbody=tbl.querySelector('tbody');
+          var search=document.getElementById('em-search'); var cnt=document.getElementById('em-count');
+          function rows(){ return Array.prototype.slice.call(tbody.querySelectorAll('tr')).filter(function(r){return r.children.length>1;}); }
+          function refresh(){ var v=(search.value||'').toLowerCase(); var n=0; rows().forEach(function(r){ var hit=!v||r.textContent.toLowerCase().indexOf(v)>-1; r.style.display=hit?'':'none'; if(hit)n++; }); cnt.textContent=n+' emails'; }
+          search.addEventListener('input', refresh); refresh();
+          var dir={};
+          tbl.querySelectorAll('.em-sort').forEach(function(th){ th.style.cursor='pointer'; th.addEventListener('click',function(){
+            var k=+th.dataset.k; dir[k]=!dir[k]; var rs=rows();
+            rs.sort(function(a,b){ var x=a.children[k].textContent.trim().toLowerCase(), y=b.children[k].textContent.trim().toLowerCase(); return (x<y?-1:x>y?1:0)*(dir[k]?1:-1); });
+            rs.forEach(function(r){ tbody.appendChild(r); });
+          }); });
+        }
         document.getElementById('send-test')?.addEventListener('click',async function(){
           var to=document.getElementById('test-to').value.trim(); var m=document.getElementById('test-msg');
           if(!to){ m.textContent='Enter an email address.'; return; } m.textContent='Sending…';
