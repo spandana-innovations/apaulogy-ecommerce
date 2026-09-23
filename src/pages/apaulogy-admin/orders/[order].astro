@@ -13,7 +13,16 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
 ---
 <AdminLayout title={`Order ${o.order_number}`} active="orders" dbBound={stats.dbBound}>
   <a id="back-link" href="/apaulogy-admin/orders/" style="font-family:var(--font-sans);font-size:.8rem;text-decoration:underline">← All orders</a>
-  <script>(function(){var r=document.referrer||"";var b=document.getElementById("back-link");if(b&&r.indexOf("/apaulogy-admin/customers/")>-1){b.href=r;b.textContent="← Back to customer";}})();</script>
+  <script>(function(){var r=document.referrer||"";var b=document.getElementById("back-link");if(b&&r.indexOf("/apaulogy-admin/customers/")>-1){b.href=r;b.textContent="← Back to customer";}})();  async function resend(ev){ var m=document.getElementById('resend-msg'); m.style.color='var(--muted)'; m.textContent='Sending…';
+    try{ var r=await fetch('/api/admin/resend-notification',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({order:(window).__order,event:ev})});
+      var d=await r.json();
+      if(d.ok){ m.style.color='#2e8b57'; m.textContent='✓ Sent via '+(d.sent||[]).join(', ')+((d.failed&&d.failed.length)?(' · failed: '+d.failed.join('; ')):''); }
+      else { m.style.color='#c23b3b'; m.textContent='✗ '+((d.failed&&d.failed.join('; '))||d.error||'Failed'); }
+    }catch(e){ m.style.color='#c23b3b'; m.textContent='Request failed'; }
+  }
+  document.getElementById('resend-conf')?.addEventListener('click',function(){ resend('order_confirmation'); });
+  document.getElementById('resend-ship')?.addEventListener('click',function(){ resend('shipping_update'); });
+</script>
   <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:2rem;margin-top:1rem;max-width:1000px;font-family:var(--font-sans);font-size:.86rem">
     <div class="card" style="padding:1.3rem">
       <h3 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">{o.order_number}</h3>
@@ -59,6 +68,11 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
         {(o as any).phonepe_order_id && (
           <button type="button" class="btn" id="pp-check" style="justify-content:center;width:100%;margin-top:.5rem">Check PhonePe status</button>
         )}
+        <div style="display:flex;gap:.4rem;margin-top:.5rem">
+          <button type="button" class="btn" id="resend-conf" style="flex:1;justify-content:center;font-size:.8rem">Resend confirmation</button>
+          <button type="button" class="btn" id="resend-ship" style="flex:1;justify-content:center;font-size:.8rem">Resend shipping</button>
+        </div>
+        <p class="muted" id="resend-msg" style="font-size:.75rem;text-align:center;margin-top:.4rem"></p>
         <p class="muted" id="pp-status-msg" style="font-size:.75rem;text-align:center;margin-top:.4rem"></p>
         <p class="muted" id="o-msg" style="font-size:.75rem;text-align:center;margin-top:.5rem"></p>
       </div>

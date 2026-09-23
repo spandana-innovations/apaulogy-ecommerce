@@ -17,6 +17,8 @@ const ppTestCid = (await getSetting(env, 'phonepe_test_client_id')) || '';
 const ppTestCver = (await getSetting(env, 'phonepe_test_client_version')) || '';
 const ppHasTestSecret = !!(await getSetting(env, 'phonepe_test_client_secret'));
 const reFrom = (await getSetting(env, 'from_email')) || '';
+const adminNotifyEmail = (await getSetting(env,'admin_notify_email'))||'';
+const adminNotifyOn = (await getSetting(env,'admin_notify_enabled'))!=='0';
 const reHasKey = !!(await getSetting(env, 'resend_key'));
 const rzpVerified = (await getSetting(env, 'razorpay_verified'))==='1';
 const ppVerified = (await getSetting(env, 'phonepe_verified'))==='1';
@@ -131,6 +133,8 @@ const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
       <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Order confirmations and shipping updates are sent through Resend.</p>
       <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
         <label class="fld">Resend API key<input id="re-key" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" type="password" placeholder="re_… (leave blank to keep)"/></label>
+        <label style="display:flex;gap:.5rem;align-items:center;margin:.2rem 0 .4rem;font-family:var(--font-sans);font-size:.85rem"><input type="checkbox" id="admin-notify-on" checked={adminNotifyOn}/> Email me when a new order comes in</label>
+        <label class="fld">Admin notification email <span class="muted">(order alerts sent here)</span><input id="admin-notify-email" value={adminNotifyEmail} placeholder="you@apaulogy.com"/></label>
         <label class="fld">From address<input id="re-from" autocomplete="off" autocapitalize="off" spellcheck="false" data-lpignore="true" data-form-type="other" placeholder="orders@apaulogy.com"/></label>
         <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="re-test">Test connection</button><button class="btn" id="re-save" style="background:#000;color:#fff">Save</button> <span class="muted" id="re-msg" style="font-size:.78rem"></span></div>
       </div>
@@ -309,7 +313,7 @@ const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
     document.querySelectorAll('input[name=site_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked))));
     document.getElementById('sms-save')?.addEventListener('click',()=>{ saveSettings({notify_sms_enabled:document.getElementById('sms-on').checked?'1':'0', msg91_authkey:document.getElementById('sms-key').value, msg91_sender_id:document.getElementById('sms-sender').value.trim(), msg91_tpl_order:document.getElementById('sms-tpl-order').value.trim(), msg91_tpl_shipping:document.getElementById('sms-tpl-ship').value.trim()},'sms-msg'); });
     document.getElementById('wa-save')?.addEventListener('click',()=>{ saveSettings({notify_wa_enabled:document.getElementById('wa-on').checked?'1':'0', wa_integrated_number:document.getElementById('wa-number').value.trim(), wa_tpl_order:document.getElementById('wa-tpl-order').value.trim(), wa_tpl_shipping:document.getElementById('wa-tpl-ship').value.trim()},'wa-msg'); });
-    document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'); });
+    document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim(),admin_notify_email:document.getElementById('admin-notify-email').value.trim(),admin_notify_enabled:document.getElementById('admin-notify-on').checked?'1':'0'},'re-msg'); });
     document.querySelectorAll('.wh-copy').forEach(function(b){ b.addEventListener('click',function(){ var el=document.getElementById(b.dataset.copy); navigator.clipboard.writeText(el.textContent).then(function(){ b.textContent='Copied ✓'; setTimeout(function(){b.textContent='Copy';},1500); }); }); });
   </script>
 <style is:global>

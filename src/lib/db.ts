@@ -76,17 +76,16 @@ export async function createPendingOrder(
     db
       .prepare(
         `INSERT INTO order_items
-          (order_id, product_slug, name, variant, quantity, unit_price, total)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          (order_number, slug, name, variant, price, quantity)
+         VALUES (?, ?, ?, ?, ?, ?)`,
       )
       .bind(
-        orderId,
+        number,
         it.slug,
         it.name,
         it.variant ?? null,
-        it.quantity,
         it.price,
-        it.price * it.quantity,
+        it.quantity,
       ),
   );
   if (stmts.length) await db.batch(stmts);
@@ -101,7 +100,7 @@ export async function markOrderPaid(
   await db
     .prepare(
       `UPDATE orders
-         SET status = 'paid', razorpay_payment_id = ?, updated_at = datetime('now')
+         SET status = 'processing', razorpay_payment_id = ?, updated_at = datetime('now')
        WHERE razorpay_order_id = ? AND status = 'pending'`,
     )
     .bind(razorpayPaymentId, razorpayOrderId)

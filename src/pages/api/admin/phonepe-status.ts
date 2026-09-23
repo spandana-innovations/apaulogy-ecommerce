@@ -23,7 +23,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
     const d: any = await r.json();
     const state = d?.state || d?.payload?.state || 'UNKNOWN';
-    if (state === 'COMPLETED') { try { await markPhonePePaid(env.DB, ppId, 'paid'); } catch {} }
+    if (state === 'COMPLETED') { try { await markPhonePePaid(env.DB, ppId, 'processing'); } catch {} }
     else if (state && state !== 'PENDING') { try { await markPhonePePaid(env.DB, ppId, 'failed'); } catch {} }
     return json({ ok: true, state, amount: d?.amount });
   } catch (e: any) {

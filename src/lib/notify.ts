@@ -14,7 +14,7 @@ export const EVENTS = ['order_confirmation', 'shipping_update'] as const;
 export async function notifyConfig(env: Env) {
   const g = (k: string) => getSetting(env, k);
   return {
-    email: { enabled: (await g('notify_email_enabled')) !== '0', key: env.RESEND_KEY || (await g('resend_key')) || '' },
+    email: { enabled: (await g('notify_email_enabled')) !== '0', key: env.RESEND_KEY || (await g('resend_key')) || '', admin: (await g('admin_notify_email')) || '', adminOn: (await g('admin_notify_enabled')) !== '0' },
     sms: {
       enabled: (await g('notify_sms_enabled')) === '1',
       authkey: env.MSG91_AUTHKEY || (await g('msg91_authkey')) || '',
@@ -77,6 +77,21 @@ export async function sendWhatsApp(env: Env, mobile: string, templateName: strin
   } catch (e: any) { return { ok: false, error: String(e?.message || e) }; }
 }
 
+/* ---- Admin new-order alert (plain, informative) ---- */
+function adminOrderAlert(site: string, o: any) {
+  const rupees = (p: number) => '₹' + (Math.round(p) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+  const items = (o.items || []).map((it: any) => `<tr><td style="padding:6px 0;border-bottom:1px solid #eee;font-family:Georgia,serif">${it.name}${it.quantity>1?` &times; ${it.quantity}`:''}</td><td style="padding:6px 0;border-bottom:1px solid #eee;text-align:right;font-family:Arial,sans-serif">${rupees(it.price*it.quantity)}</td></tr>`).join('');
+  const b = o.billing || {};
+  return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111">
+    <h2 style="font-family:Georgia,serif">New order · ${o.order_number}</h2>
+    <p><strong>${o.name || ''}</strong><br/>${o.email || ''} &middot; ${o.phone || ''}<br/>${[b.address,b.city,b.state,b.postcode].filter(Boolean).join(', ')}</p>
+    <table style="width:100%;border-collapse:collapse;margin:12px 0">${items}
+      <tr><td style="padding:8px 0;font-weight:bold">Total</td><td style="padding:8px 0;text-align:right;font-weight:bold">${rupees(o.total||0)}</td></tr>
+    </table>
+    <p style="font-size:13px;color:#666">Payment: ${o.payment_method || ''} &middot; <a href="${site}/apaulogy-admin/orders/${o.order_number}/">Open in admin</a></p>
+  </div>`;
+}
+
 /* ---- Dispatcher: send an event across all enabled channels. ---- */
 export async function notify(env: Env, event: 'order_confirmation' | 'shipping_update', o: any) {
   const cfg = await notifyConfig(env);
@@ -86,6 +101,11 @@ export async function notify(env: Env, event: 'order_confirmation' | 'shipping_u
   if (cfg.email.enabled && cfg.email.key && o.email) {
     const t = event === 'shipping_update' ? shippingUpdateEmail(site, o) : orderConfirmationEmail(site, o);
     results.email = await sendEmail(env, o.email, t.subject, t.html, event);
+    // Admin copy — new order alert
+    if (event === 'order_confirmation' && cfg.email.adminOn && cfg.email.admin) {
+      const adminHtml = adminOrderAlert(site, o);
+      results.adminEmail = await sendEmail(env, cfg.email.admin, `New order ${o.order_number} — ${o.name || ''} · ${'₹' + ((o.total||0)/100).toLocaleString('en-IN')}`, adminHtml, 'admin_new_order');
+    }
   }
   // SMS
   if (cfg.sms.enabled && o.phone) {
