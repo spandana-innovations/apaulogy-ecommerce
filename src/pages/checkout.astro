@@ -50,7 +50,7 @@ import Icon from '../components/Icon.astro';
         <fieldset class="border border-[var(--color-line-strong)] p-6">
           <legend class="text-2xl px-2 flex items-center gap-2"><Icon name="shield" size={18} /> Payment</legend>
           <div class="mt-3 space-y-2.5" id="pay-methods" style="font-family:var(--font-sans)">
-            <label class="pay-method"><input type="radio" name="gateway" value="razorpay" checked /> <span><strong>Card / UPI / Net-banking</strong> — via Razorpay</span></label>
+            <label class="pay-method" id="pm-razorpay"><input type="radio" name="gateway" value="razorpay" checked /> <span><strong>Card / UPI / Net-banking</strong> — via Razorpay</span></label>
             <label class="pay-method" id="pm-phonepe"><input type="radio" name="gateway" value="phonepe" /> <span><strong>PhonePe</strong> — UPI &amp; wallets</span></label>
           </div>
           <p class="mt-3 flex items-center gap-2.5 text-sm text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">
@@ -187,7 +187,24 @@ import Icon from '../components/Icon.astro';
       pin?.addEventListener('input', ()=>{ if(pin.value.trim().length===6) lookupPin(); });
       // international: hide PIN hint & re-quote shipping
       countryS?.addEventListener('change', async()=>{ if(pinHint) pinHint.textContent=''; togglePhonePe(); await quoteShipping(); totals=recalc(); });
-      function togglePhonePe(){ const intl = countryS && !/india/i.test(countryS.value); const pm=document.getElementById('pm-phonepe'); if(pm){ pm.style.display = intl?'none':'flex'; if(intl){ const r=pm.querySelector('input') as HTMLInputElement; if(r.checked){ (document.querySelector('input[name=gateway][value=razorpay]') as HTMLInputElement).checked=true; } } } }
+      function togglePhonePe(){
+        const intl = countryS && !/india/i.test(countryS.value);
+        const gw=(window as any).__gateways;
+        const pm=document.getElementById('pm-phonepe'); const rm=document.getElementById('pm-razorpay');
+        function show(el:any,on:boolean){ if(el) el.style.display = on?'flex':'none'; }
+        if(gw){
+          const ppOn = intl ? gw.phonepe.international : gw.phonepe.domestic;
+          const rzOn = intl ? gw.razorpay.international : gw.razorpay.domestic;
+          show(pm, !!ppOn); show(rm, !!rzOn);
+          // if the currently-checked one is now hidden, pick the other visible one
+          const checked=document.querySelector('input[name=gateway]:checked') as HTMLInputElement;
+          if(checked && ((checked.value==='phonepe'&&!ppOn)||(checked.value==='razorpay'&&!rzOn))){
+            const alt=document.querySelector('input[name=gateway][value='+(ppOn?'phonepe':'razorpay')+']') as HTMLInputElement; if(alt) alt.checked=true;
+          }
+        } else { show(pm, !intl); }
+      }
+      // load gateway config once
+      fetch('/api/site-mode').then(r=>r.json()).then(d=>{ (window as any).__gateways=d.gateways; togglePhonePe(); }).catch(()=>{});
       togglePhonePe();
       document.querySelector('[name=country]')?.addEventListener('change', async()=>{ await quoteShipping(); totals=recalc(); });
 

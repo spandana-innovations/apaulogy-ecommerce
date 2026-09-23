@@ -74,3 +74,23 @@ export async function sha256hex(input: string): Promise<string> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+/** Which gateways are available per zone, from admin settings (pg_domestic / pg_international). */
+export async function gatewaySettings(env: any) {
+  const mode = await paymentMode(env);
+  const rzpId = mode === 'test'
+    ? (await getSetting(env, 'razorpay_test_key_id'))
+    : (env.RAZORPAY_KEY_ID || (await getSetting(env, 'razorpay_key_id')));
+  const ppId = mode === 'test'
+    ? (await getSetting(env, 'phonepe_test_client_id'))
+    : (env.PHONEPE_CLIENT_ID || (await getSetting(env, 'phonepe_client_id')));
+  const dom = (await getSetting(env, 'pg_domestic')) || 'both';       // razorpay | phonepe | both
+  const intl = (await getSetting(env, 'pg_international')) || 'razorpay';
+  const allow = (pref: string, gw: string) => pref === 'both' || pref === gw;
+  return {
+    mode,
+    razorpay: { enabled: !!rzpId, domestic: !!rzpId && allow(dom, 'razorpay'), international: !!rzpId && allow(intl, 'razorpay') },
+    phonepe: { enabled: !!ppId, domestic: !!ppId && allow(dom, 'phonepe'), international: !!ppId && allow(intl, 'phonepe') },
+    pg_domestic: dom, pg_international: intl,
+  };
+}

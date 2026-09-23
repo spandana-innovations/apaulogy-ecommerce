@@ -31,6 +31,8 @@ const readsMo = await readsToday(env);
 const TURSO_READS = 500_000_000;
 const usagePct = Math.min(100, Math.round((readsMo / TURSO_READS) * 100));
 const payMode = await paymentMode(env);
+const pgDomestic = (await getSetting(env,'pg_domestic'))||'both';
+const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
 ---
 <AdminLayout title="Settings" active="settings" dbBound={stats.dbBound}>
   <div class="set-tabs" role="tablist">
@@ -52,6 +54,23 @@ const payMode = await paymentMode(env);
         <input type="hidden" id="pay-mode-val" value={payMode} />
         <span class="muted" id="paymode-msg" style="font-size:.78rem;margin-left:.8rem"></span>
       </div>
+      <div style="margin-top:1.4rem;display:grid;grid-template-columns:1fr 1fr;gap:1rem;max-width:520px">
+        <label class="fld">Domestic (India) gateway
+          <select id="pg-dom">
+            <option value="both" selected={pgDomestic==='both'}>Both (customer chooses)</option>
+            <option value="razorpay" selected={pgDomestic==='razorpay'}>Razorpay only</option>
+            <option value="phonepe" selected={pgDomestic==='phonepe'}>PhonePe only</option>
+          </select>
+        </label>
+        <label class="fld">International gateway
+          <select id="pg-intl">
+            <option value="razorpay" selected={pgIntl==='razorpay'}>Razorpay only</option>
+            <option value="both" selected={pgIntl==='both'}>Both</option>
+            <option value="phonepe" selected={pgIntl==='phonepe'}>PhonePe only</option>
+          </select>
+        </label>
+      </div>
+      <div style="margin-top:.8rem"><button class="btn" id="pg-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Save gateway routing</button> <span class="muted" id="pg-msg" style="font-size:.78rem"></span></div>
     </section>
 
     <!-- Razorpay -->
@@ -228,6 +247,7 @@ const payMode = await paymentMode(env);
     });
     async function saveSettings(body, msgId){ const m=document.getElementById(msgId); m.textContent='Saving…'; const r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); m.textContent=r.ok?'Saved ✓':'Failed — database connected?'; }
     document.getElementById('pp-save').addEventListener('click',()=>{ if(document.getElementById('pp-csecret').value && !ppOK){ const m=document.getElementById('pp-msg'); m.style.color='#c23b3b'; m.textContent='Please test PhonePe details before saving.'; return; } saveSettings({phonepe_client_id:document.getElementById('pp-cid').value.trim(),phonepe_client_secret:document.getElementById('pp-csecret').value,phonepe_client_version:document.getElementById('pp-cver').value.trim(),phonepe_test_client_id:document.getElementById('pp-test-cid').value.trim(),phonepe_test_client_secret:document.getElementById('pp-test-csecret').value,phonepe_test_client_version:document.getElementById('pp-test-cver').value.trim()},'pp-msg'); });
+    document.getElementById('pg-save')?.addEventListener('click',function(){ saveSettings({pg_domestic:document.getElementById('pg-dom').value, pg_international:document.getElementById('pg-intl').value},'pg-msg'); });
     (function(){
       var sw=document.getElementById('pay-switch');
       if(sw){ sw.addEventListener('click', function(){

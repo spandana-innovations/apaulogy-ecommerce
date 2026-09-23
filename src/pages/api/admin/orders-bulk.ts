@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { updateOrder, logOrderEvent } from '../../../lib/admin-data';
+import { updateOrder, logOrderEvent, trashOrders, restoreOrders, purgeOrders } from '../../../lib/admin-data';
 export const prerender = false;
 
 const ALLOWED = ['pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'];
@@ -16,11 +16,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const ok = await updateOrder(env, on, { status: b.status });
       if (ok) { done++; try { await logOrderEvent(env, on, 'status', String(b.status)); } catch {} } else failed++;
     }
-  } else if (b.action === 'archive') {
-    for (const on of orders) {
-      const ok = await updateOrder(env, on, { archived: 1 } as any);
-      if (ok) done++; else failed++;
-    }
+  } else if (b.action === 'trash') { done = await trashOrders(env, orders);
+  } else if (b.action === 'restore') { done = await restoreOrders(env, orders);
+  } else if (b.action === 'purge') { done = await purgeOrders(env, orders);
   } else {
     return json({ ok: false, error: 'Unknown action.' }, 400);
   }

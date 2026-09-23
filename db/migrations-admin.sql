@@ -147,3 +147,7 @@ CREATE INDEX IF NOT EXISTS idx_email_created ON email_log(created_at);
 -- PhonePe order reference (v2)
 ALTER TABLE orders ADD COLUMN phonepe_order_id TEXT;
 CREATE INDEX IF NOT EXISTS idx_orders_pp ON orders(phonepe_order_id);
+
+-- Order trash (soft delete)
+ALTER TABLE orders ADD COLUMN deleted_at TEXT;
+CREATE INDEX IF NOT EXISTS idx_orders_deleted ON orders(deleted_at);

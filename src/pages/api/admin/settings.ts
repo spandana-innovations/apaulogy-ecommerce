@@ -21,6 +21,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (b.resend_key) await setSetting(env, 'resend_key', b.resend_key);
     if (typeof b.from_email === 'string' && b.from_email) await setSetting(env, 'from_email', b.from_email);
     if (typeof b.site_mode === 'string' && ['production','construction','paused'].includes(b.site_mode)) await setSetting(env, 'site_mode', b.site_mode);
+    if (typeof b.pg_domestic === 'string' && ['razorpay','phonepe','both'].includes(b.pg_domestic)) await setSetting(env, 'pg_domestic', b.pg_domestic);
+    if (typeof b.pg_international === 'string' && ['razorpay','phonepe','both'].includes(b.pg_international)) await setSetting(env, 'pg_international', b.pg_international);
     if (typeof b.payment_mode === 'string' && ['test','live'].includes(b.payment_mode)) await setSetting(env, 'payment_mode', b.payment_mode);
     if (typeof b.razorpay_test_key_id === 'string' && b.razorpay_test_key_id) await setSetting(env, 'razorpay_test_key_id', b.razorpay_test_key_id);
     if (b.razorpay_test_key_secret) await setSetting(env, 'razorpay_test_key_secret', b.razorpay_test_key_secret);

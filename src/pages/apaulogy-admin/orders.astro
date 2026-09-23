@@ -10,9 +10,10 @@ const status = url.searchParams.get('status') || 'all';
 const year = url.searchParams.get('year') || 'all';
 const search = url.searchParams.get('q') || '';
 const archived = url.searchParams.get('tab') === 'archived';
+const trash = url.searchParams.get('tab') === 'trash';
 const page = parseInt(url.searchParams.get('page') || '1', 10);
 const per = Math.min(50, Math.max(10, parseInt(url.searchParams.get('per') || '10', 10)));
-const { rows, total, pages } = await listOrders(env, { status, year, search, page, per, archived });
+const { rows, total, pages } = await listOrders(env, { status, year, search, page, per, archived, trash });
 const years = await orderYears(env);
 const STATUSES = ['all','pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'];
 function qs(over: Record<string,string>) {
@@ -25,6 +26,7 @@ function qs(over: Record<string,string>) {
   <div class="ord-tabs">
     <a href="/apaulogy-admin/orders/" class={!archived ? 'ord-tab on' : 'ord-tab'}>Live <span class="muted">· last 3 months</span></a>
     <a href="/apaulogy-admin/orders/?tab=archived" class={archived ? 'ord-tab on' : 'ord-tab'}>Archived <span class="muted">· older</span></a>
+    <a href="/apaulogy-admin/orders/?tab=trash" class={trash ? 'ord-tab on' : 'ord-tab'}>Trash</a>
   </div>
 
   <form method="get" class="filters">
@@ -52,8 +54,10 @@ function qs(over: Record<string,string>) {
       <option value="shipped">Shipped</option><option value="completed">Completed</option>
       <option value="cancelled">Cancelled</option><option value="refunded">Refunded</option>
     </select>
-    <button class="btn" id="bulk-apply" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply</button>
-    <button class="btn" id="bulk-archive">Archive</button>
+    {!trash && <button class="btn" id="bulk-apply" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply</button>}
+    {!trash && <button class="btn" id="bulk-trash">Move to trash</button>}
+    {trash && <button class="btn" id="bulk-restore" style="background:var(--gold);color:#0a0f16;font-weight:600">Restore</button>}
+    {trash && <button class="btn" id="bulk-purge" style="border-color:var(--bad);color:var(--bad)">Delete permanently</button>}
     <button class="btn" id="bulk-clear">Clear</button>
     <span class="muted" id="bulk-msg" style="font-size:.78rem"></span>
   </div>
@@ -129,7 +133,9 @@ function qs(over: Record<string,string>) {
         else { msg.style.color='#c23b3b'; msg.textContent='✗ '+(d.error||'Failed'); }
       }
       document.getElementById('bulk-apply')?.addEventListener('click',function(){ var st=document.getElementById('bulk-status').value; if(!st){ msg.textContent='Choose a status first.'; return; } bulk({action:'status',status:st}); });
-      document.getElementById('bulk-archive')?.addEventListener('click',function(){ if(confirm('Archive '+selected().length+' order(s)?')) bulk({action:'archive'}); });
+      document.getElementById('bulk-trash')?.addEventListener('click',function(){ if(confirm('Move '+selected().length+' order(s) to trash?')) bulk({action:'trash'}); });
+      document.getElementById('bulk-restore')?.addEventListener('click',function(){ bulk({action:'restore'}); });
+      document.getElementById('bulk-purge')?.addEventListener('click',function(){ if(confirm('Permanently delete '+selected().length+' order(s)? This cannot be undone.')) bulk({action:'purge'}); });
       refresh();
     }
     if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);

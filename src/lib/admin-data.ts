@@ -56,15 +56,16 @@ export async function recentOrders(env: Env, limit = 8) {
   return (await q(env,
     `SELECT order_number, email, status, total, created_at FROM orders ORDER BY created_at DESC LIMIT ?`, limit)).rows;
 }
-export async function listOrders(env: Env, opts: { status?: string; search?: string; year?: string; page?: number; per?: number; archived?: boolean } = {}) {
+export async function listOrders(env: Env, opts: { status?: string; search?: string; year?: string; page?: number; per?: number; archived?: boolean; trash?: boolean } = {}) {
   const per = Math.min(100, opts.per || 10);
   const page = Math.max(1, opts.page || 1);
   const where: string[] = [];
   const bind: any[] = [];
   // Only the last 3 months are "live". Older orders live in the Archive, and are
   // only queried when the Archived tab is opened — this keeps everyday reads small.
+  where.push(opts.trash ? 'deleted_at IS NOT NULL' : 'deleted_at IS NULL');
   const searching = !!opts.search || (opts.year && opts.year !== 'all');
-  if (!searching) {
+  if (!opts.trash && !searching) {
     if (opts.archived) where.push("created_at < date('now','-3 months')");
     else where.push("created_at >= date('now','-3 months')");
   }
@@ -379,4 +380,22 @@ export async function getSiteMode(env: Env): Promise<string> {
   const mode = (await getSetting(env, 'site_mode')) || 'production';
   _modeCache = { at: Date.now(), mode };
   return mode;
+}
+
+
+/** Order trash: soft-delete, restore, and permanent purge. */
+export async function trashOrders(env: Env, orderNumbers: string[]) {
+  if (!env?.DB || !orderNumbers.length) return 0; let n = 0;
+  for (const on of orderNumbers) { try { await env.DB.prepare(`UPDATE orders SET deleted_at = datetime('now') WHERE order_number=?`).bind(on).run(); n++; } catch {} }
+  return n;
+}
+export async function restoreOrders(env: Env, orderNumbers: string[]) {
+  if (!env?.DB || !orderNumbers.length) return 0; let n = 0;
+  for (const on of orderNumbers) { try { await env.DB.prepare(`UPDATE orders SET deleted_at = NULL WHERE order_number=?`).bind(on).run(); n++; } catch {} }
+  return n;
+}
+export async function purgeOrders(env: Env, orderNumbers: string[]) {
+  if (!env?.DB || !orderNumbers.length) return 0; let n = 0;
+  for (const on of orderNumbers) { try { await env.DB.prepare(`DELETE FROM order_items WHERE order_number=?`).bind(on).run(); await env.DB.prepare(`DELETE FROM orders WHERE order_number=? AND deleted_at IS NOT NULL`).bind(on).run(); n++; } catch {} }
+  return n;
 }
