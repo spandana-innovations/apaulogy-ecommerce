@@ -47,7 +47,25 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
         <p style="margin:.2rem 0"><strong>{bill.name||o.email}</strong></p>
         <p class="muted" style="margin:.2rem 0">{o.email}</p>
         <p class="muted" style="margin:.2rem 0">{o.phone||''}</p>
-        {bill.city && <p class="muted" style="margin:.2rem 0">{bill.city}</p>}
+      </div>
+      <div class="card" style="padding:1.2rem">
+        <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Shipping address</h4>
+        {(() => {
+          const street = [bill.line1 || bill.address, bill.line2].filter(Boolean).join(', ');
+          const cityLine = [bill.city, bill.state].filter(Boolean).join(', ');
+          const pin = bill.postcode || bill.pin || bill.zip || '';
+          const has = street || cityLine || pin || bill.country;
+          return has ? (
+            <address style="font-style:normal;line-height:1.7;color:var(--ink)">
+              {bill.name && <div><strong>{bill.name}</strong></div>}
+              {street && <div>{street}</div>}
+              {cityLine && <div>{cityLine}{pin ? ` — ${pin}` : ''}</div>}
+              {!cityLine && pin && <div>{pin}</div>}
+              {bill.country && <div>{bill.country}</div>}
+              {o.phone && <div class="muted" style="margin-top:.4rem">☎ {o.phone}</div>}
+            </address>
+          ) : (<p class="muted" style="margin:0">No address on record for this order.</p>);
+        })()}
       </div>
       <div class="card" style="padding:1.2rem">
         <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Fulfilment</h4>
