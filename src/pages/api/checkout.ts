@@ -74,12 +74,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const coupon = body.coupon ? await getCoupon(env, body.coupon) : null;
   const { discount, freeShipping } = computeDiscount(discountLines, subtotal, discs, coupon);
 
+  const isBangalore = /^560\d{3}$/.test(String(customer.postcode||'').trim());
+  const deliveryMethod = (body.delivery_method === 'porter' && isBangalore) ? 'porter' : 'standard';
   const zone = (customer.country && !/india/i.test(customer.country)) ? 'international' : 'domestic';
   const weight = cartWeight(rawItems.map((it) => ({ slug: it.slug, qty: it.qty })));
   const rates = await getRates(env, zone);
   const freeSlugs = await freeShippingSlugs(env);
   const hasFreeItem = rawItems.some((it) => freeSlugs.has(it.slug));
-  const shipping = (freeShipping || hasFreeItem) ? 0 : shippingFor(weight, rates);
+  const shipping = deliveryMethod === 'porter' ? 0 : ((freeShipping || hasFreeItem) ? 0 : shippingFor(weight, rates));
   const total = Math.max(0, subtotal - discount) + shipping;
 
   const address = {
@@ -120,6 +122,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           items: lines,
           subtotal,
           shipping,
+          delivery_method: deliveryMethod,
           total,
           billing: address,
           shipping_address: address,

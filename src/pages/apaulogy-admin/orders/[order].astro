@@ -42,6 +42,7 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
       </div>
       <div class="card" style="padding:1.2rem">
         <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Fulfilment</h4>
+        {(o.notes||'').includes('delivery:porter') && <div style="margin-bottom:.8rem;padding:.5rem .7rem;background:var(--gold-soft);border:1px solid var(--gold);border-radius:8px;font-family:var(--font-sans);font-size:.8rem;font-weight:600">🛵 Porter — pay on delivery (local Bangalore)</div>}
         <label class="fld">Status
           <select id="o-status">
             {['pending','processing','on-hold','completed','shipped','cancelled','refunded','failed'].map((s)=>(<option value={s} selected={s===o.status}>{statusLabel(s)}</option>))}

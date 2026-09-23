@@ -49,6 +49,11 @@ import Icon from '../components/Icon.astro';
 
         <fieldset class="border border-[var(--color-line-strong)] p-6">
           <legend class="text-2xl px-2 flex items-center gap-2"><Icon name="shield" size={18} /> Payment</legend>
+          <div id="delivery-methods" class="mt-3 space-y-2.5" style="font-family:var(--font-sans);display:none">
+            <p class="field-label" style="margin-bottom:.3rem">Delivery (Bangalore)</p>
+            <label class="pay-method" id="dm-standard"><input type="radio" name="delivery" value="standard" checked /> <span><strong>Standard courier</strong> — shipping charged now</span></label>
+            <label class="pay-method" id="dm-porter"><input type="radio" name="delivery" value="porter" /> <span><strong>Porter local delivery</strong> — pay the rider on delivery</span></label>
+          </div>
           <div class="mt-3 space-y-2.5" id="pay-methods" style="font-family:var(--font-sans)">
             <label class="pay-method" id="pm-razorpay"><input type="radio" name="gateway" value="razorpay" checked /> <span><strong>Card / UPI / Net-banking</strong> — via Razorpay</span></label>
             <label class="pay-method" id="pm-phonepe"><input type="radio" name="gateway" value="phonepe" /> <span><strong>PhonePe</strong> — UPI &amp; wallets</span></label>
@@ -138,7 +143,15 @@ import Icon from '../components/Icon.astro';
       empty.classList.add('hidden'); form.classList.remove('hidden'); form.classList.add('grid');
 
       let shipping=0;
+      function porterActive(){ var d=document.querySelector('input[name=delivery]:checked') as HTMLInputElement; return d && d.value==='porter'; }
+      function toggleDelivery(){
+        var pinv=(form.querySelector('[name=postcode]') as HTMLInputElement).value.trim();
+        var isBlr=/^560\d{3}$/.test(pinv);
+        var block=document.getElementById('delivery-methods'); if(block) block.style.display=isBlr?'block':'none';
+        if(!isBlr){ var st=document.querySelector('input[name=delivery][value=standard]') as HTMLInputElement; if(st) st.checked=true; }
+      }
       async function quoteShipping(){
+        if(porterActive()){ shipping=0; return; }
         try{
           const country=(document.querySelector('[name=country]')||{}).value||'India';
           const zone=/india/i.test(country)?'domestic':'international';
@@ -154,10 +167,13 @@ import Icon from '../components/Icon.astro';
         document.getElementById('co-subtotal')!.textContent=inr(subtotal);
         const dRow=document.getElementById('co-discount-row')!;
         if(discount>0){ dRow.hidden=false; document.getElementById('co-discount')!.textContent='– '+inr(discount); } else dRow.hidden=true;
-        document.getElementById('co-shipping')!.textContent=shipping===0?'Free':inr(shipping);
+        document.getElementById('co-shipping')!.textContent=porterActive()?'Pay Porter on delivery':(shipping===0?'Free':inr(shipping));
         document.getElementById('co-total')!.textContent=inr(total);
         return { subtotal, shipping, total };
       }
+      toggleDelivery();
+      form.querySelector('[name=postcode]')?.addEventListener('input', async()=>{ toggleDelivery(); await quoteShipping(); totals=recalc(); });
+      document.querySelectorAll('input[name=delivery]').forEach(function(r){ r.addEventListener('change', async()=>{ await quoteShipping(); totals=recalc(); }); });
       await quoteShipping(); let totals=recalc();
       document.getElementById('co-gst')?.addEventListener('change',(e)=>{ document.getElementById('co-gst-fields')!.hidden = !(e.target as HTMLInputElement).checked; });
 
@@ -235,12 +251,12 @@ import Icon from '../components/Icon.astro';
         totals=recalc();
         const gstWanted=(document.getElementById('co-gst') as HTMLInputElement)?.checked;
         const gst = gstWanted ? { gstin:(document.getElementById('co-gstin') as HTMLInputElement).value.trim().toUpperCase(), business:(document.getElementById('co-gst-name') as HTMLInputElement).value.trim() } : null;
-        const order={ items:items.map((it:any)=>({slug:it.slug,name:it.name,qty:it.qty,variant:it.variant,price:it.price})), customer, coupon, gst, created:new Date().toISOString() };
+        const order={ items:items.map((it:any)=>({slug:it.slug,name:it.name,qty:it.qty,variant:it.variant,price:it.price})), customer, coupon, gst, delivery_method:porterActive()?'porter':'standard', created:new Date().toISOString() };
         const gateway=(document.querySelector('input[name=gateway]:checked') as HTMLInputElement)?.value || 'razorpay';
         try{
           if(gateway==='phonepe'){
             try{ localStorage.setItem('apaulogy_last_order', JSON.stringify({...order,subtotal:totals.subtotal,shipping:totals.shipping,total:totals.total})); }catch{}
-            const r=await fetch('/api/phonepe-initiate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:totals.total,subtotal:totals.subtotal,shipping:totals.shipping,email:(customer as any).email,phone:(customer as any).phone,billing:customer,items:items.map((it:any)=>({slug:it.slug,name:it.name,variant:it.variant,quantity:it.qty,price:it.price}))})});
+            const r=await fetch('/api/phonepe-initiate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:totals.total,subtotal:totals.subtotal,shipping:totals.shipping,email:(customer as any).email,phone:(customer as any).phone,billing:customer,delivery_method:porterActive()?'porter':'standard',items:items.map((it:any)=>({slug:it.slug,name:it.name,variant:it.variant,quantity:it.qty,price:it.price}))})});
             const d=await r.json();
             if(d.ok && d.redirect){ Cart.clear(); window.location.href=d.redirect; return; }
             throw new Error(d.error||'Could not start PhonePe payment.');

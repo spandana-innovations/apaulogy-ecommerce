@@ -33,6 +33,7 @@ export interface CreateOrderInput {
   shipping_address?: Address;
   razorpay_order_id?: string | null;
   phonepe_order_id?: string | null;
+  delivery_method?: string;
   payment_method?: string; // 'razorpay' | 'phonepe' | 'bank'
 }
 
@@ -65,7 +66,7 @@ export async function createPendingOrder(
       input.shipping_address ? JSON.stringify(input.shipping_address) : null,
       input.razorpay_order_id ?? null,
       input.phonepe_order_id ?? null,
-      input.payment_method ? `payment_method:${input.payment_method}` : null,
+      [input.payment_method ? `payment_method:${input.payment_method}` : '', input.delivery_method ? `delivery:${input.delivery_method}` : ''].filter(Boolean).join(' ') || null,
     )
     .run();
 
