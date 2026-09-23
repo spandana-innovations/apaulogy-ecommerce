@@ -25,6 +25,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
     if (b.msg91_authkey) await setSetting(env, 'msg91_authkey', b.msg91_authkey);
     if (typeof b.admin_notify_email === 'string') await setSetting(env, 'admin_notify_email', b.admin_notify_email);
+    for (const k of ['notify_evt_order_confirmation','notify_evt_shipping_update']) { if (typeof b[k]==='string') await setSetting(env, k, b[k]); }
     if (typeof b.admin_notify_enabled === 'string') await setSetting(env, 'admin_notify_enabled', b.admin_notify_enabled);
     if (typeof b.site_mode === 'string' && ['production','construction','paused'].includes(b.site_mode)) await setSetting(env, 'site_mode', b.site_mode);
     if (typeof b.pg_domestic === 'string' && ['razorpay','phonepe','both'].includes(b.pg_domestic)) await setSetting(env, 'pg_domestic', b.pg_domestic);

@@ -3,6 +3,7 @@ export const prerender = false;
 import AdminLayout from '../../../layouts/AdminLayout.astro';
 import { getStats, getOrder, orderEvents } from '../../../lib/admin-data';
 import { formatINR, statusLabel } from '../../../lib/format';
+import Icon from '../../../components/Icon.astro';
 const { order } = Astro.params;
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
@@ -43,13 +44,13 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
 
     <div style="display:grid;gap:1.2rem;align-content:start">
       <div class="card" style="padding:1.2rem">
-        <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Customer</h4>
-        <p style="margin:.2rem 0"><strong>{bill.name||o.email}</strong></p>
-        <p class="muted" style="margin:.2rem 0">{o.email}</p>
-        <p class="muted" style="margin:.2rem 0">{o.phone||''}</p>
+        <h4 class="oh"><Icon name="user" size={16} /> Customer</h4>
+        <p style="margin:.2rem 0;font-size:1.02rem"><strong>{bill.name||o.email}</strong></p>
+        <p class="crow"><Icon name="mail" size={14} /> <a href={`mailto:${o.email}`} style="color:inherit">{o.email}</a></p>
+        {o.phone && <p class="crow"><Icon name="phone" size={14} /> <a href={`tel:${o.phone}`} style="color:inherit">{o.phone}</a></p>
       </div>
       <div class="card" style="padding:1.2rem">
-        <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Shipping address</h4>
+        <h4 class="oh"><Icon name="pin" size={16} /> Shipping address</h4>
         {(() => {
           const street = [bill.line1 || bill.address, bill.line2].filter(Boolean).join(', ');
           const cityLine = [bill.city, bill.state].filter(Boolean).join(', ');
@@ -68,7 +69,7 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
         })()}
       </div>
       <div class="card" style="padding:1.2rem">
-        <h4 style="font-family:var(--font-display);font-size:1.1rem;margin:0 0 .7rem">Fulfilment</h4>
+        <h4 class="oh"><Icon name="truck" size={16} /> Fulfilment</h4>
         {(o.notes||'').includes('delivery:porter') && <div style="margin-bottom:.8rem;padding:.5rem .7rem;background:var(--gold-soft);border:1px solid var(--gold);border-radius:8px;font-family:var(--font-sans);font-size:.8rem;font-weight:600">🛵 Porter — pay on delivery (local Bangalore)</div>}
         <label class="fld">Status
           <select id="o-status">
@@ -131,4 +132,10 @@ const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { ret
       msg.textContent=r.ok?'Updated ✓':'Failed — database connected?';
     });
   </script>
+<style>
+    .oh{ display:flex; align-items:center; gap:.5rem; font-family:var(--font-display); font-size:1.1rem; margin:0 0 .8rem; }
+    .oh :global(svg){ color:var(--gold); }
+    .crow{ display:flex; align-items:center; gap:.5rem; margin:.35rem 0; color:var(--muted); font-size:.9rem; }
+    .crow :global(svg){ color:var(--muted); opacity:.7; flex:none; }
+  </style>
 </AdminLayout>

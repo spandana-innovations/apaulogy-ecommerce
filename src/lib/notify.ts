@@ -11,10 +11,15 @@ type Env = Record<string, any>;
 export const CHANNELS = ['email', 'sms', 'whatsapp'] as const;
 export const EVENTS = ['order_confirmation', 'shipping_update'] as const;
 
+export async function eventEnabled(env: Env, event: string) {
+  const v = await getSetting(env, `notify_evt_${event}`);
+  return v !== '0'; // default on
+}
+
 export async function notifyConfig(env: Env) {
   const g = (k: string) => getSetting(env, k);
   return {
-    email: { enabled: (await g('notify_email_enabled')) !== '0', key: env.RESEND_KEY || (await g('resend_key')) || '', admin: (await g('admin_notify_email')) || '', adminOn: (await g('admin_notify_enabled')) !== '0' },
+    email: { enabled: (await g('notify_email_enabled')) !== '0', key: env.RESEND_KEY || (await g('resend_key')) || '', admin: (await g('admin_notify_email')) || 'apaulogygallery@gmail.com', adminOn: (await g('admin_notify_enabled')) !== '0' },
     sms: {
       enabled: (await g('notify_sms_enabled')) === '1',
       authkey: env.MSG91_AUTHKEY || (await g('msg91_authkey')) || '',
@@ -94,6 +99,7 @@ function adminOrderAlert(site: string, o: any) {
 
 /* ---- Dispatcher: send an event across all enabled channels. ---- */
 export async function notify(env: Env, event: 'order_confirmation' | 'shipping_update', o: any) {
+  if (!(await eventEnabled(env, event))) return { skipped: true };
   const cfg = await notifyConfig(env);
   const site = (await emailConfig(env)).site;
   const results: Record<string, any> = {};

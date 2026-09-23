@@ -6,49 +6,95 @@ import { TEMPLATES, renderTemplate, listEmails } from '../../lib/email';
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const base = await getStats(env);
 const site = env.SITE_URL || 'https://apaulogy.com';
-const hasKey = !!(env.RESEND_KEY || (await getSetting(env, 'resend_key')));
-const fromEmail = (await getSetting(env, 'from_email')) || '(not set)';
-const sample = {
-  order_number: 'APG-5221', name: 'Carissa Dsouza',
-  items: [{ name: 'Coastline', quantity: 1, price: 280000 }, { name: 'Amchi Mumbai', quantity: 2, price: 35000 }],
-  subtotal: 350000, shipping: 19500, total: 369500,
-  tracking_number: 'EX123456789IN', tracking_carrier: 'DTDC',
-};
-// pre-render each template's HTML for preview
-const sentEmails = await listEmails(env, 100);
-const previews = TEMPLATES.map((t) => ({ ...t, html: renderTemplate(t.id, site, sample).html, subject: renderTemplate(t.id, site, sample).subject }));
+const g = (k:string)=>getSetting(env,k);
+const hasKey = !!(env.RESEND_KEY || (await g('resend_key')));
+const fromEmail = (await g('from_email')) || '';
+const adminEmail = (await g('admin_notify_email')) || 'apaulogygallery@gmail.com';
+// automatic-notification toggles (default ON)
+const evtOrder = (await g('notify_evt_order_confirmation')) !== '0';
+const evtShip = (await g('notify_evt_shipping_update')) !== '0';
+const adminOn = (await g('admin_notify_enabled')) !== '0';
+// channels
+const smsOn = (await g('notify_sms_enabled')) === '1';
+const waOn = (await g('notify_wa_enabled')) === '1';
+const msg91HasKey = !!(await g('msg91_authkey'));
+const msg91Sender = (await g('msg91_sender_id'))||'';
+const msg91TplOrder = (await g('msg91_tpl_order'))||'';
+const msg91TplShip = (await g('msg91_tpl_shipping'))||'';
+const waNumber = (await g('wa_integrated_number'))||'';
+const waTplOrder = (await g('wa_tpl_order'))||'';
+const waTplShip = (await g('wa_tpl_shipping'))||'';
+const sentEmails = await listEmails(env, 200);
+const sample = { order_number:'APG-5221', name:'Carissa Dsouza',
+  items:[{name:'Coastline',quantity:1,price:280000},{name:'Amchi Mumbai',quantity:2,price:35000}],
+  subtotal:350000, shipping:19500, total:369500, tracking_number:'EX123456789IN', tracking_carrier:'DTDC' };
+const previews = TEMPLATES.map((t)=>({ ...t, html:renderTemplate(t.id,site,sample).html, subject:renderTemplate(t.id,site,sample).subject }));
 ---
 <AdminLayout title="Notifications" active="emails" dbBound={base.dbBound}>
   <div class="em-tabs">
-    <button class="em-tab on" data-etab="templates" type="button">Templates</button>
+    <button class="em-tab on" data-etab="settings" type="button">Settings</button>
+    <button class="em-tab" data-etab="templates" type="button">Templates</button>
     <button class="em-tab" data-etab="sent" type="button">Sent archive ({sentEmails.length})</button>
   </div>
-  {!hasKey && (
-    <div class="banner">Email sending isn't active yet — add your <strong>Resend API key</strong> in <a href="/apaulogy-admin/settings/" style="color:inherit;text-decoration:underline">Settings → Email</a>. Templates below still preview.</div>
-  )}
-  <div class="em-panel" data-epanel="templates" style="display:grid;grid-template-columns:280px 1fr;gap:1.6rem;align-items:start">
+
+  <!-- SETTINGS TAB -->
+  <div class="em-panel" data-epanel="settings">
+    <div class="ncard">
+      <h3>Automatic notifications</h3>
+      <p class="muted">Fired automatically when the event happens. Turn any off here.</p>
+      <label class="ntoggle"><input type="checkbox" id="evt-order" checked={evtOrder}/> <span><strong>Order confirmation → customer</strong><br/><span class="muted">Sent when payment succeeds (Razorpay & PhonePe).</span></span></label>
+      <label class="ntoggle"><input type="checkbox" id="admin-on" checked={adminOn}/> <span><strong>New-order alert → admin</strong><br/><span class="muted">A copy of every new order to your team inbox.</span></span></label>
+      <label class="ntoggle"><input type="checkbox" id="evt-ship" checked={evtShip}/> <span><strong>Shipping update → customer</strong><br/><span class="muted">Sent when you add a tracking number.</span></span></label>
+      <label class="fld" style="margin-top:.8rem">Admin notification email<input id="admin-email" value={adminEmail} placeholder="apaulogygallery@gmail.com"/></label>
+      <label class="fld">Send-from address<input id="from-email" value={fromEmail} placeholder="aPaulogy <orders@apaulogy.com>"/></label>
+      <button class="btn primary" id="auto-save">Save automatic notifications</button> <span class="muted nmsg" id="auto-msg"></span>
+    </div>
+
+    <div class="ncard">
+      <h3>📧 Email — Resend {hasKey ? <span class="chip ok">Connected</span> : <span class="chip">Not set</span>}</h3>
+      <p class="muted">The email channel. {!hasKey && <span>Add your Resend API key in <a href="/apaulogy-admin/settings/" style="text-decoration:underline">Settings → Keys</a>.</span>}</p>
+    </div>
+
+    <div class="ncard">
+      <h3>💬 SMS — MSG91 {msg91HasKey ? <span class="chip ok">Key present</span> : <span class="chip">Not set</span>}</h3>
+      <p class="muted">India requires DLT-registered templates. Paste the IDs from your MSG91 dashboard.</p>
+      <label class="ntoggle"><input type="checkbox" id="sms-on" checked={smsOn}/> <span><strong>Send SMS notifications</strong></span></label>
+      <label class="fld">MSG91 Auth Key<input id="sms-key" type="password" autocomplete="off" placeholder={msg91HasKey?'•••••••• (saved)':'Auth key'}/></label>
+      <div class="two"><label class="fld">Sender ID (DLT header)<input id="sms-sender" value={msg91Sender} placeholder="APAULG"/></label>
+        <label class="fld">Order template ID<input id="sms-tpl-order" value={msg91TplOrder}/></label></div>
+      <label class="fld">Shipping template ID<input id="sms-tpl-ship" value={msg91TplShip}/></label>
+      <button class="btn" id="sms-save">Save SMS</button> <span class="muted nmsg" id="sms-msg"></span>
+    </div>
+
+    <div class="ncard">
+      <h3>🟢 WhatsApp {waNumber ? <span class="chip ok">Number set</span> : <span class="chip">Not set</span>}</h3>
+      <p class="muted">Needs an approved WhatsApp Business number + Meta-approved templates (uses the MSG91 key above).</p>
+      <label class="ntoggle"><input type="checkbox" id="wa-on" checked={waOn}/> <span><strong>Send WhatsApp notifications</strong></span></label>
+      <label class="fld">Integrated WhatsApp number<input id="wa-number" value={waNumber} placeholder="918012345678"/></label>
+      <div class="two"><label class="fld">Order template name<input id="wa-tpl-order" value={waTplOrder}/></label>
+        <label class="fld">Shipping template name<input id="wa-tpl-ship" value={waTplShip}/></label></div>
+      <button class="btn" id="wa-save">Save WhatsApp</button> <span class="muted nmsg" id="wa-msg"></span>
+    </div>
+  </div>
+
+  <!-- TEMPLATES TAB -->
+  <div class="em-panel" data-epanel="templates" hidden style="display:grid;grid-template-columns:280px 1fr;gap:1.6rem;align-items:start">
     <div class="card" style="padding:1rem">
       <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.6rem">Templates</div>
-      {previews.map((t, i) => (
-        <button class="tmpl-btn" data-tmpl={t.id} data-i={i}>
-          <strong>{t.name}</strong>
-          <span class="muted" style="font-size:.76rem;display:block">{t.desc}</span>
-        </button>
-      ))}
+      {previews.map((t,i)=>(<button class="tmpl-btn" data-tmpl={t.id} data-i={i}><strong>{t.name}</strong><span class="muted" style="font-size:.76rem;display:block">{t.desc}</span></button>))}
       <hr style="border:0;border-top:1px solid var(--line);margin:1rem 0" />
       <div class="muted" style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem">Send a test</div>
       <input id="test-to" placeholder="you@example.com" style="width:100%;margin-bottom:.5rem" />
-      <button class="btn" id="send-test" style="background:var(--gold);color:#0a0f16;font-weight:600;width:100%">Send test email</button>
+      <button class="btn primary" id="send-test" style="width:100%">Send test email</button>
       <p class="muted" id="test-msg" style="font-size:.75rem;margin-top:.5rem"></p>
-      <p class="muted" style="font-size:.72rem;margin-top:.8rem">From: {fromEmail}</p>
     </div>
     <div class="card" style="padding:0;overflow:hidden">
-      <div style="padding:.7rem 1rem;border-bottom:1px solid var(--line);font-family:var(--font-sans);font-size:.82rem">
-        <span class="muted">Subject:</span> <span id="pv-subject"></span>
-      </div>
+      <div style="padding:.7rem 1rem;border-bottom:1px solid var(--line);font-family:var(--font-sans);font-size:.82rem"><span class="muted">Subject:</span> <span id="pv-subject"></span></div>
       <iframe id="pv-frame" style="width:100%;height:640px;border:0;background:#fff"></iframe>
     </div>
   </div>
+
+  <!-- SENT ARCHIVE TAB -->
   <div class="em-panel" data-epanel="sent" hidden>
     <div style="display:flex;gap:.6rem;margin-bottom:1rem;align-items:center">
       <input id="em-search" placeholder="Search recipient, subject, template…" style="flex:1;max-width:420px" />
@@ -58,61 +104,77 @@ const previews = TEMPLATES.map((t) => ({ ...t, html: renderTemplate(t.id, site, 
       <table id="em-table"><thead><tr>
         <th class="em-sort" data-k="0">Sent ▲▼</th><th class="em-sort" data-k="1">To</th>
         <th class="em-sort" data-k="2">Subject</th><th class="em-sort" data-k="3">Template</th><th class="em-sort" data-k="4">Status</th>
-      </tr></thead>
-        <tbody>
-          {sentEmails.map((e:any)=>(<tr>
-            <td class="muted" style="font-size:.78rem;white-space:nowrap">{(e.created_at||'').replace('T',' ').slice(0,16)}</td>
-            <td>{e.to_addr}</td><td>{e.subject}</td>
-            <td class="muted" style="font-size:.78rem">{e.template||'—'}</td>
-            <td><span class={`pill s-${e.status==='sent'?'paid':'failed'}`}>{e.status}</span></td>
-          </tr>))}
-          {!sentEmails.length && <tr><td colspan="5" class="empty">No emails sent yet.</td></tr>}
-        </tbody></table>
+      </tr></thead><tbody>
+        {sentEmails.map((e:any)=>(<tr>
+          <td class="muted" style="font-size:.78rem;white-space:nowrap">{(e.created_at||'').replace('T',' ').slice(0,16)}</td>
+          <td>{e.to_addr}</td><td>{e.subject}</td>
+          <td class="muted" style="font-size:.78rem">{e.template||'—'}</td>
+          <td><span class={`pill s-${e.status==='sent'?'paid':'failed'}`}>{e.status}</span></td>
+        </tr>))}
+        {!sentEmails.length && <tr><td colspan="5" class="empty" style="text-align:center;padding:2rem;color:var(--muted)">No emails sent yet. They'll appear here once notifications go out.</td></tr>}
+      </tbody></table>
     </div>
   </div>
-  {previews.map((t, i) => (<script type="application/json" class="tmpl-data" data-i={i} set:html={JSON.stringify({ html: t.html, subject: t.subject })}></script>))}
+
+  {previews.map((t,i)=>(<script type="application/json" class="tmpl-data" data-i={i} set:html={JSON.stringify({html:t.html,subject:t.subject})}></script>))}
+
   <style is:global>
     .em-tabs{ display:flex; gap:.4rem; border-bottom:1px solid var(--line); margin-bottom:1.4rem; }
     .em-tab{ padding:.6rem 1rem; background:none; border:0; border-bottom:2px solid transparent; margin-bottom:-1px; cursor:pointer; font-family:var(--font-sans); font-size:.86rem; font-weight:500; color:var(--muted); }
     .em-tab.on{ color:var(--ink); border-bottom-color:var(--gold); }
+    .em-panel[hidden]{ display:none !important; }
+    .ncard{ background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.4rem; margin-bottom:1.2rem; max-width:720px; }
+    .ncard h3{ font-family:var(--font-display); font-size:1.25rem; margin:0 0 .3rem; }
+    .ncard .muted{ font-family:var(--font-sans); font-size:.82rem; }
+    .ntoggle{ display:flex; gap:.6rem; align-items:flex-start; padding:.6rem 0; border-top:1px solid var(--line); font-family:var(--font-sans); font-size:.88rem; }
+    .ncard .ntoggle:first-of-type{ border-top:0; }
+    .ntoggle input{ margin-top:.2rem; }
+    .ncard .fld{ display:block; margin:.7rem 0; font-family:var(--font-sans); font-size:.84rem; }
+    .ncard .fld input{ width:100%; margin-top:.25rem; }
+    .ncard .two{ display:grid; grid-template-columns:1fr 1fr; gap:.8rem; }
+    .btn.primary{ background:var(--gold); color:#0a0f16; font-weight:600; }
+    .chip{ font-family:var(--font-sans); font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; padding:.2rem .5rem; border-radius:20px; background:var(--panel-2); color:var(--muted); border:1px solid var(--line-strong); vertical-align:middle; margin-left:.4rem; }
+    .chip.ok{ background:rgba(57,217,138,.14); color:#39d98a; border-color:rgba(57,217,138,.5); }
+    .nmsg{ font-size:.78rem; margin-left:.6rem; }
     .tmpl-btn{ display:block; width:100%; text-align:left; padding:.7rem .8rem; margin-bottom:.4rem; border:1px solid var(--line); border-radius:8px; background:var(--panel-2); color:var(--ink); cursor:pointer; }
     .tmpl-btn.on{ border-color:var(--gold); box-shadow:0 0 0 2px var(--gold-soft); }
   </style>
   <script is:inline>
     (function(){
       function init(){
+        // tabs
         document.querySelectorAll('.em-tab').forEach(function(b){ b.addEventListener('click',function(){
           document.querySelectorAll('.em-tab').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
-          document.querySelectorAll('.em-panel').forEach(function(p){ p.hidden = (p.dataset.epanel!==b.dataset.etab); });
+          document.querySelectorAll('.em-panel').forEach(function(p){ p.hidden=(p.dataset.epanel!==b.dataset.etab); });
         }); });
+        // helper save
+        async function save(payload, msgId){ var m=document.getElementById(msgId); m.style.color='var(--muted)'; m.textContent='Saving…';
+          try{ var r=await fetch('/api/admin/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); var d=await r.json();
+            if(d.ok!==false){ m.style.color='#2e8b57'; m.textContent='✓ Saved'; } else { m.style.color='#c23b3b'; m.textContent='✗ '+(d.error||'Failed'); } }catch(e){ m.style.color='#c23b3b'; m.textContent='Failed'; } }
+        var v=function(id){ var e=document.getElementById(id); return e?e.value.trim():''; };
+        var ck=function(id){ var e=document.getElementById(id); return e&&e.checked; };
+        document.getElementById('auto-save')?.addEventListener('click',function(){ save({ notify_evt_order_confirmation:ck('evt-order')?'1':'0', notify_evt_shipping_update:ck('evt-ship')?'1':'0', admin_notify_enabled:ck('admin-on')?'1':'0', admin_notify_email:v('admin-email'), from_email:v('from-email') },'auto-msg'); });
+        document.getElementById('sms-save')?.addEventListener('click',function(){ var p={ notify_sms_enabled:ck('sms-on')?'1':'0', msg91_sender_id:v('sms-sender'), msg91_tpl_order:v('sms-tpl-order'), msg91_tpl_shipping:v('sms-tpl-ship') }; if(v('sms-key')) p.msg91_authkey=v('sms-key'); save(p,'sms-msg'); });
+        document.getElementById('wa-save')?.addEventListener('click',function(){ save({ notify_wa_enabled:ck('wa-on')?'1':'0', wa_integrated_number:v('wa-number'), wa_tpl_order:v('wa-tpl-order'), wa_tpl_shipping:v('wa-tpl-ship') },'wa-msg'); });
+        // templates preview
         var data=[]; document.querySelectorAll('.tmpl-data').forEach(function(el){ data[Number(el.dataset.i)]=JSON.parse(el.textContent); });
         var frame=document.getElementById('pv-frame'); var subj=document.getElementById('pv-subject');
-        function show(i){ var d=data[i]; if(!d)return; frame.srcdoc=d.html; subj.textContent=d.subject;
-          document.querySelectorAll('.tmpl-btn').forEach(function(b){ b.classList.toggle('on', Number(b.dataset.i)===i); }); }
-        document.querySelectorAll('.tmpl-btn').forEach(function(b){ b.addEventListener('click',function(){ show(Number(b.dataset.i)); window.__tmpl=b.dataset.tmpl; }); });
-        show(0); window.__tmpl=document.querySelector('.tmpl-btn')?.dataset.tmpl;
-        // Sent archive: search + sort
-        var tbl=document.getElementById('em-table');
-        if(tbl){
-          var tbody=tbl.querySelector('tbody');
-          var search=document.getElementById('em-search'); var cnt=document.getElementById('em-count');
-          function rows(){ return Array.prototype.slice.call(tbody.querySelectorAll('tr')).filter(function(r){return r.children.length>1;}); }
-          function refresh(){ var v=(search.value||'').toLowerCase(); var n=0; rows().forEach(function(r){ var hit=!v||r.textContent.toLowerCase().indexOf(v)>-1; r.style.display=hit?'':'none'; if(hit)n++; }); cnt.textContent=n+' emails'; }
-          search.addEventListener('input', refresh); refresh();
-          var dir={};
-          tbl.querySelectorAll('.em-sort').forEach(function(th){ th.style.cursor='pointer'; th.addEventListener('click',function(){
-            var k=+th.dataset.k; dir[k]=!dir[k]; var rs=rows();
-            rs.sort(function(a,b){ var x=a.children[k].textContent.trim().toLowerCase(), y=b.children[k].textContent.trim().toLowerCase(); return (x<y?-1:x>y?1:0)*(dir[k]?1:-1); });
-            rs.forEach(function(r){ tbody.appendChild(r); });
-          }); });
-        }
+        function showT(i){ var d=data[i]; if(!d)return; frame.srcdoc=d.html; subj.textContent=d.subject; document.querySelectorAll('.tmpl-btn').forEach(function(b){ b.classList.toggle('on',Number(b.dataset.i)===i); }); }
+        document.querySelectorAll('.tmpl-btn').forEach(function(b){ b.addEventListener('click',function(){ showT(Number(b.dataset.i)); window.__tmpl=b.dataset.tmpl; }); });
+        if(data.length){ showT(0); window.__tmpl=document.querySelector('.tmpl-btn')?.dataset.tmpl; }
         document.getElementById('send-test')?.addEventListener('click',async function(){
-          var to=document.getElementById('test-to').value.trim(); var m=document.getElementById('test-msg');
-          if(!to){ m.textContent='Enter an email address.'; return; } m.textContent='Sending…';
-          var r=await fetch('/api/admin/send-test-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:to,template:window.__tmpl})});
-          var d=await r.json().catch(function(){return{};});
+          var to=v('test-to'); var m=document.getElementById('test-msg'); if(!to){ m.textContent='Enter an email.'; return; } m.textContent='Sending…';
+          var r=await fetch('/api/admin/send-test-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:to,template:window.__tmpl})}); var d=await r.json().catch(function(){return{};});
           m.style.color=d.ok?'#2e8b57':'#c23b3b'; m.textContent=d.ok?('✓ Sent to '+to):('✗ '+(d.error||'Failed'));
         });
+        // archive search + sort
+        var tbl=document.getElementById('em-table');
+        if(tbl){ var tbody=tbl.querySelector('tbody'); var search=document.getElementById('em-search'); var cnt=document.getElementById('em-count');
+          function rows(){ return Array.prototype.slice.call(tbody.querySelectorAll('tr')).filter(function(r){return r.children.length>1;}); }
+          function refresh(){ var q=(search.value||'').toLowerCase(); var n=0; rows().forEach(function(r){ var hit=!q||r.textContent.toLowerCase().indexOf(q)>-1; r.style.display=hit?'':'none'; if(hit)n++; }); cnt.textContent=n+' emails'; }
+          search.addEventListener('input',refresh); refresh();
+          var dir={}; tbl.querySelectorAll('.em-sort').forEach(function(th){ th.style.cursor='pointer'; th.addEventListener('click',function(){ var k=+th.dataset.k; dir[k]=!dir[k]; var rs=rows(); rs.sort(function(a,b){ var x=a.children[k].textContent.trim().toLowerCase(),y=b.children[k].textContent.trim().toLowerCase(); return (x<y?-1:x>y?1:0)*(dir[k]?1:-1); }); rs.forEach(function(r){ tbody.appendChild(r); }); }); });
+        }
       }
       if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded',init);
       document.addEventListener('astro:page-load',init);
