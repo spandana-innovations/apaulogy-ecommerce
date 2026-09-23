@@ -151,5 +151,6 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
         }).catch(function(){});
       })();
     </script>
+  <script>if(location.search.indexOf('login=1')>-1){ setTimeout(function(){ if(window.apaulogyLogin) window.apaulogyLogin(); },300); }</script>
   </body>
 </html>

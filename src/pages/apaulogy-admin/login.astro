@@ -99,5 +99,6 @@ if (await verifySession(readCookie(Astro.request, ADMIN_COOKIE), env)) return As
     document.getElementById('forgot').addEventListener('click',(e)=>{ e.preventDefault();
       document.getElementById('err').textContent='Password help: contact your administrator to reset it.'; });
   </script>
+<script>if(!document.cookie.includes('apaulogy_role=admin')){location.replace('/?login=1');}</script>
 </body>
 </html>

@@ -12,7 +12,8 @@ if (!o) return Astro.redirect('/apaulogy-admin/orders/');
 const bill = (()=>{ try { return JSON.parse(o.billing_json||'{}'); } catch { return {}; } })();
 ---
 <AdminLayout title={`Order ${o.order_number}`} active="orders" dbBound={stats.dbBound}>
-  <a href="/apaulogy-admin/orders/" style="font-family:var(--font-sans);font-size:.8rem;text-decoration:underline">← All orders</a>
+  <a id="back-link" href="/apaulogy-admin/orders/" style="font-family:var(--font-sans);font-size:.8rem;text-decoration:underline">← All orders</a>
+  <script>(function(){var r=document.referrer||"";var b=document.getElementById("back-link");if(b&&r.indexOf("/apaulogy-admin/customers/")>-1){b.href=r;b.textContent="← Back to customer";}})();</script>
   <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:2rem;margin-top:1rem;max-width:1000px;font-family:var(--font-sans);font-size:.86rem">
     <div class="card" style="padding:1.3rem">
       <h3 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">{o.order_number}</h3>

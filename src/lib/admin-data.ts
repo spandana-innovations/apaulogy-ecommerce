@@ -220,7 +220,7 @@ export async function upsertProduct(env: Env, p: any) {
 const PAID = "status IN ('completed','processing','shipped')";
 let _statsCache: { at: number; data: any } | null = null;
 export async function statsSummary(env: Env) {
-  if (_statsCache && Date.now() - _statsCache.at < 180000) return _statsCache.data;
+  if (_statsCache && Date.now() - _statsCache.at < 20000) return _statsCache.data;
   const data = await _statsSummaryRaw(env);
   _statsCache = { at: Date.now(), data };
   return data;

@@ -42,5 +42,5 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (path.startsWith('/api/')) {
     return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } });
   }
-  return context.redirect('/apaulogy-admin/login');
+  return context.redirect('/');
 });
