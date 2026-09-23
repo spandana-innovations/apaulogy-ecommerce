@@ -21,6 +21,15 @@ const reHasKey = !!(await getSetting(env, 'resend_key'));
 const rzpVerified = (await getSetting(env, 'razorpay_verified'))==='1';
 const ppVerified = (await getSetting(env, 'phonepe_verified'))==='1';
 const reVerified = (await getSetting(env, 'resend_verified'))==='1';
+const smsEnabled = (await getSetting(env,'notify_sms_enabled'))==='1';
+const waEnabled = (await getSetting(env,'notify_wa_enabled'))==='1';
+const msg91Sender = (await getSetting(env,'msg91_sender_id'))||'';
+const msg91TplOrder = (await getSetting(env,'msg91_tpl_order'))||'';
+const msg91TplShip = (await getSetting(env,'msg91_tpl_shipping'))||'';
+const msg91HasKey = !!(await getSetting(env,'msg91_authkey'));
+const waNumber = (await getSetting(env,'wa_integrated_number'))||'';
+const waTplOrder = (await getSetting(env,'wa_tpl_order'))||'';
+const waTplShip = (await getSetting(env,'wa_tpl_shipping'))||'';
 const origin = env.SITE_URL || 'https://apaulogy.com';
 import { getSiteMode } from '../../lib/admin-data';
 const siteMode = await getSiteMode(env);
@@ -205,6 +214,33 @@ const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
     .mode-opt input{ margin-bottom:.3rem; }
     .mode-opt strong{ font-size:.95rem; } .mode-opt span{ font-size:.78rem; color:var(--muted); }
   </style>
+    <!-- SMS (MSG91) -->
+    <section data-panel="keys" class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">SMS — MSG91 {msg91HasKey ? <span class="key-badge ok">Key present</span> : ''}</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Transactional SMS via MSG91. India requires <strong>DLT-registered templates</strong> — paste the template IDs from your MSG91 dashboard.</p>
+      <label style="display:flex;gap:.5rem;align-items:center;margin-bottom:1rem;font-family:var(--font-sans);font-size:.85rem"><input type="checkbox" id="sms-on" checked={smsEnabled}/> Send SMS notifications</label>
+      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
+        <label class="fld">MSG91 Auth Key<input id="sms-key" type="password" autocomplete="off" data-lpignore="true" placeholder={msg91HasKey?'•••••••• (saved)':'Auth key from MSG91'}/></label>
+        <label class="fld">Sender ID <span class="muted">(6-char DLT header)</span><input id="sms-sender" value={msg91Sender} placeholder="e.g. APAULG"/></label>
+        <label class="fld">DLT template — Order confirmation<input id="sms-tpl-order" value={msg91TplOrder} placeholder="template id"/></label>
+        <label class="fld">DLT template — Shipping update<input id="sms-tpl-ship" value={msg91TplShip} placeholder="template id"/></label>
+        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="sms-save" style="background:#000;color:#fff">Save</button> <span class="muted" id="sms-msg" style="font-size:.78rem"></span></div>
+      </div>
+    </section>
+
+    <!-- WhatsApp -->
+    <section data-panel="keys" class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">WhatsApp</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">WhatsApp Business messages via MSG91. Needs an <strong>approved WhatsApp Business number</strong> and <strong>pre-approved message templates</strong> (see the setup guide). Uses the same MSG91 auth key above.</p>
+      <label style="display:flex;gap:.5rem;align-items:center;margin-bottom:1rem;font-family:var(--font-sans);font-size:.85rem"><input type="checkbox" id="wa-on" checked={waEnabled}/> Send WhatsApp notifications</label>
+      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
+        <label class="fld">Integrated WhatsApp number <span class="muted">(with country code)</span><input id="wa-number" value={waNumber} placeholder="e.g. 918012345678"/></label>
+        <label class="fld">Template — Order confirmation<input id="wa-tpl-order" value={waTplOrder} placeholder="approved template name"/></label>
+        <label class="fld">Template — Shipping update<input id="wa-tpl-ship" value={waTplShip} placeholder="approved template name"/></label>
+        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="wa-save" style="background:#000;color:#fff">Save</button> <span class="muted" id="wa-msg" style="font-size:.78rem"></span></div>
+      </div>
+    </section>
+
   <script>
     (function(){
       var grid=document.querySelector('.settings-grid');
@@ -271,6 +307,8 @@ const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
     document.querySelectorAll('input[name=pay_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('input[name=pay_mode]').forEach(x=>x.closest('.mode-opt').classList.toggle('on', x.checked))));
     document.getElementById('mode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=site_mode]:checked'); saveSettings({site_mode:m?m.value:'production'},'mode-msg'); document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked)); });
     document.querySelectorAll('input[name=site_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked))));
+    document.getElementById('sms-save')?.addEventListener('click',()=>{ saveSettings({notify_sms_enabled:document.getElementById('sms-on').checked?'1':'0', msg91_authkey:document.getElementById('sms-key').value, msg91_sender_id:document.getElementById('sms-sender').value.trim(), msg91_tpl_order:document.getElementById('sms-tpl-order').value.trim(), msg91_tpl_shipping:document.getElementById('sms-tpl-ship').value.trim()},'sms-msg'); });
+    document.getElementById('wa-save')?.addEventListener('click',()=>{ saveSettings({notify_wa_enabled:document.getElementById('wa-on').checked?'1':'0', wa_integrated_number:document.getElementById('wa-number').value.trim(), wa_tpl_order:document.getElementById('wa-tpl-order').value.trim(), wa_tpl_shipping:document.getElementById('wa-tpl-ship').value.trim()},'wa-msg'); });
     document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim()},'re-msg'); });
     document.querySelectorAll('.wh-copy').forEach(function(b){ b.addEventListener('click',function(){ var el=document.getElementById(b.dataset.copy); navigator.clipboard.writeText(el.textContent).then(function(){ b.textContent='Copied ✓'; setTimeout(function(){b.textContent='Copy';},1500); }); }); });
   </script>

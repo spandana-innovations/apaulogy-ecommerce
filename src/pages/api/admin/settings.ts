@@ -20,6 +20,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (typeof b.phonepe_salt_index === 'string' && b.phonepe_salt_index) await setSetting(env, 'phonepe_salt_index', b.phonepe_salt_index);
     if (b.resend_key) await setSetting(env, 'resend_key', b.resend_key);
     if (typeof b.from_email === 'string' && b.from_email) await setSetting(env, 'from_email', b.from_email);
+    for (const k of ['notify_sms_enabled','notify_wa_enabled','msg91_sender_id','msg91_tpl_order','msg91_tpl_shipping','wa_integrated_number','wa_tpl_order','wa_tpl_shipping']) {
+      if (typeof b[k] === 'string') await setSetting(env, k, b[k]);
+    }
+    if (b.msg91_authkey) await setSetting(env, 'msg91_authkey', b.msg91_authkey);
     if (typeof b.site_mode === 'string' && ['production','construction','paused'].includes(b.site_mode)) await setSetting(env, 'site_mode', b.site_mode);
     if (typeof b.pg_domestic === 'string' && ['razorpay','phonepe','both'].includes(b.pg_domestic)) await setSetting(env, 'pg_domestic', b.pg_domestic);
     if (typeof b.pg_international === 'string' && ['razorpay','phonepe','both'].includes(b.pg_international)) await setSetting(env, 'pg_international', b.pg_international);

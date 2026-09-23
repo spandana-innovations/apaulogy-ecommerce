@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { verifyWebhookSignature } from '../../lib/razorpay';
 import { markOrderPaid, recordEventOnce } from '../../lib/db';
+import { notify } from '../../lib/notify';
 
 export const prerender = false;
 
@@ -41,6 +42,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if ((event.event === 'payment.captured' || event.event === 'order.paid') && razorpayOrderId) {
       await markOrderPaid(env.DB, razorpayOrderId, razorpayPaymentId || '');
+      try {
+        const o: any = await env.DB.prepare(`SELECT * FROM orders WHERE razorpay_order_id=?`).bind(razorpayOrderId).first();
+        if (o) { const bill = o.billing_json ? JSON.parse(o.billing_json) : {}; const items = ((await env.DB.prepare(`SELECT name,price,quantity FROM order_items WHERE order_number=?`).bind(o.order_number).all()).results)||[]; await notify(env, 'order_confirmation', { order_number:o.order_number, email:o.email, phone:o.phone, name:bill.name, items, subtotal:o.subtotal, shipping:o.shipping, total:o.total }); }
+      } catch (e) { console.error('notify failed', e); }
     } else if (event.event === 'payment.failed' && razorpayOrderId) {
       await env.DB.prepare(
         `UPDATE orders SET status='failed', updated_at=datetime('now')

@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { updateOrder, logOrderEvent, getOrder } from '../../../lib/admin-data';
-import { sendEmail, shippingUpdateEmail, emailConfig } from '../../../lib/email';
+import { notify } from '../../../lib/notify';
 export const prerender = false;
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals as any)?.runtime?.env ?? {};
@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       try {
         const o: any = await getOrder(env, b.order);
         const bill = o?.billing_json ? JSON.parse(o.billing_json) : {};
-        if (o?.email) { const cfg = await emailConfig(env); const t = shippingUpdateEmail(cfg.site, { order_number: b.order, name: bill.name, tracking_number: fields.tracking_number, tracking_carrier: fields.tracking_carrier }); await sendEmail(env, o.email, t.subject, t.html); }
+        await notify(env, 'shipping_update', { order_number: b.order, email: o?.email, phone: o?.phone, name: bill.name, tracking_number: fields.tracking_number, tracking_carrier: fields.tracking_carrier });
       } catch {}
     }
   }

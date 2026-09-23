@@ -18,7 +18,7 @@ const sample = {
 const sentEmails = await listEmails(env, 100);
 const previews = TEMPLATES.map((t) => ({ ...t, html: renderTemplate(t.id, site, sample).html, subject: renderTemplate(t.id, site, sample).subject }));
 ---
-<AdminLayout title="Emails" active="emails" dbBound={base.dbBound}>
+<AdminLayout title="Notifications" active="emails" dbBound={base.dbBound}>
   <div class="em-tabs">
     <button class="em-tab on" data-etab="templates" type="button">Templates</button>
     <button class="em-tab" data-etab="sent" type="button">Sent archive ({sentEmails.length})</button>

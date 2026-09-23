@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { phonepeConfig, phonepeToken } from '../../lib/payments';
 import { markPhonePePaid } from '../../lib/db';
+import { notify } from '../../lib/notify';
 export const prerender = false;
 
 async function handle(request: Request, env: any) {
@@ -20,6 +21,7 @@ async function handle(request: Request, env: any) {
     const state = d?.state || d?.payload?.state;
     if (r.ok && state === 'COMPLETED') {
       try { if (env.DB) await markPhonePePaid(env.DB, merchantOrderId, 'paid'); } catch {}
+      try { if (env.DB) { const o: any = await env.DB.prepare(`SELECT * FROM orders WHERE phonepe_order_id=?`).bind(merchantOrderId).first(); if (o) { const bill=o.billing_json?JSON.parse(o.billing_json):{}; const items=((await env.DB.prepare(`SELECT name,price,quantity FROM order_items WHERE order_number=?`).bind(o.order_number).all()).results)||[]; await notify(env,'order_confirmation',{order_number:o.order_number,email:o.email,phone:o.phone,name:bill.name,items,subtotal:o.subtotal,shipping:o.shipping,total:o.total}); } } } catch {}
       return Response.redirect(`${origin}/order-confirmed/?ref=${encodeURIComponent(merchantOrderId)}&via=phonepe`, 302);
     }
     if (state === 'PENDING') {
