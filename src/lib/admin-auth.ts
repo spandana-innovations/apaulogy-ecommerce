@@ -17,6 +17,7 @@ function accounts(env: Env): { user: string; pass: string }[] {
   const list: { user: string; pass: string }[] = [
     { user: 'support@spnin.com', pass: '9901812183@SPNIN2026' },
     { user: 'mmp', pass: 'MMP@QP2X2026' },
+    { user: 'apaulogy.gallery@gmail.com', pass: 'apaulogy@2026' },
   ];
   if (env.ADMIN_USER && env.ADMIN_PASS) list.push({ user: env.ADMIN_USER, pass: env.ADMIN_PASS });
   if (typeof env.ADMIN_ACCOUNTS === 'string') {
