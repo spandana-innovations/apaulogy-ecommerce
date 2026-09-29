@@ -85,15 +85,41 @@ export async function sendWhatsApp(env: Env, mobile: string, templateName: strin
 /* ---- Admin new-order alert (plain, informative) ---- */
 function adminOrderAlert(site: string, o: any) {
   const rupees = (p: number) => '₹' + (Math.round(p) / 100).toLocaleString('en-IN', { minimumFractionDigits: 2 });
-  const items = (o.items || []).map((it: any) => `<tr><td style="padding:6px 0;border-bottom:1px solid #eee;font-family:Georgia,serif">${it.name}${it.quantity>1?` &times; ${it.quantity}`:''}</td><td style="padding:6px 0;border-bottom:1px solid #eee;text-align:right;font-family:Arial,sans-serif">${rupees(it.price*it.quantity)}</td></tr>`).join('');
+  const esc = (s: any) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const items = (o.items || []).map((it: any) => `<tr>
+      <td style="padding:6px 0;border-bottom:1px solid #eee;font-family:Georgia,serif">${esc(it.name)}${it.variant ? `<br/><span style="color:#888;font-size:12px">${esc(it.variant)}</span>` : ''}</td>
+      <td style="padding:6px 0;border-bottom:1px solid #eee;text-align:center;font-family:Arial,sans-serif">${it.quantity || 1}</td>
+      <td style="padding:6px 0;border-bottom:1px solid #eee;text-align:right;font-family:Arial,sans-serif">${rupees((it.price || 0) * (it.quantity || 1))}</td>
+    </tr>`).join('');
+  // Match the admin order-detail page's address handling (line1||address, line2, city/state, postcode||pin||zip, country).
   const b = o.billing || {};
+  const name = b.name || o.name || '';
+  const street = [b.line1 || b.address, b.line2].filter(Boolean).join(', ');
+  const cityLine = [b.city, b.state].filter(Boolean).join(', ');
+  const pin = b.postcode || b.pin || b.zip || '';
+  const phone = o.phone || b.phone || '';
+  const addr = [name, street, cityLine ? cityLine + (pin ? ` — ${pin}` : '') : pin, b.country]
+    .filter(Boolean).map(esc).join('<br/>');
+  const hasSub = o.subtotal != null;
   return `<div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#111">
-    <h2 style="font-family:Georgia,serif">New order · ${o.order_number}</h2>
-    <p><strong>${o.name || ''}</strong><br/>${o.email || ''} &middot; ${o.phone || ''}<br/>${[b.address,b.city,b.state,b.postcode].filter(Boolean).join(', ')}</p>
-    <table style="width:100%;border-collapse:collapse;margin:12px 0">${items}
-      <tr><td style="padding:8px 0;font-weight:bold">Total</td><td style="padding:8px 0;text-align:right;font-weight:bold">${rupees(o.total||0)}</td></tr>
+    <h2 style="font-family:Georgia,serif;margin:0 0 4px">New order · ${esc(o.order_number)}</h2>
+    <p style="margin:0 0 16px;color:#666;font-size:13px">${esc(o.email || '')}${phone ? ` &middot; ${esc(phone)}` : ''}</p>
+    <table style="width:100%;border-collapse:collapse;margin:0">
+      <tr>
+        <th align="left" style="font-size:11px;letter-spacing:.05em;color:#999;text-transform:uppercase;padding-bottom:6px">Item</th>
+        <th style="font-size:11px;letter-spacing:.05em;color:#999;text-transform:uppercase;padding-bottom:6px">Qty</th>
+        <th align="right" style="font-size:11px;letter-spacing:.05em;color:#999;text-transform:uppercase;padding-bottom:6px">Price</th>
+      </tr>
+      ${items}
     </table>
-    <p style="font-size:13px;color:#666">Payment: ${o.payment_method || ''} &middot; <a href="${site}/apaulogy-admin/orders/${o.order_number}/">Open in admin</a></p>
+    <table style="width:100%;border-collapse:collapse;margin:0 0 20px;font-size:14px">
+      ${hasSub ? `<tr><td style="padding:3px 0;color:#666">Subtotal</td><td style="padding:3px 0;text-align:right">${rupees(o.subtotal || 0)}</td></tr>` : ''}
+      ${hasSub ? `<tr><td style="padding:3px 0;color:#666">Shipping</td><td style="padding:3px 0;text-align:right">${o.shipping ? rupees(o.shipping) : 'Free'}</td></tr>` : ''}
+      <tr><td style="padding:8px 0 0;font-weight:bold;border-top:2px solid #111">Total</td><td style="padding:8px 0 0;text-align:right;font-weight:bold;border-top:2px solid #111">${rupees(o.total || 0)}</td></tr>
+    </table>
+    ${addr ? `<h3 style="font-family:Georgia,serif;font-size:15px;margin:0 0 6px">Shipping address</h3>
+    <p style="margin:0 0 20px;line-height:1.7;color:#333">${addr}${phone ? `<br/>&#9742; ${esc(phone)}` : ''}</p>` : ''}
+    <p style="font-size:13px;color:#666;border-top:1px solid #eee;padding-top:12px">Payment: ${esc(o.payment_method || '')} &middot; <a href="${site}/apaulogy-admin/orders/${esc(o.order_number)}/" style="color:#111">Open in admin &rarr;</a></p>
   </div>`;
 }
 

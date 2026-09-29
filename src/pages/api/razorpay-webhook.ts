@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       await markOrderPaid(env.DB, razorpayOrderId, razorpayPaymentId || '');
       try {
         const o: any = await env.DB.prepare(`SELECT * FROM orders WHERE razorpay_order_id=?`).bind(razorpayOrderId).first();
-        if (o) { const bill = o.billing_json ? JSON.parse(o.billing_json) : {}; const items = ((await env.DB.prepare(`SELECT name,price,quantity FROM order_items WHERE order_number=?`).bind(o.order_number).all()).results)||[]; await notify(env, 'order_confirmation', { order_number:o.order_number, email:o.email, phone:o.phone, name:bill.name, items, subtotal:o.subtotal, shipping:o.shipping, total:o.total }); }
+        if (o) { const bill = o.billing_json ? JSON.parse(o.billing_json) : {}; const items = ((await env.DB.prepare(`SELECT name,variant,price,quantity FROM order_items WHERE order_number=?`).bind(o.order_number).all()).results)||[]; await notify(env, 'order_confirmation', { order_number:o.order_number, email:o.email, phone:o.phone, name:bill.name, billing:bill, items, subtotal:o.subtotal, shipping:o.shipping, total:o.total, payment_method:'Razorpay' }); }
       } catch (e) { console.error('notify failed', e); }
     } else if (event.event === 'payment.failed' && razorpayOrderId) {
       await env.DB.prepare(
