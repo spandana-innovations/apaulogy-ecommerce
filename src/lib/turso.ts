@@ -1,10 +1,23 @@
 /* Turso (libSQL) adapter mimicking the Cloudflare D1 interface. */
 import { createClient, type Client } from '@libsql/client/web';
 type Env = Record<string, any>;
-let _client: Client | null = null; let _url = '';
+
+/* On Cloudflare Workers a connection object created while handling one request
+   cannot be reused by a later request ("Cannot perform I/O on behalf of a
+   different request" -> Error 1101). A libsql:// or wss:// URL makes the web
+   client open a persistent WebSocket, which is exactly such an object, so we:
+   (1) force the stateless HTTP protocol by normalising the scheme to https/http,
+   and (2) never cache the client across requests — a fresh one is created per
+   call (cheap for the HTTP pipeline). */
+function httpUrl(u: string): string {
+  if (!u) return u;
+  return u
+    .replace(/^libsql:\/\//i, 'https://')
+    .replace(/^wss:\/\//i, 'https://')
+    .replace(/^ws:\/\//i, 'http://');
+}
 function client(env: Env): Client {
-  if (_client && _url === env.TURSO_URL) return _client;
-  _url = env.TURSO_URL; _client = createClient({ url: env.TURSO_URL, authToken: env.TURSO_AUTH_TOKEN }); return _client;
+  return createClient({ url: httpUrl(env.TURSO_URL), authToken: env.TURSO_AUTH_TOKEN });
 }
 function rowMapper(cols: string[]) { return (row: any) => { const o: Record<string, any> = {}; for (let i = 0; i < cols.length; i++) o[cols[i]] = row[i]; return o; }; }
 function statement(env: Env, sql: string, args: any[] = []) {

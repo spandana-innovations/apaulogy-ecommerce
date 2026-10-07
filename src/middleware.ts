@@ -36,7 +36,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const env = (context.locals as any)?.runtime?.env ?? {};
   const token = readCookie(context.request, ADMIN_COOKIE);
-  const ok = await verifySession(token, env);
+  let ok = false;
+  try { ok = await verifySession(token, env); } catch { ok = false; } // never 1101 on a bad/absent session
   if (ok) return next();
 
   if (path.startsWith('/api/')) {
