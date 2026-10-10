@@ -1,20 +1,41 @@
 ---
 export const prerender = false;
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { getStats } from '../../lib/admin-data';
+import catalog from '../../data/catalog.json';
+import { getStats, getSetting } from '../../lib/admin-data';
 import { getRates } from '../../lib/shipping';
-import { formatINR } from '../../lib/format';
 const env = (Astro.locals as any)?.runtime?.env ?? {};
 const stats = await getStats(env);
 const domestic = await getRates(env, 'domestic');
 const intl = await getRates(env, 'international');
+const fsThreshold = parseInt((await getSetting(env, 'free_shipping_threshold')) || '0', 10) || 0;
+let free: string[] = [];
+if (env.DB) { try { free = ((await env.DB.prepare(`SELECT slug FROM free_shipping_products`).all()).results || []).map((r:any)=>r.slug); } catch {} }
+const cat = catalog as any;
+const bySlug = Object.fromEntries(cat.products.map((p:any)=>[p.slug,p.name]));
+const prods = cat.products.map((p:any)=>({slug:p.slug,name:p.name})).sort((a:any,b:any)=>a.name.localeCompare(b.name));
+const tabs = [
+  { key: 'domestic', label: 'Domestic' },
+  { key: 'international', label: 'International' },
+  { key: 'free', label: 'Free shipping' },
+];
 ---
 <AdminLayout title="Shipping" active="shipping" dbBound={stats.dbBound}>
+  <div class="ship-tabs" role="tablist">
+    {tabs.map((t,i)=>(
+      <button class={`ship-tab${i===0?' on':''}`} data-tab={t.key} role="tab">{t.label}</button>
+    ))}
+  </div>
+
+  {/* ---- Domestic & International rate tables ---- */}
   {['domestic','international'].map((zone) => {
     const rows = zone==='domestic'?domestic:intl;
     return (
-    <section style="max-width:720px;margin-bottom:2rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .7rem;text-transform:capitalize">{zone}</h2>
+    <section class="ship-panel" data-panel={zone} style="max-width:720px;margin-bottom:2rem">
+      <p class="muted" style="font-family:var(--font-sans);font-size:.85rem;max-width:620px;margin:0 0 1rem">
+        Weight-based brackets (cart weight in kg). The first bracket whose limit the cart
+        weight falls within sets the price. Leave the top bracket's limit blank for “and above”.
+      </p>
       <div class="card" style="overflow:hidden">
         <table class={`rate-tbl`} data-zone={zone}>
           <thead><tr><th>Up to (kg)</th><th>Price (₹)</th><th>Extra ₹/kg over</th><th></th></tr></thead>
@@ -38,11 +59,68 @@ const intl = await getRates(env, 'international');
     </section>
     );
   })}
+
+  {/* ---- Free shipping (threshold + per-product) ---- */}
+  <section class="ship-panel" data-panel="free" style="max-width:720px;margin-bottom:2rem;display:none">
+    <h2 style="font-family:var(--font-display);font-size:1.25rem;margin:0 0 .5rem">Order-value threshold</h2>
+    <p class="muted" style="font-family:var(--font-sans);font-size:.85rem;max-width:620px;margin:0 0 .9rem">
+      Orders whose subtotal reaches this amount ship free. Set to <strong>0</strong> to disable —
+      no order gets free shipping based on its value.
+    </p>
+    <div class="card" style="padding:1rem;max-width:620px;font-family:var(--font-sans)">
+      <label style="display:flex;align-items:center;gap:.6rem;font-size:.9rem">
+        <span>Free shipping over ₹</span>
+        <input id="fs-threshold" type="number" min="0" step="1" value={fsThreshold}
+          style="width:140px;padding:.45rem .6rem;border:1px solid var(--line);font:inherit"/>
+        <button class="btn" id="fs-thr-save" style="background:#000;color:#fff">Save</button>
+        <span class="muted" id="fs-thr-msg" style="font-size:.78rem"></span>
+      </label>
+    </div>
+
+    <h2 style="font-family:var(--font-display);font-size:1.25rem;margin:1.8rem 0 .5rem">Always-free products</h2>
+    <p class="muted" style="font-family:var(--font-sans);font-size:.85rem;max-width:620px;margin-bottom:1rem">
+      Any order containing one of these products ships free, regardless of the threshold above.
+      Useful for large canvases or promotions.
+    </p>
+    <div style="display:flex;gap:.6rem;max-width:620px;margin-bottom:1rem;font-family:var(--font-sans)">
+      <select id="fs-pick" style="flex:1;padding:.5rem .6rem;border:1px solid var(--line)">
+        <option value="">Choose a product to add…</option>
+        {prods.map((p:any)=>(<option value={p.slug}>{p.name}</option>))}
+      </select>
+      <button class="btn" id="fs-add" style="background:#000;color:#fff">Add</button>
+    </div>
+    <div class="card" style="overflow:hidden;max-width:620px">
+      <table id="fs-tbl">
+        <thead><tr><th>Product</th><th></th></tr></thead>
+        <tbody>
+          {free.map((slug:string)=>(<tr data-slug={slug}><td><strong style="font-weight:600">{bySlug[slug]||slug}</strong></td>
+            <td style="text-align:right"><button class="fs-del btn" data-slug={slug}>Remove</button></td></tr>))}
+          {!free.length && <tr><td colspan="2" class="empty">No always-free products yet.</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
   <style is:global>
     .rate-tbl input{ width:100%; padding:.4rem .5rem; border:1px solid var(--line); font:inherit }
     .rate-tbl td{ padding:.5rem .6rem }
+    .ship-tabs{ display:flex; gap:.3rem; border-bottom:1px solid var(--line); margin-bottom:1.5rem }
+    .ship-tab{ border:0; background:none; cursor:pointer; padding:.6rem 1rem; font:inherit;
+      font-family:var(--font-sans); font-size:.9rem; color:var(--muted,#777);
+      border-bottom:2px solid transparent; margin-bottom:-1px }
+    .ship-tab.on{ color:#000; border-bottom-color:#000; font-weight:600 }
   </style>
   <script>
+    // --- Tabs ---
+    const tabBtns = document.querySelectorAll('.ship-tab');
+    const panels = document.querySelectorAll('.ship-panel');
+    function show(key){
+      tabBtns.forEach(b=>b.classList.toggle('on', b.dataset.tab===key));
+      panels.forEach(p=>{ p.style.display = p.dataset.panel===key ? '' : 'none'; });
+    }
+    tabBtns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));
+
+    // --- Rate tables ---
     function collect(tbl){ return Array.from(tbl.querySelectorAll('tbody tr')).map((tr,i)=>({
       up_to_kg: tr.querySelector('.r-upto').value===''?null:parseFloat(tr.querySelector('.r-upto').value),
       price: Math.round(parseFloat(tr.querySelector('.r-price').value||'0')*100),
@@ -62,5 +140,20 @@ const intl = await getRates(env, 'international');
       const r=await fetch('/api/admin/shipping',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({zone,rates:collect(tbl)})});
       msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
     }));
+
+    // --- Free-shipping threshold ---
+    const thrSave=document.getElementById('fs-thr-save');
+    thrSave && thrSave.addEventListener('click',async()=>{
+      const val=Math.max(0,Math.floor(parseFloat(document.getElementById('fs-threshold').value||'0')));
+      const msg=document.getElementById('fs-thr-msg'); msg.textContent='Saving…';
+      const r=await fetch('/api/admin/shipping',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({free_shipping_threshold:val})});
+      msg.textContent=r.ok?'Saved ✓':'Failed — database connected?';
+    });
+
+    // --- Always-free products ---
+    async function fsPost(body){ const r=await fetch('/api/admin/free-shipping',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}); if(r.ok) location.reload(); else alert('Failed — database connected?'); }
+    const fsAdd=document.getElementById('fs-add');
+    fsAdd && fsAdd.addEventListener('click',()=>{ const s=document.getElementById('fs-pick').value; if(s) fsPost({add:s}); });
+    document.querySelectorAll('.fs-del').forEach(b=>b.addEventListener('click',()=>fsPost({remove:b.dataset.slug})));
   </script>
 </AdminLayout>

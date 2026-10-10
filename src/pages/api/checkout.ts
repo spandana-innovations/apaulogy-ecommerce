@@ -10,9 +10,6 @@ import { verifySession, readCookie, ADMIN_COOKIE } from '../../lib/admin-auth';
 
 export const prerender = false;
 
-const FREE_SHIPPING_OVER = 500000; // paise (₹5,000)
-const SHIPPING_FLAT = 15000;       // paise (₹150)
-
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -81,7 +78,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const rates = await getRates(env, zone);
   const freeSlugs = await freeShippingSlugs(env);
   const hasFreeItem = rawItems.some((it) => freeSlugs.has(it.slug));
-  const shipping = deliveryMethod === 'porter' ? 0 : ((freeShipping || hasFreeItem) ? 0 : shippingFor(weight, rates));
+  // Amount-based free shipping: only when an admin has set a threshold (₹) above 0.
+  // Stored in rupees; 0/blank means "never free based on order value".
+  const fsThreshold = parseInt((await getSetting(env, 'free_shipping_threshold')) || '0', 10) || 0;
+  const meetsThreshold = fsThreshold > 0 && subtotal >= fsThreshold * 100;
+  const shipping = deliveryMethod === 'porter'
+    ? 0
+    : ((freeShipping || hasFreeItem || meetsThreshold) ? 0 : shippingFor(weight, rates));
   const total = Math.max(0, subtotal - discount) + shipping;
 
   const address = {

@@ -11,8 +11,7 @@ INSERT OR IGNORE INTO order_items (order_number,slug,name,variant,price,quantity
  ('APG-100002','pensioner','Pensioner','Small Mounted Print (8.5\" x 11.5\")',135000,1),
  ('APG-100003','bhaan-copper-water-boiler','Bhaan Copper Water Boiler','Mounted Print · 9″ × 9″',95000,1);
 INSERT OR IGNORE INTO discounts (label,scope,target,kind,value,active) VALUES
- ('Festive 15% off Bangalore 70s','category','bangalore-in-the-70s','percent',15,1),
- ('Free shipping over the season','all','','free_shipping',0,1);
+ ('Festive 15% off Bangalore 70s','category','bangalore-in-the-70s','percent',15,1);
 INSERT OR IGNORE INTO coupons (code,kind,value,min_order,active) VALUES
  ('WELCOME10','percent',10,0,1),
  ('FLAT200','fixed',200,100000,1);

@@ -103,6 +103,9 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT,
   updated_at TEXT DEFAULT (datetime('now'))
 );
+-- Free-shipping order-value threshold, in whole rupees. 0 = disabled (no free
+-- shipping based on order value). Set from Admin → Shipping → Free shipping.
+INSERT OR IGNORE INTO settings (key,value) VALUES ('free_shipping_threshold','0');
 
 -- Free-shipping product list
 CREATE TABLE IF NOT EXISTS free_shipping_products (
