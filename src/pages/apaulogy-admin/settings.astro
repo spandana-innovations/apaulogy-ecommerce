@@ -141,6 +141,33 @@ const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
       </div>
     </section>
 
+    <!-- SMS (MSG91) -->
+    <section data-panel="keys" class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">SMS — MSG91 {msg91HasKey ? <span class="key-badge ok">Key present</span> : ''}</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Transactional SMS via MSG91. India requires <strong>DLT-registered templates</strong> — paste the template IDs from your MSG91 dashboard.</p>
+      <label style="display:flex;gap:.5rem;align-items:center;margin-bottom:1rem;font-family:var(--font-sans);font-size:.85rem"><input type="checkbox" id="sms-on" checked={smsEnabled}/> Send SMS notifications</label>
+      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
+        <label class="fld">MSG91 Auth Key<input id="sms-key" type="password" autocomplete="off" data-lpignore="true" placeholder={msg91HasKey?'•••••••• (saved)':'Auth key from MSG91'}/></label>
+        <label class="fld">Sender ID <span class="muted">(6-char DLT header)</span><input id="sms-sender" value={msg91Sender} placeholder="e.g. APAULG"/></label>
+        <label class="fld">DLT template — Order confirmation<input id="sms-tpl-order" value={msg91TplOrder} placeholder="template id"/></label>
+        <label class="fld">DLT template — Shipping update<input id="sms-tpl-ship" value={msg91TplShip} placeholder="template id"/></label>
+        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="sms-save" style="background:#000;color:#fff">Save</button> <span class="muted" id="sms-msg" style="font-size:.78rem"></span></div>
+      </div>
+    </section>
+
+    <!-- WhatsApp -->
+    <section data-panel="keys" class="card" style="padding:1.4rem">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">WhatsApp</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">WhatsApp Business messages via MSG91. Needs an <strong>approved WhatsApp Business number</strong> and <strong>pre-approved message templates</strong> (see the setup guide). Uses the same MSG91 auth key above.</p>
+      <label style="display:flex;gap:.5rem;align-items:center;margin-bottom:1rem;font-family:var(--font-sans);font-size:.85rem"><input type="checkbox" id="wa-on" checked={waEnabled}/> Send WhatsApp notifications</label>
+      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
+        <label class="fld">Integrated WhatsApp number <span class="muted">(with country code)</span><input id="wa-number" value={waNumber} placeholder="e.g. 918012345678"/></label>
+        <label class="fld">Template — Order confirmation<input id="wa-tpl-order" value={waTplOrder} placeholder="approved template name"/></label>
+        <label class="fld">Template — Shipping update<input id="wa-tpl-ship" value={waTplShip} placeholder="approved template name"/></label>
+        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="wa-save" style="background:#000;color:#fff">Save</button> <span class="muted" id="wa-msg" style="font-size:.78rem"></span></div>
+      </div>
+    </section>
+
     <!-- Shortcuts -->
     <section data-panel="resources" class="card" style="padding:1.4rem">
       <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .8rem">Store configuration</h2>
@@ -229,32 +256,6 @@ const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
     .mode-opt input{ margin-bottom:.3rem; }
     .mode-opt strong{ font-size:.95rem; } .mode-opt span{ font-size:.78rem; color:var(--muted); }
   </style>
-    <!-- SMS (MSG91) -->
-    <section data-panel="keys" class="card" style="padding:1.4rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">SMS — MSG91 {msg91HasKey ? <span class="key-badge ok">Key present</span> : ''}</h2>
-      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Transactional SMS via MSG91. India requires <strong>DLT-registered templates</strong> — paste the template IDs from your MSG91 dashboard.</p>
-      <label style="display:flex;gap:.5rem;align-items:center;margin-bottom:1rem;font-family:var(--font-sans);font-size:.85rem"><input type="checkbox" id="sms-on" checked={smsEnabled}/> Send SMS notifications</label>
-      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
-        <label class="fld">MSG91 Auth Key<input id="sms-key" type="password" autocomplete="off" data-lpignore="true" placeholder={msg91HasKey?'•••••••• (saved)':'Auth key from MSG91'}/></label>
-        <label class="fld">Sender ID <span class="muted">(6-char DLT header)</span><input id="sms-sender" value={msg91Sender} placeholder="e.g. APAULG"/></label>
-        <label class="fld">DLT template — Order confirmation<input id="sms-tpl-order" value={msg91TplOrder} placeholder="template id"/></label>
-        <label class="fld">DLT template — Shipping update<input id="sms-tpl-ship" value={msg91TplShip} placeholder="template id"/></label>
-        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="sms-save" style="background:#000;color:#fff">Save</button> <span class="muted" id="sms-msg" style="font-size:.78rem"></span></div>
-      </div>
-    </section>
-
-    <!-- WhatsApp -->
-    <section data-panel="keys" class="card" style="padding:1.4rem">
-      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">WhatsApp</h2>
-      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">WhatsApp Business messages via MSG91. Needs an <strong>approved WhatsApp Business number</strong> and <strong>pre-approved message templates</strong> (see the setup guide). Uses the same MSG91 auth key above.</p>
-      <label style="display:flex;gap:.5rem;align-items:center;margin-bottom:1rem;font-family:var(--font-sans);font-size:.85rem"><input type="checkbox" id="wa-on" checked={waEnabled}/> Send WhatsApp notifications</label>
-      <div style="display:grid;gap:.8rem;font-family:var(--font-sans);font-size:.85rem">
-        <label class="fld">Integrated WhatsApp number <span class="muted">(with country code)</span><input id="wa-number" value={waNumber} placeholder="e.g. 918012345678"/></label>
-        <label class="fld">Template — Order confirmation<input id="wa-tpl-order" value={waTplOrder} placeholder="approved template name"/></label>
-        <label class="fld">Template — Shipping update<input id="wa-tpl-ship" value={waTplShip} placeholder="approved template name"/></label>
-        <div style="display:flex;gap:.6rem;align-items:center"><button class="btn" id="wa-save" style="background:#000;color:#fff">Save</button> <span class="muted" id="wa-msg" style="font-size:.78rem"></span></div>
-      </div>
-    </section>
 
   <script>
     (function(){
