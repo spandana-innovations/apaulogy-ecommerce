@@ -28,6 +28,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     for (const k of ['notify_evt_order_confirmation','notify_evt_shipping_update']) { if (typeof b[k]==='string') await setSetting(env, k, b[k]); }
     if (typeof b.admin_notify_enabled === 'string') await setSetting(env, 'admin_notify_enabled', b.admin_notify_enabled);
     if (typeof b.site_mode === 'string' && ['production','construction','paused'].includes(b.site_mode)) await setSetting(env, 'site_mode', b.site_mode);
+    if (b.hero_speed !== undefined && b.hero_speed !== '') { const hs = Math.max(0.1, Math.min(2, Number(b.hero_speed))); if (!Number.isNaN(hs)) await setSetting(env, 'hero_speed', String(hs)); }
     if (typeof b.pg_domestic === 'string' && ['razorpay','phonepe','both'].includes(b.pg_domestic)) await setSetting(env, 'pg_domestic', b.pg_domestic);
     if (typeof b.pg_international === 'string' && ['razorpay','phonepe','both'].includes(b.pg_international)) await setSetting(env, 'pg_international', b.pg_international);
     if (typeof b.payment_mode === 'string' && ['test','live'].includes(b.payment_mode)) await setSetting(env, 'payment_mode', b.payment_mode);

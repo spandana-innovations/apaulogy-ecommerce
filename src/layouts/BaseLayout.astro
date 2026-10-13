@@ -139,6 +139,15 @@ const ogImage = new URL(image, Astro.site ?? Astro.url.origin).toString();
       <script>
       (function(){
         fetch('/api/site-mode').then(function(r){return r.json();}).then(function(d){
+          if(d && typeof d.heroSpeed==='number'){
+            var hv=document.getElementById('hero-video');
+            if(hv){
+              var apply=function(){ try{ hv.playbackRate=d.heroSpeed; }catch(e){} };
+              apply();
+              hv.addEventListener('loadedmetadata', apply);
+              hv.addEventListener('play', apply);
+            }
+          }
           if(d && d.mode==='paused'){
             document.documentElement.setAttribute('data-paused','1');
             var bar=document.createElement('div');

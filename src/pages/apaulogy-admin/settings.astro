@@ -35,6 +35,7 @@ const waTplShip = (await getSetting(env,'wa_tpl_shipping'))||'';
 const origin = env.SITE_URL || 'https://apaulogy.com';
 import { getSiteMode } from '../../lib/admin-data';
 const siteMode = await getSiteMode(env);
+const heroSpeedPct = Math.round((Number(await getSetting(env, 'hero_speed')) || 1) * 100);
 import { paymentMode } from '../../lib/payments';
 import { systemStatus, readsToday } from '../../lib/admin-data';
 const sys = await systemStatus(env);
@@ -160,6 +161,17 @@ const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
         <label class={`mode-opt ${siteMode==='construction'?'on':''}`}><input type="radio" name="site_mode" value="construction" checked={siteMode==='construction'}/><strong>Construction</strong><span>Storefront shows a “back soon” page. Admin stays open.</span></label>
       </div>
       <div style="margin-top:1rem"><button class="btn" id="mode-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Apply site mode</button> <span class="muted" id="mode-msg" style="font-size:.78rem"></span></div>
+    </section>
+
+    <!-- Homepage banner animation speed -->
+    <section data-panel="modes" class="card" style="padding:1.4rem;grid-column:1/-1">
+      <h2 style="font-family:var(--font-display);font-size:1.4rem;margin:0 0 .3rem">Banner animation speed</h2>
+      <p class="muted" style="font-family:var(--font-sans);font-size:.82rem;margin:0 0 1rem">Sets the playback speed of the animated banner on the homepage. 100% is full speed; lower values slow it down.</p>
+      <div style="display:flex;align-items:center;gap:1rem;max-width:460px">
+        <input type="range" id="hero-speed" min="10" max="100" step="5" value={heroSpeedPct} style="flex:1" />
+        <strong id="hero-speed-val" style="font-family:var(--font-sans);font-size:.95rem;min-width:3.2rem;text-align:right">{heroSpeedPct}%</strong>
+      </div>
+      <div style="margin-top:1rem"><button class="btn" id="hero-speed-save" style="background:var(--gold);color:#0a0f16;font-weight:600">Save banner speed</button> <span class="muted" id="hero-speed-msg" style="font-size:.78rem"></span></div>
     </section>
 
     <!-- Admin users -->
@@ -310,6 +322,11 @@ const pgIntl = (await getSetting(env,'pg_international'))||'razorpay';
     document.querySelectorAll('input[name=pay_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('input[name=pay_mode]').forEach(x=>x.closest('.mode-opt').classList.toggle('on', x.checked))));
     document.getElementById('mode-save')?.addEventListener('click',()=>{ const m=document.querySelector('input[name=site_mode]:checked'); saveSettings({site_mode:m?m.value:'production'},'mode-msg'); document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked)); });
     document.querySelectorAll('input[name=site_mode]').forEach(r=>r.addEventListener('change',()=>document.querySelectorAll('.mode-opt').forEach(o=>o.classList.toggle('on', o.querySelector('input').checked))));
+    (function(){
+      var sl=document.getElementById('hero-speed'), out=document.getElementById('hero-speed-val');
+      if(sl){ sl.addEventListener('input',function(){ out.textContent=sl.value+'%'; }); }
+      document.getElementById('hero-speed-save')?.addEventListener('click',()=>{ saveSettings({hero_speed:String((Number(sl.value)||100)/100)},'hero-speed-msg'); });
+    })();
     document.getElementById('sms-save')?.addEventListener('click',()=>{ saveSettings({notify_sms_enabled:document.getElementById('sms-on').checked?'1':'0', msg91_authkey:document.getElementById('sms-key').value, msg91_sender_id:document.getElementById('sms-sender').value.trim(), msg91_tpl_order:document.getElementById('sms-tpl-order').value.trim(), msg91_tpl_shipping:document.getElementById('sms-tpl-ship').value.trim()},'sms-msg'); });
     document.getElementById('wa-save')?.addEventListener('click',()=>{ saveSettings({notify_wa_enabled:document.getElementById('wa-on').checked?'1':'0', wa_integrated_number:document.getElementById('wa-number').value.trim(), wa_tpl_order:document.getElementById('wa-tpl-order').value.trim(), wa_tpl_shipping:document.getElementById('wa-tpl-ship').value.trim()},'wa-msg'); });
     document.getElementById('re-save').addEventListener('click',()=>{ if(document.getElementById('re-key').value && !reOK){ const m=document.getElementById('re-msg'); m.style.color='#c23b3b'; m.textContent='Please test the Resend key before saving.'; return; } saveSettings({resend_key:document.getElementById('re-key').value,from_email:document.getElementById('re-from').value.trim(),admin_notify_email:document.getElementById('admin-notify-email').value.trim(),admin_notify_enabled:document.getElementById('admin-notify-on').checked?'1':'0'},'re-msg'); });
