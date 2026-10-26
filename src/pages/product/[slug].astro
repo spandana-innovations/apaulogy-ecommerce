@@ -17,6 +17,7 @@ if (!product) return Astro.redirect('/404');
 const price = effectivePrice(product);
 const onSale = isOnSale(product);
 const range = hasPriceRange(product);
+const soldOut = product.stock_status === 'outofstock';
 const related = getRelatedProducts(product);
 const heroImg = product.images?.[0]?.url;
 const ogImage = heroImg || '/og-default.svg';
@@ -177,35 +178,49 @@ const MAN_INCHES = 69;
           </div>
         )}
 
-        <!-- Quantity + actions -->
-        <div class="mt-7 flex flex-wrap items-center gap-3">
-          <div class="inline-flex items-center border border-[var(--color-ink)]">
-            <button type="button" id="qty-dec" class="px-3.5 py-3 leading-none" aria-label="Decrease quantity"><Icon name="minus" size={16} /></button>
-            <input id="qty" value="1" inputmode="numeric" class="w-12 text-center bg-transparent py-3" aria-label="Quantity" />
-            <button type="button" id="qty-inc" class="px-3.5 py-3 leading-none" aria-label="Increase quantity"><Icon name="plus" size={16} /></button>
+        {soldOut ? (
+          <div class="mt-7">
+            <span class="btn btn-outline w-full gap-2" aria-disabled="true"
+              style="opacity:.5;cursor:not-allowed;pointer-events:none">Sold out</span>
+            <p class="mt-3 text-sm text-[var(--color-ink-soft)]" style="font-family:var(--font-sans)">
+              This piece is currently unavailable. Write to <a href="mailto:info@apaulogy.com" class="link-underline">info@apaulogy.com</a> and we'll let you know when it's back.
+            </p>
           </div>
-          <button id="add-btn" class="btn btn-outline flex-1 min-w-[10rem] gap-2"
-            data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''} data-variable={variations.length > 0 ? '1' : '0'}>
-            <Icon name="cart" size={16} /> Add to cart
-          </button>
-        </div>
-        <button id="buy-btn" class="btn btn-primary w-full mt-3"
-          data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''}>
-          Buy it now
-        </button>
-        <p id="variation-hint" class="mt-2 text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)" hidden>Please choose a print size first.</p>
+        ) : (
+          <>
+            <!-- Quantity + actions -->
+            <div class="mt-7 flex flex-wrap items-center gap-3">
+              <div class="inline-flex items-center border border-[var(--color-ink)]">
+                <button type="button" id="qty-dec" class="px-3.5 py-3 leading-none" aria-label="Decrease quantity"><Icon name="minus" size={16} /></button>
+                <input id="qty" value="1" inputmode="numeric" class="w-12 text-center bg-transparent py-3" aria-label="Quantity" />
+                <button type="button" id="qty-inc" class="px-3.5 py-3 leading-none" aria-label="Increase quantity"><Icon name="plus" size={16} /></button>
+              </div>
+              <button id="add-btn" class="btn btn-outline flex-1 min-w-[10rem] gap-2"
+                data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''} data-variable={variations.length > 0 ? '1' : '0'}>
+                <Icon name="cart" size={16} /> Add to cart
+              </button>
+            </div>
+            <button id="buy-btn" class="btn btn-primary w-full mt-3"
+              data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''}>
+              Buy it now
+            </button>
+            <p id="variation-hint" class="mt-2 text-xs text-[var(--color-muted)]" style="font-family:var(--font-sans)" hidden>Please choose a print size first.</p>
+          </>
+        )}
 
   <!-- Mobile sticky add-to-cart bar -->
-  <div id="sticky-buy" class="sticky-buy sm:hidden" aria-hidden="true">
-    <div class="sb-info">
-      <span class="sb-name">{product.name}</span>
-      <span class="sb-price" id="sb-price">{range ? formatINRRange(price, product.price_max!) : formatINR(price)}</span>
+  {!soldOut && (
+    <div id="sticky-buy" class="sticky-buy sm:hidden" aria-hidden="true">
+      <div class="sb-info">
+        <span class="sb-name">{product.name}</span>
+        <span class="sb-price" id="sb-price">{range ? formatINRRange(price, product.price_max!) : formatINR(price)}</span>
+      </div>
+      <button id="sb-add" class="btn btn-primary sb-btn"
+        data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''} data-variable={variations.length > 0 ? '1' : '0'}>
+        Add to cart
+      </button>
     </div>
-    <button id="sb-add" class="btn btn-primary sb-btn"
-      data-slug={product.slug} data-name={product.name} data-price={price} data-image={heroImg || ''} data-variable={variations.length > 0 ? '1' : '0'}>
-      Add to cart
-    </button>
-  </div>
+  )}
 
         {product.description_html && (
           <div class="prose-paper mt-10 border-t border-[var(--color-line)] pt-8" set:html={product.description_html} />

@@ -581,7 +581,7 @@
    "price": 35000,
    "price_max": null,
    "sale_price": null,
-   "stock_status": "instock",
+   "stock_status": "outofstock",
    "featured": false,
    "categories": [
     "posters"
@@ -650,7 +650,7 @@
    "price": 175000,
    "price_max": null,
    "sale_price": null,
-   "stock_status": "instock",
+   "stock_status": "outofstock",
    "featured": false,
    "categories": [
     "bags",
@@ -889,7 +889,7 @@
    "primary_category": "bangalore-morphed",
    "short_html": "<p>A series depicting the rapid change of Bangalore in the last 50 years Pensioner's Parade, Garden City, Pub City, Boom Town, Silicon City, Bungleuru... Bengaluroo... Bangaluru</p><ul><li>Mounted on laminate board ready to hang</li><li>6 pieces</li><li>8.5\" x 11\" each</li></ul>",
    "description_html": "",
-   "weight": 2.0,
+   "weight": 2,
    "images": [
     {
      "url": "/uploads/2017/03/Morphing-ALLRevised.webp",
@@ -1866,7 +1866,7 @@
    "price": 175000,
    "price_max": null,
    "sale_price": null,
-   "stock_status": "instock",
+   "stock_status": "outofstock",
    "featured": false,
    "categories": [
     "bags",
@@ -1932,7 +1932,7 @@
    "price": 175000,
    "price_max": null,
    "sale_price": null,
-   "stock_status": "instock",
+   "stock_status": "outofstock",
    "featured": false,
    "categories": [
     "bags",
@@ -1965,7 +1965,7 @@
    "price": 170000,
    "price_max": null,
    "sale_price": null,
-   "stock_status": "instock",
+   "stock_status": "outofstock",
    "featured": false,
    "categories": [
     "bags",
@@ -2031,7 +2031,7 @@
    "price": 175000,
    "price_max": null,
    "sale_price": null,
-   "stock_status": "instock",
+   "stock_status": "outofstock",
    "featured": false,
    "categories": [
     "bags",

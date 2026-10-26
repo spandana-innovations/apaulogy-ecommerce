@@ -11,15 +11,18 @@ const range = hasPriceRange(product);
 const img = product.images?.[0]?.url;
 const href = `/product/${product.slug}/`;
 const kind = showKind ? productKind(product) : null;
+const soldOut = product.stock_status === 'outofstock';
 ---
 
 <article class="group">
   <a href={href} class="block frame art-guard overflow-hidden">
     <div class="relative overflow-hidden bg-white art-pad">
-      {onSale && <span class="absolute z-10 top-2.5 left-2.5 chip">Sale</span>}
+      {soldOut
+        ? <span class="absolute z-10 top-2.5 left-2.5 chip" style="background:var(--color-ink);color:#fff;border-color:var(--color-ink)">Sold out</span>
+        : onSale && <span class="absolute z-10 top-2.5 left-2.5 chip">Sale</span>}
       {img ? (
         <img src={img} alt={product.images?.[0]?.alt || product.name} width="600" height="470" loading="lazy" decoding="async"
-          class="protected w-full h-auto aspect-[4/3] object-contain transition-transform duration-500 group-hover:scale-[1.03]" />
+          class:list={["protected w-full h-auto aspect-[4/3] object-contain transition-transform duration-500 group-hover:scale-[1.03]", soldOut && "opacity-60"]} />
       ) : (
         <div class="w-full aspect-[4/3] grid place-items-center text-[var(--color-muted)] text-sm" style="font-family:var(--font-sans)">aPaulogy</div>
       )}
@@ -37,7 +40,10 @@ const kind = showKind ? productKind(product) : null;
       </span>
       {onSale && !range && <span class="text-[var(--color-muted)] line-through text-sm">{formatINR(product.price)}</span>}
     </div>
-    {product.type === 'variable' ? (
+    {soldOut ? (
+      <span class="btn btn-outline mt-3 w-full !py-2 text-[0.7rem]" aria-disabled="true"
+        style="opacity:.5;cursor:not-allowed;pointer-events:none">Sold out</span>
+    ) : product.type === 'variable' ? (
       <a href={href} class="btn btn-outline mt-3 w-full !py-2 text-[0.7rem]">Select options</a>
     ) : (
       <button class="btn btn-outline mt-3 w-full !py-2 text-[0.7rem]" data-add-to-cart
