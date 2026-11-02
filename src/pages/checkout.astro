@@ -139,6 +139,8 @@ import Icon from '../components/Icon.astro';
       const empty=document.getElementById('co-empty')!;
       const form=document.getElementById('co-form') as HTMLFormElement;
       if(!items.length){ empty.classList.remove('hidden'); form.classList.add('hidden'); form.classList.remove('grid'); return; }
+      // Prefill name/email for signed-in customers (guest checkout still works — these stay editable).
+      try{ const u=JSON.parse(localStorage.getItem('apaulogy_user')||'null'); if(u){ for(const k of ['name','email']){ const el=form.elements.namedItem(k) as HTMLInputElement|null; if(el && !el.value) el.value=u[k]||''; } } }catch{}
       empty.classList.add('hidden'); form.classList.remove('hidden'); form.classList.add('grid');
 
       let shipping=0;

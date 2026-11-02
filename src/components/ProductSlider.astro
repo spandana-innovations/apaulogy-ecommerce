@@ -59,23 +59,9 @@ const id = 'sld-' + Math.random().toString(36).slice(2, 8);
       t.addEventListener('mouseleave', end);
       // only cancel the click if this was an actual drag
       t.addEventListener('click', (e) => { if (dragged) { e.preventDefault(); e.stopPropagation(); dragged = false; } }, true);
+      // keep each row's first card flush-left under its heading
+      t.scrollLeft = 0;
     });
-
-    // #17 — gentle, staggered "peek" nudge so people notice the row scrolls (once, out of sync)
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      document.querySelectorAll('.slider-track').forEach((el, i) => {
-        const t = el as HTMLElement;
-        if (t.dataset.nudged) return; t.dataset.nudged = '1';
-        const delay = 900 + i * 700 + Math.random() * 400;
-        setTimeout(() => {
-          if (t.scrollLeft > 4) return; // only if untouched at the start
-          const card = t.querySelector('*') as HTMLElement | null;
-          const step = card ? card.getBoundingClientRect().width * (1 + Math.random()) : 180;
-          t.scrollTo({ left: step, behavior: 'smooth' });
-          setTimeout(() => { if (t.scrollLeft <= step + 4) t.scrollTo({ left: 0, behavior: 'smooth' }); }, 1100);
-        }, delay);
-      });
-    }
   }
   initSliders();
   document.addEventListener('astro:after-swap', initSliders);

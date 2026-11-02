@@ -5,7 +5,7 @@ const tabs = [
   { label: 'Home',   href: '/',            icon: 'home' },
   { label: 'Shop',   href: '/store/',      icon: 'grid' },
   { label: 'Map',    href: '/map/',        icon: 'pin' },
-  { label: 'Account',href: '/apaulogy-admin/', icon: 'user', id: 'mnav-account' },
+  { label: 'Account',href: '/account/', icon: 'user', id: 'mnav-account' },
 ];
 ---
 <nav class="mobile-tabbar lg:hidden" aria-label="Primary">
@@ -41,9 +41,11 @@ const tabs = [
         document.getElementById('cart-toggle')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       });
     }
-    // reflect logged-in state on the Account tab (role hint cookie)
+    // reflect logged-in state on the Account tab
     const acct = document.getElementById('mnav-account');
-    if (acct && document.cookie.includes('apaulogy_role=admin')) acct.classList.add('is-auth');
+    let signedIn = document.cookie.includes('apaulogy_role=admin');
+    try { if (localStorage.getItem('apaulogy_user')) signedIn = true; } catch {}
+    if (acct && signedIn) acct.classList.add('is-auth');
   }
   initMobileTabs();
   document.addEventListener('astro:page-load', initMobileTabs);
