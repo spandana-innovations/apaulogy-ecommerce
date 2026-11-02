@@ -1,6 +1,10 @@
 import type { APIRoute } from 'astro';
 import { phonepeConfig, phonepeToken } from '../../lib/payments';
 import { createPendingOrder } from '../../lib/db';
+import { getProduct, effectivePrice } from '../../lib/catalog';
+import { activeDiscounts, getCoupon, computeDiscount } from '../../lib/discounts';
+import { cartWeight, getRates, shippingFor, freeShippingSlugs } from '../../lib/shipping';
+import { getSetting } from '../../lib/admin-data';
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -9,7 +13,42 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!cfg.clientId || !cfg.clientSecret) return json({ error: 'PhonePe is not configured (client id/secret missing).' }, 503);
 
   let b: any = {}; try { b = await request.json(); } catch {}
-  const amount = Math.round(Number(b.amount) || 0);   // paise
+
+  const rawItems = Array.isArray(b.items) ? b.items : [];
+  if (!rawItems.length) return json({ error: 'Your cart is empty.' }, 400);
+  const customer = b.billing || {};
+
+  // Recompute everything server-side from the trusted catalogue — never trust
+  // client-supplied amount/shipping (mirrors /api/checkout).
+  let subtotal = 0;
+  const lines: any[] = [];
+  for (const it of rawItems) {
+    const p = getProduct(it.slug);
+    if (!p) return json({ error: `Item not found: ${it.slug}` }, 400);
+    const qty = Math.max(1, Math.min(99, Math.floor(Number(it.quantity ?? it.qty) || 1)));
+    const unit = effectivePrice(p);
+    subtotal += unit * qty;
+    lines.push({ slug: p.slug, name: p.name, variant: it.variant, quantity: qty, price: unit });
+  }
+
+  const discountLines = lines.map((l) => ({ slug: l.slug, price: l.price, quantity: l.quantity, category: getProduct(l.slug)?.primary_category }));
+  const discs = await activeDiscounts(env);
+  const coupon = b.coupon ? await getCoupon(env, b.coupon) : null;
+  const { discount, freeShipping } = computeDiscount(discountLines, subtotal, discs, coupon);
+
+  const isBangalore = /^560\d{3}$/.test(String(customer.postcode || '').trim());
+  const deliveryMethod = (b.delivery_method === 'porter' && isBangalore) ? 'porter' : 'standard';
+  const zone = (customer.country && !/india/i.test(customer.country)) ? 'international' : 'domestic';
+  const weight = cartWeight(rawItems.map((it: any) => ({ slug: it.slug, qty: it.quantity ?? it.qty })));
+  const rates = await getRates(env, zone);
+  const freeSlugs = await freeShippingSlugs(env);
+  const hasFreeItem = rawItems.some((it: any) => freeSlugs.has(it.slug));
+  const fsThreshold = parseInt((await getSetting(env, 'free_shipping_threshold')) || '0', 10) || 0;
+  const meetsThreshold = fsThreshold > 0 && subtotal >= fsThreshold * 100;
+  const shipping = deliveryMethod === 'porter'
+    ? 0
+    : ((freeShipping || hasFreeItem || meetsThreshold) ? 0 : shippingFor(weight, rates));
+  const amount = Math.max(0, subtotal - discount) + shipping;   // paise, authoritative
   if (amount < 100) return json({ error: 'Invalid amount.' }, 400);
 
   const origin = env.SITE_URL || new URL(request.url).origin;
@@ -17,11 +56,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // Persist a pending order (so it appears in admin + can be status-checked), mirroring the Razorpay flow.
   let orderNumber = '';
-  if (env.DB && Array.isArray(b.items) && b.items.length) {
+  if (env.DB) {
     try {
       const rec = await createPendingOrder(env.DB, {
         email: b.email || '', phone: b.phone || '',
-        items: b.items, subtotal: b.subtotal ?? (amount - (b.shipping || 0)), shipping: b.shipping ?? 0, total: amount,
+        items: lines, subtotal, shipping, total: amount,
         billing: b.billing || null, shipping_address: b.billing || null,
         phonepe_order_id: merchantOrderId, payment_method: 'phonepe',
       });

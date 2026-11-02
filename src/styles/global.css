@@ -391,13 +391,14 @@ img.protected, .protected img {
 /* ---- Modern mobile: bottom tab bar ---------------------------------------- */
 .mobile-tabbar{
   position:fixed; left:0; right:0; bottom:0; z-index:40;
-  display:grid; grid-template-columns:repeat(5,1fr);
+  width:100%; max-width:100vw; overflow:hidden;
+  display:grid; grid-template-columns:repeat(5,minmax(0,1fr));
   background:rgba(255,255,255,.92); backdrop-filter:saturate(180%) blur(14px);
   border-top:1px solid var(--color-line);
   padding-bottom:env(safe-area-inset-bottom, 0);
   box-shadow:0 -2px 20px rgba(0,0,0,.06);
 }
-.mtab{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+.mtab{ min-width:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
   padding:.5rem 0 .55rem; color:var(--color-muted); text-decoration:none; background:none; border:0; cursor:pointer;
   -webkit-tap-highlight-color:transparent; }
 .mtab-ico{ position:relative; display:grid; place-items:center; height:24px; transition:transform .15s; }

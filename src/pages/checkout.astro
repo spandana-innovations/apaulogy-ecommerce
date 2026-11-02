@@ -109,7 +109,6 @@ import Icon from '../components/Icon.astro';
   </style>
 
   <script>
-    const FREE_SHIPPING_OVER = 500000; // ₹5,000
     const SHIPPING_FLAT = 15000;       // ₹150
     function inr(p:number){ return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(p/100); }
     function loadRazorpay(){ return new Promise<boolean>((res)=>{ if((window as any).Razorpay) return res(true); const s=document.createElement('script'); s.src='https://checkout.razorpay.com/v1/checkout.js'; s.onload=()=>res(true); s.onerror=()=>res(false); document.body.appendChild(s); }); }
@@ -161,7 +160,6 @@ import Icon from '../components/Icon.astro';
       }
       function recalc(){
         const subtotal=Cart.subtotal();
-        if((subtotal-discount)>=FREE_SHIPPING_OVER) shipping=0;
         const total=Math.max(0, subtotal-discount)+shipping;
         document.getElementById('co-items')!.innerHTML=items.map((it:any)=>`<li class="flex justify-between gap-3"><span>${it.name}${it.variant?` <span class="text-[var(--color-muted)]">(${it.variant})</span>`:''} × ${it.qty}</span><span>${inr(it.price*it.qty)}</span></li>`).join('');
         document.getElementById('co-subtotal')!.textContent=inr(subtotal);

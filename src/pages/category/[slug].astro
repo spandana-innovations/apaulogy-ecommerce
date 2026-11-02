@@ -41,8 +41,7 @@ const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.
     </nav>
 
     <header class="mb-10 max-w-2xl mx-auto text-center">
-      <p class="eyebrow">Collection</p>
-      <h1 class="text-5xl sm:text-6xl mt-3">{category.name}</h1>
+      <h1 class="text-5xl sm:text-6xl">{category.name}</h1>
       {category.description && <p class="mt-4 text-[var(--color-ink-soft)] text-lg">{category.description}</p>}
       <p class="series-tag mt-4">
         <span class="series-rule"></span>
