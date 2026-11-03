@@ -23,6 +23,16 @@ crumbs.push({ name: category.name, url: `/category/${category.slug}/` });
 
 const catImage = products[0]?.images?.[0]?.url;
 const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.name, category.slug, products, Astro.site)];
+
+// Per-category illustrated title banners. Categories not listed keep the text header.
+const CATEGORY_BANNERS: Record<string, { src: string; alt: string; width: number; height: number }> = {
+  'bangalore-in-the-70s': {
+    src: '/uploads/banner/bangalore-70s-banner.webp',
+    alt: 'Bangalore — Swinging in the 70s · 67 memories in watercolour, illustrated by Paul Fernandes',
+    width: 1400, height: 509,
+  },
+};
+const banner = CATEGORY_BANNERS[category.slug];
 ---
 
 <BaseLayout
@@ -40,15 +50,32 @@ const jsonld = [breadcrumbSchema(crumbs, Astro.site), collectionSchema(category.
       <span class="text-[var(--color-ink-soft)]">{category.name}</span>
     </nav>
 
-    <header class="mb-10 max-w-2xl mx-auto text-center">
-      <h1 class="text-5xl sm:text-6xl">{category.name}</h1>
-      {category.description && <p class="mt-4 text-[var(--color-ink-soft)] text-lg">{category.description}</p>}
-      <p class="series-tag mt-4">
-        <span class="series-rule"></span>
-        <span class="series-text">A Series of {products.length} {products.length === 1 ? 'Drawing' : 'Drawings'}</span>
-        <span class="series-rule"></span>
-      </p>
-    </header>
+    {banner ? (
+      <header class="mb-10 sm:mb-12 pt-2 sm:pt-4 text-center">
+        <h1 class="sr-only">{category.name}</h1>
+        <img
+          src={banner.src}
+          alt={banner.alt}
+          width={banner.width}
+          height={banner.height}
+          class="block w-full h-auto max-w-2xl mx-auto"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
+        {category.description && <p class="mt-5 text-[var(--color-ink-soft)] text-base sm:text-lg max-w-xl mx-auto">{category.description}</p>}
+      </header>
+    ) : (
+      <header class="mb-10 max-w-2xl mx-auto text-center">
+        <h1 class="text-5xl sm:text-6xl">{category.name}</h1>
+        {category.description && <p class="mt-4 text-[var(--color-ink-soft)] text-lg">{category.description}</p>}
+        <p class="series-tag mt-4">
+          <span class="series-rule"></span>
+          <span class="series-text">A Series of {products.length} {products.length === 1 ? 'Drawing' : 'Drawings'}</span>
+          <span class="series-rule"></span>
+        </p>
+      </header>
+    )}
 
     {children.length > 0 && (
       <div class="flex flex-wrap gap-2 mb-12" style="font-family:var(--font-sans)">
