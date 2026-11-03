@@ -100,14 +100,14 @@ export async function ensureCustomerAuth(db: any): Promise<void> {
       created_at TEXT DEFAULT (datetime('now'))
     )`).run();
   } catch {}
-  // Existing installs already have the table without the password columns — add them.
-  for (const col of ['password_hash TEXT', 'password_salt TEXT']) {
+  // Existing installs already have the table without these columns — add them.
+  for (const col of ['password_hash TEXT', 'password_salt TEXT', 'phone TEXT', 'address_json TEXT']) {
     try { await db.prepare(`ALTER TABLE customers ADD COLUMN ${col}`).run(); } catch {}
   }
 }
 
 export async function getCustomer(db: any, email: string): Promise<any | null> {
-  try { return await db.prepare(`SELECT email, name, phone, password_hash, password_salt FROM customers WHERE LOWER(email)=LOWER(?)`).bind(email).first(); }
+  try { return await db.prepare(`SELECT email, name, phone, address_json, password_hash, password_salt FROM customers WHERE LOWER(email)=LOWER(?)`).bind(email).first(); }
   catch { return null; }
 }
 

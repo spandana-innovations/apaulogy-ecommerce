@@ -9,16 +9,16 @@ import Icon from '../components/Icon.astro';
     <div id="acc-auth">
       <div class="flex justify-center mb-4 opacity-70"><Icon name="user" size={44} stroke={1.2} /></div>
       <h1 class="text-4xl text-center" style="font-family:var(--font-display)">Your account</h1>
-      <p class="text-center text-[var(--color-ink-soft)] mt-3 text-sm">Sign in to see your orders, or create an account. You can also just <a href="/store/" class="link-underline">keep shopping</a> and check out as a guest.</p>
+      <p class="text-center text-[var(--color-ink-soft)] mt-3 text-sm max-w-sm mx-auto">Sign in to see your orders, or create an account. You can also just <a href="/store/" class="link-underline">keep shopping</a> and check out as a guest.</p>
 
       <!-- tabs -->
-      <div class="acc-tabs" role="tablist">
+      <div class="flex mt-8 mb-6 border border-[var(--color-ink)] rounded-sm overflow-hidden" role="tablist">
         <button id="tab-signin" class="acc-tab is-on" role="tab">Sign in</button>
-        <button id="tab-register" class="acc-tab" role="tab">Create account</button>
+        <button id="tab-register" class="acc-tab border-l border-[var(--color-ink)]" role="tab">Create account</button>
       </div>
 
       <!-- Sign in -->
-      <form id="form-signin" class="mt-7 space-y-5">
+      <form id="form-signin" class="space-y-5">
         <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /></label>
         <label class="block"><span class="field-label">Password</span><input name="password" type="password" required class="input" autocomplete="current-password" /></label>
         <button class="btn btn-primary w-full gap-2" type="submit"><Icon name="user" size={16} /> Sign in</button>
@@ -27,7 +27,7 @@ import Icon from '../components/Icon.astro';
       </form>
 
       <!-- Create account -->
-      <form id="form-register" class="mt-7 space-y-5 hidden">
+      <form id="form-register" class="space-y-5 hidden">
         <label class="block"><span class="field-label">Name</span><input name="name" required class="input" autocomplete="name" /></label>
         <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /></label>
         <label class="block"><span class="field-label">Password</span><input name="password" type="password" required minlength="8" class="input" autocomplete="new-password" /><small class="text-xs text-[var(--color-muted)]">At least 8 characters.</small></label>
@@ -42,37 +42,106 @@ import Icon from '../components/Icon.astro';
       <h1 class="text-4xl text-center" style="font-family:var(--font-display)">Hello, <span id="acc-name"></span></h1>
       <p id="acc-email" class="text-center text-[var(--color-muted)] mt-2 text-sm"></p>
 
-      <p class="acc-eyebrow">Your orders</p>
+      <!-- Profile -->
+      <p class="acc-head">Profile &amp; address</p>
+      <form id="form-profile" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="field-label">Name</span><input name="name" class="input" autocomplete="name" /></label>
+          <label class="block"><span class="field-label">Phone</span><input name="phone" class="input" inputmode="tel" autocomplete="tel" /></label>
+        </div>
+        <label class="block"><span class="field-label">Address line 1</span><input name="line1" class="input" autocomplete="address-line1" /></label>
+        <label class="block"><span class="field-label">Address line 2</span><input name="line2" class="input" autocomplete="address-line2" /></label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="field-label">City</span><input name="city" class="input" autocomplete="address-level2" /></label>
+          <label class="block"><span class="field-label">State</span><input name="state" class="input" autocomplete="address-level1" /></label>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="block"><span class="field-label">PIN / ZIP</span><input name="postcode" class="input" autocomplete="postal-code" /></label>
+          <label class="block"><span class="field-label">Country</span><input name="country" class="input" autocomplete="country-name" value="India" /></label>
+        </div>
+        <button class="btn btn-outline w-full gap-2" type="submit"><Icon name="user" size={15} /> Save details</button>
+        <p class="acc-msg" data-msg hidden></p>
+      </form>
+
+      <!-- Orders -->
+      <p class="acc-head">Your orders</p>
       <div id="acc-orders" class="space-y-3"></div>
       <p id="acc-noorders" class="text-sm text-[var(--color-ink-soft)] hidden">No orders yet. <a href="/store/" class="link-underline">Start shopping</a>.</p>
 
-      <button id="acc-signout" class="btn btn-outline w-full mt-12">Sign out</button>
+      <button id="acc-signout" class="btn btn-primary w-full mt-12">Sign out</button>
     </div>
   </div>
 
   <style>
-    .acc-tabs{ display:flex; margin-top:2.25rem; margin-bottom:.5rem; border:1px solid var(--color-ink) !important;
-      border-radius:2px; overflow:hidden; }
     .acc-tab{ flex:1; padding:.72rem 1.5rem; font-family:var(--font-sans); font-size:.78rem; font-weight:600;
       text-transform:uppercase; letter-spacing:.14em; background-color:#fff !important; color:var(--color-muted) !important;
-      border:0; cursor:pointer; transition:background-color .15s ease, color .15s ease; }
-    .acc-tab + .acc-tab{ border-left:1px solid var(--color-ink) !important; }
+      cursor:pointer; transition:background-color .15s ease, color .15s ease; }
     .acc-tab:hover{ color:var(--color-ink) !important; }
-    .acc-tab.is-on{ background-color:var(--color-ink) !important; color:#fff !important; }
+    .acc-tab.is-on{ background-color:#000 !important; color:#fff !important; }
     .acc-msg{ font-size:.82rem; text-align:center; }
-    .acc-eyebrow{ font-family:var(--font-sans); font-size:.68rem; font-weight:600; text-transform:uppercase;
-      letter-spacing:.16em; color:var(--color-muted); margin:3rem 0 1rem; padding-bottom:.6rem;
+    .acc-head{ font-family:var(--font-sans); font-size:.68rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:.16em; color:var(--color-muted); margin:3rem 0 1.1rem; padding-bottom:.6rem;
       border-bottom:1px solid var(--color-line) !important; }
   </style>
 
   <script>
     function inr(p:number){ return new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format((p||0)/100); }
-    function fmtDate(s:string){ try{ return new Date(s.includes('T')?s:s.replace(' ','T')+'Z').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }catch{ return s||''; } }
+    function inr2(p:number){ return '₹'+(Math.round(p||0)/100).toLocaleString('en-IN'); }
+    function fmtDate(s:string){ try{ return new Date(s.includes('T')?s:(s||'').replace(' ','T')+'Z').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }catch{ return s||''; } }
+    function esc(s:any){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     const $ = (id:string)=>document.getElementById(id)!;
+    const stCol:Record<string,string>={ paid:'#1f6b2e', completed:'#1f6b2e', processing:'#1f6b2e', shipped:'#1f6b2e', delivered:'#1f6b2e', 'on-hold':'#9a7b1e', pending:'#9a7b1e', failed:'#b00020', cancelled:'#8a8a8a', refunded:'#8a8a8a' };
 
     function showMsg(form:HTMLElement, text:string, ok=false){
       const m=form.querySelector('[data-msg]') as HTMLElement; if(!m) return;
       m.hidden=false; m.style.color = ok ? '#1f6b2e' : '#b00020'; m.textContent=text;
+    }
+
+    function setVal(form:HTMLFormElement, name:string, v:any){ const el=form.elements.namedItem(name) as HTMLInputElement|null; if(el) el.value=v==null?'':String(v); }
+
+    async function toggleDetail(card:HTMLElement, ref:string){
+      let panel=card.nextElementSibling as HTMLElement|null;
+      if(panel && panel.classList.contains('ord-detail')){ panel.remove(); return; }
+      panel=document.createElement('div'); panel.className='ord-detail';
+      panel.setAttribute('style','border:1px solid var(--color-line-strong);border-top:0;padding:.9rem 1.1rem;font-size:.82rem;color:var(--color-ink-soft)');
+      panel.innerHTML='<div style="color:var(--color-muted)">Loading…</div>';
+      card.after(panel);
+      try{
+        const d=await (await fetch('/api/account/order?ref='+encodeURIComponent(ref))).json();
+        if(!d.ok){ panel.innerHTML='<div style="color:#b00020">'+esc(d.error||'Could not load this order.')+'</div>'; return; }
+        const items=(d.items||[]).map((it:any)=>'<div style="display:flex;justify-content:space-between;gap:1rem;padding:.3rem 0"><span>'+esc(it.name)+(it.variant?' <span style=\"color:var(--color-muted)\">('+esc(it.variant)+')</span>':'')+' × '+(it.quantity||1)+'</span><span>'+inr2((it.price||0)*(it.quantity||1))+'</span></div>').join('');
+        const a=d.address||{};
+        const street=[a.line1||a.address, a.line2].filter(Boolean).map(esc).join(', ');
+        const cityLine=[a.city, a.state].filter(Boolean).map(esc).join(', ');
+        const pin=esc(a.postcode||a.pin||a.zip||'');
+        const addr=[esc(a.name), street, cityLine+(pin?(' — '+pin):''), esc(a.country)].filter(x=>x&&x.trim()).join('<br/>');
+        const totals='<div style="border-top:1px solid var(--color-line);margin-top:.5rem;padding-top:.5rem">'+
+          (d.subtotal!=null?'<div style="display:flex;justify-content:space-between"><span style="color:var(--color-muted)">Subtotal</span><span>'+inr2(d.subtotal)+'</span></div>':'')+
+          (d.shipping!=null?'<div style="display:flex;justify-content:space-between"><span style="color:var(--color-muted)">Shipping</span><span>'+inr2(d.shipping)+'</span></div>':'')+
+          '<div style="display:flex;justify-content:space-between;font-weight:600;margin-top:.2rem"><span>Total</span><span>'+inr2(d.total)+'</span></div></div>';
+        const track=d.tracking?('<div style="margin-top:.6rem;color:var(--color-muted)">Tracking: <span style="color:var(--color-ink)">'+esc(d.tracking)+(d.carrier?(' · '+esc(d.carrier)):'')+'</span></div>'):'';
+        panel.innerHTML=items+totals+(addr?('<div style="margin-top:.8rem"><div style="font-weight:600;margin-bottom:.25rem">Shipping to</div><div style="line-height:1.6">'+addr+'</div></div>'):'')+track;
+      }catch{ panel.innerHTML='<div style="color:#b00020">Could not load this order.</div>'; }
+    }
+
+    function renderOrders(orders:any[]){
+      const wrap=$('acc-orders'); wrap.innerHTML='';
+      if(!orders || !orders.length){ $('acc-noorders').classList.remove('hidden'); return; }
+      $('acc-noorders').classList.add('hidden');
+      for(const o of orders){
+        const st=String(o.status||'').toLowerCase();
+        const col=stCol[st]||'#555';
+        const label=st.replace(/(^|[\s-])\w/g,(c)=>c.toUpperCase());
+        const card=document.createElement('div');
+        card.setAttribute('style','border:1px solid var(--color-line-strong);padding:1rem 1.1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;cursor:pointer');
+        card.setAttribute('role','button'); card.setAttribute('tabindex','0');
+        card.innerHTML='<div><div style="font-weight:600;font-size:.95rem">'+esc(o.ref)+'</div>'+
+          '<div style="font-size:.8rem;color:var(--color-muted);margin-top:.15rem">'+fmtDate(o.date)+' · '+inr(o.total)+'</div></div>'+
+          '<span style="display:flex;align-items:center;gap:.6rem"><span style="font-size:.64rem;text-transform:uppercase;letter-spacing:.07em;font-weight:600;border:1px solid '+col+';color:'+col+';padding:.22rem .6rem;border-radius:2px;white-space:nowrap">'+label+'</span><span style="color:var(--color-muted);font-size:1.1rem">›</span></span>';
+        card.addEventListener('click',()=>toggleDetail(card,o.ref));
+        card.addEventListener('keydown',(e)=>{ if((e as KeyboardEvent).key==='Enter'){ toggleDetail(card,o.ref); } });
+        wrap.appendChild(card);
+      }
     }
 
     async function loadMe(){
@@ -84,24 +153,11 @@ import Icon from '../components/Icon.astro';
         $('acc-name').textContent = d.name || 'friend';
         $('acc-email').textContent = d.email || '';
         try{ localStorage.setItem('apaulogy_user', JSON.stringify({ name:d.name, email:d.email })); }catch{}
-        const wrap=$('acc-orders'); wrap.innerHTML='';
-        if(d.orders && d.orders.length){
-          const stCol:Record<string,string>={ paid:'#1f6b2e', completed:'#1f6b2e', processing:'#1f6b2e', shipped:'#1f6b2e', delivered:'#1f6b2e', 'on-hold':'#9a7b1e', pending:'#9a7b1e', failed:'#b00020', cancelled:'#8a8a8a', refunded:'#8a8a8a' };
-          for(const o of d.orders){
-            const st=String(o.status||'').toLowerCase();
-            const col=stCol[st]||'#555';
-            const label=st.replace(/(^|[\s-])\w/g,(c)=>c.toUpperCase());
-            // Styles are inline: these rows are built at runtime, so Astro's
-            // scoped <style> would not apply to them.
-            const el=document.createElement('div');
-            el.setAttribute('style','border:1px solid var(--color-line-strong);padding:1rem 1.1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem');
-            el.innerHTML='<div><div style="font-weight:600;font-size:.95rem">'+o.ref+'</div>'+
-              '<div style="font-size:.8rem;color:var(--color-muted);margin-top:.15rem">'+fmtDate(o.date)+' · '+inr(o.total)+'</div></div>'+
-              '<span style="font-size:.64rem;text-transform:uppercase;letter-spacing:.07em;font-weight:600;border:1px solid '+col+';color:'+col+';padding:.22rem .6rem;border-radius:2px;white-space:nowrap">'+label+'</span>';
-            wrap.appendChild(el);
-          }
-          $('acc-noorders').classList.add('hidden');
-        } else { $('acc-noorders').classList.remove('hidden'); }
+        const pf=$('form-profile') as HTMLFormElement; const a=d.address||{};
+        setVal(pf,'name',d.name); setVal(pf,'phone',d.phone);
+        setVal(pf,'line1',a.line1); setVal(pf,'line2',a.line2); setVal(pf,'city',a.city);
+        setVal(pf,'state',a.state); setVal(pf,'postcode',a.postcode); setVal(pf,'country',a.country||'India');
+        renderOrders(d.orders);
       } else {
         $('acc-in').classList.add('hidden');
         $('acc-auth').classList.remove('hidden');
@@ -127,6 +183,21 @@ import Icon from '../components/Icon.astro';
       }
       (fS as HTMLFormElement).addEventListener('submit',(e)=>{ e.preventDefault(); submit(fS as HTMLFormElement,'/api/account/login'); });
       (fR as HTMLFormElement).addEventListener('submit',(e)=>{ e.preventDefault(); submit(fR as HTMLFormElement,'/api/account/register'); });
+
+      const pf=$('form-profile') as HTMLFormElement;
+      pf.addEventListener('submit',async(e)=>{
+        e.preventDefault();
+        const btn=pf.querySelector('button[type=submit]') as HTMLButtonElement; btn.disabled=true;
+        const g=(n:string)=>(pf.elements.namedItem(n) as HTMLInputElement)?.value||'';
+        const body={ name:g('name'), phone:g('phone'), address:{ line1:g('line1'), line2:g('line2'), city:g('city'), state:g('state'), postcode:g('postcode'), country:g('country') } };
+        try{
+          const r=await fetch('/api/account/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+          const d=await r.json();
+          if(d.ok){ $('acc-name').textContent=d.name||'friend'; try{ localStorage.setItem('apaulogy_user',JSON.stringify({name:d.name,email:$('acc-email').textContent})); }catch{} showMsg(pf,'Saved.',true); }
+          else showMsg(pf, d.error||'Could not save.');
+        }catch{ showMsg(pf,'Could not reach the server.'); }
+        btn.disabled=false;
+      });
 
       $('acc-signout').addEventListener('click', async ()=>{
         try{ await fetch('/api/account/logout',{method:'POST'}); }catch{}
