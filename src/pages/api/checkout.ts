@@ -3,8 +3,8 @@ import { getProduct, effectivePrice } from '../../lib/catalog';
 import { createRazorpayOrder } from '../../lib/razorpay';
 import { createPendingOrder, type CartLine } from '../../lib/db';
 import { activeDiscounts, getCoupon, computeDiscount } from '../../lib/discounts';
-import { cartWeight, getRates, shippingFor, freeShippingSlugs } from '../../lib/shipping';
-import { getSetting, getSiteMode } from '../../lib/admin-data';
+import { cartWeight, getRates, shippingFor } from '../../lib/shipping';
+import { getSiteMode } from '../../lib/admin-data';
 import { razorpayKeys } from '../../lib/payments';
 import { verifySession, readCookie, ADMIN_COOKIE } from '../../lib/admin-auth';
 
@@ -69,22 +69,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }));
   const discs = await activeDiscounts(env);
   const coupon = body.coupon ? await getCoupon(env, body.coupon) : null;
-  const { discount, freeShipping } = computeDiscount(discountLines, subtotal, discs, coupon);
+  const { discount } = computeDiscount(discountLines, subtotal, discs, coupon);
 
   const isBangalore = /^560\d{3}$/.test(String(customer.postcode||'').trim());
   const deliveryMethod = (body.delivery_method === 'porter' && isBangalore) ? 'porter' : 'standard';
   const zone = (customer.country && !/india/i.test(customer.country)) ? 'international' : 'domestic';
   const weight = cartWeight(rawItems.map((it) => ({ slug: it.slug, qty: it.qty })));
   const rates = await getRates(env, zone);
-  const freeSlugs = await freeShippingSlugs(env);
-  const hasFreeItem = rawItems.some((it) => freeSlugs.has(it.slug));
-  // Amount-based free shipping: only when an admin has set a threshold (₹) above 0.
-  // Stored in rupees; 0/blank means "never free based on order value".
-  const fsThreshold = parseInt((await getSetting(env, 'free_shipping_threshold')) || '0', 10) || 0;
-  const meetsThreshold = fsThreshold > 0 && subtotal >= fsThreshold * 100;
-  const shipping = deliveryMethod === 'porter'
-    ? 0
-    : ((freeShipping || hasFreeItem || meetsThreshold) ? 0 : shippingFor(weight, rates));
+  // Free shipping has been removed: shipping is always charged from the rate
+  // table. (Porter is a within-Bangalore pay-on-delivery option, not free shipping.)
+  const shipping = deliveryMethod === 'porter' ? 0 : shippingFor(weight, rates);
   const total = Math.max(0, subtotal - discount) + shipping;
 
   const address = {

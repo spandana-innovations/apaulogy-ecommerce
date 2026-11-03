@@ -27,11 +27,11 @@ export async function getRates(env: Env, zone = 'domestic') {
       const r = await env.DB.prepare(
         `SELECT up_to_kg,price,per_kg_over FROM shipping_rates WHERE zone=? ORDER BY sort`).bind(zone).all();
       const rows = (r.results || []) as any[];
-      // Only trust the saved rates if at least one bucket actually charges
-      // something. An empty or all-zero table is a misconfiguration and must
-      // NOT silently make every order free — fall back to the defaults.
-      const hasPositive = rows.some((b) => Number(b.price) > 0 || Number(b.per_kg_over) > 0);
-      if (rows.length && hasPositive) {
+      // Trust the saved rates only if EVERY bucket charges a positive price.
+      // Any ₹0 bucket (or an empty table) is treated as a misconfiguration and
+      // falls back to the defaults, so no order can ship free from the table.
+      const allPositive = rows.length > 0 && rows.every((b) => Number(b.price) > 0);
+      if (allPositive) {
         return rows.map((b) => ({
           up_to_kg: b.up_to_kg == null ? null : Number(b.up_to_kg),
           price: Number(b.price) || 0,
