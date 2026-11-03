@@ -35,13 +35,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const coupon = b.coupon ? await getCoupon(env, b.coupon) : null;
   const { discount } = computeDiscount(discountLines, subtotal, discs, coupon);
 
-  const isBangalore = /^560\d{3}$/.test(String(customer.postcode || '').trim());
-  const deliveryMethod = (b.delivery_method === 'porter' && isBangalore) ? 'porter' : 'standard';
   const zone = (customer.country && !/india/i.test(customer.country)) ? 'international' : 'domestic';
   const weight = cartWeight(rawItems.map((it: any) => ({ slug: it.slug, qty: it.quantity ?? it.qty })));
   const rates = await getRates(env, zone);
-  // Free shipping removed: always charge from the rate table (Porter aside).
-  const shipping = deliveryMethod === 'porter' ? 0 : shippingFor(weight, rates);
+  // Shipping is always charged from the rate table — no free shipping, no Porter.
+  const shipping = shippingFor(weight, rates);
   const amount = Math.max(0, subtotal - discount) + shipping;   // paise, authoritative
   if (amount < 100) return json({ error: 'Invalid amount.' }, 400);
 
