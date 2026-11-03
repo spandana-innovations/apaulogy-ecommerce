@@ -18,7 +18,7 @@ import Icon from '../components/Icon.astro';
       </div>
 
       <!-- Sign in -->
-      <form id="form-signin" class="mt-6 space-y-4">
+      <form id="form-signin" class="mt-7 space-y-5">
         <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /></label>
         <label class="block"><span class="field-label">Password</span><input name="password" type="password" required class="input" autocomplete="current-password" /></label>
         <button class="btn btn-primary w-full gap-2" type="submit"><Icon name="user" size={16} /> Sign in</button>
@@ -27,7 +27,7 @@ import Icon from '../components/Icon.astro';
       </form>
 
       <!-- Create account -->
-      <form id="form-register" class="mt-6 space-y-4 hidden">
+      <form id="form-register" class="mt-7 space-y-5 hidden">
         <label class="block"><span class="field-label">Name</span><input name="name" required class="input" autocomplete="name" /></label>
         <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /></label>
         <label class="block"><span class="field-label">Password</span><input name="password" type="password" required minlength="8" class="input" autocomplete="new-password" /><small class="text-xs text-[var(--color-muted)]">At least 8 characters.</small></label>
@@ -38,15 +38,15 @@ import Icon from '../components/Icon.astro';
 
     <!-- Signed IN -->
     <div id="acc-in" class="hidden">
-      <div class="flex justify-center mb-4"><span class="w-14 h-14 grid place-items-center border-2 border-black rounded-full"><Icon name="user" size={26} /></span></div>
+      <div class="flex justify-center mb-5"><span class="w-14 h-14 grid place-items-center border-2 border-black rounded-full"><Icon name="user" size={26} /></span></div>
       <h1 class="text-4xl text-center" style="font-family:var(--font-display)">Hello, <span id="acc-name"></span></h1>
       <p id="acc-email" class="text-center text-[var(--color-muted)] mt-2 text-sm"></p>
 
-      <h2 class="text-lg mt-10 mb-3" style="font-family:var(--font-display)">Your orders</h2>
+      <p class="acc-eyebrow">Your orders</p>
       <div id="acc-orders" class="space-y-3"></div>
       <p id="acc-noorders" class="text-sm text-[var(--color-ink-soft)] hidden">No orders yet. <a href="/store/" class="link-underline">Start shopping</a>.</p>
 
-      <button id="acc-signout" class="btn btn-outline w-full mt-10">Sign out</button>
+      <button id="acc-signout" class="btn btn-outline w-full mt-12">Sign out</button>
     </div>
   </div>
 
@@ -60,10 +60,9 @@ import Icon from '../components/Icon.astro';
     .acc-tab:hover{ color:var(--color-ink) !important; }
     .acc-tab.is-on{ background-color:var(--color-ink) !important; color:#fff !important; }
     .acc-msg{ font-size:.82rem; text-align:center; }
-    .ord{ border:1px solid var(--color-line-strong); padding:.9rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
-    .ord .ref{ font-weight:600; }
-    .ord .meta{ font-size:.78rem; color:var(--color-muted); }
-    .ord .st{ font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; border:1px solid var(--color-line-strong); padding:.15rem .5rem; white-space:nowrap; }
+    .acc-eyebrow{ font-family:var(--font-sans); font-size:.68rem; font-weight:600; text-transform:uppercase;
+      letter-spacing:.16em; color:var(--color-muted); margin:3rem 0 1rem; padding-bottom:.6rem;
+      border-bottom:1px solid var(--color-line) !important; }
   </style>
 
   <script>
@@ -87,10 +86,18 @@ import Icon from '../components/Icon.astro';
         try{ localStorage.setItem('apaulogy_user', JSON.stringify({ name:d.name, email:d.email })); }catch{}
         const wrap=$('acc-orders'); wrap.innerHTML='';
         if(d.orders && d.orders.length){
+          const stCol:Record<string,string>={ paid:'#1f6b2e', completed:'#1f6b2e', processing:'#1f6b2e', shipped:'#1f6b2e', delivered:'#1f6b2e', 'on-hold':'#9a7b1e', pending:'#9a7b1e', failed:'#b00020', cancelled:'#8a8a8a', refunded:'#8a8a8a' };
           for(const o of d.orders){
-            const el=document.createElement('div'); el.className='ord';
-            el.innerHTML='<div><div class="ref">'+o.ref+'</div><div class="meta">'+fmtDate(o.date)+' · '+inr(o.total)+'</div></div>'+
-              '<span class="st">'+String(o.status||'').replace(/^\w/,(c:string)=>c.toUpperCase())+'</span>';
+            const st=String(o.status||'').toLowerCase();
+            const col=stCol[st]||'#555';
+            const label=st.replace(/(^|[\s-])\w/g,(c)=>c.toUpperCase());
+            // Styles are inline: these rows are built at runtime, so Astro's
+            // scoped <style> would not apply to them.
+            const el=document.createElement('div');
+            el.setAttribute('style','border:1px solid var(--color-line-strong);padding:1rem 1.1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem');
+            el.innerHTML='<div><div style="font-weight:600;font-size:.95rem">'+o.ref+'</div>'+
+              '<div style="font-size:.8rem;color:var(--color-muted);margin-top:.15rem">'+fmtDate(o.date)+' · '+inr(o.total)+'</div></div>'+
+              '<span style="font-size:.64rem;text-transform:uppercase;letter-spacing:.07em;font-weight:600;border:1px solid '+col+';color:'+col+';padding:.22rem .6rem;border-radius:2px;white-space:nowrap">'+label+'</span>';
             wrap.appendChild(el);
           }
           $('acc-noorders').classList.add('hidden');
