@@ -12,9 +12,9 @@ import Icon from '../components/Icon.astro';
       <p class="text-center text-[var(--color-ink-soft)] mt-3 text-sm">Sign in to see your orders, or create an account. You can also just <a href="/store/" class="link-underline">keep shopping</a> and check out as a guest.</p>
 
       <!-- tabs -->
-      <div class="flex mt-8 border border-[var(--color-ink)]">
-        <button id="tab-signin" class="acc-tab is-on">Sign in</button>
-        <button id="tab-register" class="acc-tab">Create account</button>
+      <div class="acc-tabs" role="tablist">
+        <button id="tab-signin" class="acc-tab is-on" role="tab">Sign in</button>
+        <button id="tab-register" class="acc-tab" role="tab">Create account</button>
       </div>
 
       <!-- Sign in -->
@@ -22,6 +22,7 @@ import Icon from '../components/Icon.astro';
         <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /></label>
         <label class="block"><span class="field-label">Password</span><input name="password" type="password" required class="input" autocomplete="current-password" /></label>
         <button class="btn btn-primary w-full gap-2" type="submit"><Icon name="user" size={16} /> Sign in</button>
+        <p class="text-center text-sm"><a href="/account/reset/" class="link-underline text-[var(--color-muted)]">Forgot password?</a></p>
         <p class="acc-msg" data-msg hidden></p>
       </form>
 
@@ -50,10 +51,14 @@ import Icon from '../components/Icon.astro';
   </div>
 
   <style>
-    .acc-tab{ flex:1; padding:.7rem; font-size:.8rem; font-weight:600; text-transform:uppercase; letter-spacing:.08em;
-      background:none; border:0; cursor:pointer; color:var(--color-muted); }
-    .acc-tab.is-on{ background:var(--color-ink); color:#fff; }
-    .acc-msg{ font-size:.82rem; }
+    .acc-tabs{ display:flex; margin-top:2rem; border:1px solid var(--color-ink) !important; }
+    .acc-tab{ flex:1; padding:.85rem 1rem; font-family:var(--font-sans); font-size:.72rem; font-weight:600;
+      text-transform:uppercase; letter-spacing:.14em; background-color:#fff !important; color:var(--color-muted) !important;
+      border:0; cursor:pointer; transition:background-color .15s ease, color .15s ease; }
+    .acc-tab + .acc-tab{ border-left:1px solid var(--color-ink) !important; }
+    .acc-tab:hover{ color:var(--color-ink) !important; }
+    .acc-tab.is-on{ background-color:var(--color-ink) !important; color:#fff !important; }
+    .acc-msg{ font-size:.82rem; text-align:center; }
     .ord{ border:1px solid var(--color-line-strong); padding:.9rem 1rem; display:flex; justify-content:space-between; align-items:center; gap:1rem; }
     .ord .ref{ font-weight:600; }
     .ord .meta{ font-size:.78rem; color:var(--color-muted); }

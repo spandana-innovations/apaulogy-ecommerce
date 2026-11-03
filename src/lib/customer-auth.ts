@@ -110,3 +110,23 @@ export async function getCustomer(db: any, email: string): Promise<any | null> {
   try { return await db.prepare(`SELECT email, name, phone, password_hash, password_salt FROM customers WHERE LOWER(email)=LOWER(?)`).bind(email).first(); }
   catch { return null; }
 }
+
+/* ---- Password-reset tokens ----
+   Stateless + single-use: the token binds to the account's current password
+   hash, so once the password changes the token no longer validates. 1h TTL. */
+const RESET_TTL = 60 * 60;
+export async function createResetToken(env: Env, email: string, pwHash: string): Promise<string> {
+  const payload = JSON.stringify({ e: email.toLowerCase(), h: (pwHash || '').slice(0, 24), exp: Math.floor(Date.now() / 1000) + RESET_TTL });
+  const p64 = b64url(enc.encode(payload));
+  return `${p64}.${await sign(p64, secretOf(env))}`;
+}
+export async function verifyResetToken(token: string | undefined, env: Env): Promise<{ email: string; hashPrefix: string } | null> {
+  if (!token || !token.includes('.')) return null;
+  const [p64, sig] = token.split('.');
+  if (sig !== await sign(p64, secretOf(env))) return null;
+  try {
+    const d = JSON.parse(b64urlToStr(p64));
+    if (typeof d.exp !== 'number' || d.exp <= Math.floor(Date.now() / 1000)) return null;
+    return { email: d.e, hashPrefix: d.h };
+  } catch { return null; }
+}

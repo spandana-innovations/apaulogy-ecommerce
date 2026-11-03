@@ -75,7 +75,8 @@ export async function verifySession(token: string | undefined, env: Env): Promis
 }
 
 export function checkCredentials(user: string, pass: string, env: Env): boolean {
-  return accounts(env).some((a) => a.user === user && a.pass === pass);
+  const u = (user || '').trim().toLowerCase();
+  return accounts(env).some((a) => a.user.trim().toLowerCase() === u && a.pass === pass);
 }
 
 export function readCookie(request: Request, name = COOKIE): string | undefined {

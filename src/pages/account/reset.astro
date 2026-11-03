@@ -1,0 +1,67 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Icon from '../../components/Icon.astro';
+---
+<BaseLayout title="Reset password" description="Reset your aPaulogy account password." noindex={true}>
+  <div class="container-page py-16 min-h-[60vh] max-w-md mx-auto" style="font-family:var(--font-sans)">
+    <div class="flex justify-center mb-4 opacity-70"><Icon name="user" size={44} stroke={1.2} /></div>
+    <h1 class="text-4xl text-center" style="font-family:var(--font-display)">Reset password</h1>
+
+    <!-- Step 1: request a link (no token) -->
+    <form id="form-request" class="mt-8 space-y-4 hidden">
+      <p class="text-center text-[var(--color-ink-soft)] text-sm">Enter your account email and we'll send you a link to set a new password.</p>
+      <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /></label>
+      <button class="btn btn-primary w-full gap-2" type="submit"><Icon name="mail" size={16} /> Send reset link</button>
+      <p class="acc-msg" data-msg hidden></p>
+      <p class="text-center text-sm"><a href="/account/" class="link-underline">Back to sign in</a></p>
+    </form>
+
+    <!-- Step 2: set a new password (token in URL) -->
+    <form id="form-set" class="mt-8 space-y-4 hidden">
+      <p class="text-center text-[var(--color-ink-soft)] text-sm">Choose a new password for your account.</p>
+      <label class="block"><span class="field-label">New password</span><input name="password" type="password" required minlength="8" class="input" autocomplete="new-password" /><small class="text-xs text-[var(--color-muted)]">At least 8 characters.</small></label>
+      <label class="block"><span class="field-label">Confirm password</span><input name="confirm" type="password" required minlength="8" class="input" autocomplete="new-password" /></label>
+      <button class="btn btn-primary w-full gap-2" type="submit"><Icon name="user" size={16} /> Set new password</button>
+      <p class="acc-msg" data-msg hidden></p>
+    </form>
+  </div>
+
+  <style>
+    .acc-msg{ font-size:.82rem; text-align:center; }
+  </style>
+
+  <script>
+    const $=(id:string)=>document.getElementById(id)!;
+    function msg(form:HTMLElement,t:string,ok=false){ const m=form.querySelector('[data-msg]') as HTMLElement; if(m){ m.hidden=false; m.style.color=ok?'#1f6b2e':'#b00020'; m.textContent=t; } }
+    function init(){
+      const req=$('form-request') as HTMLFormElement, set=$('form-set') as HTMLFormElement;
+      if((req as any).dataset.bound) return; (req as any).dataset.bound='1';
+      const token=new URLSearchParams(location.search).get('token');
+      if(token){ set.classList.remove('hidden'); } else { req.classList.remove('hidden'); }
+
+      req.addEventListener('submit',async(e)=>{
+        e.preventDefault(); const btn=req.querySelector('button') as HTMLButtonElement; btn.disabled=true;
+        const email=(req.elements.namedItem('email') as HTMLInputElement).value.trim();
+        try{ await fetch('/api/account/forgot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}); }catch{}
+        msg(req,'If an account exists for that email, a reset link is on its way. Check your inbox.',true);
+        btn.disabled=false; req.querySelector('button')!.textContent='Sent ✓';
+      });
+
+      set.addEventListener('submit',async(e)=>{
+        e.preventDefault();
+        const pw=(set.elements.namedItem('password') as HTMLInputElement).value;
+        const cf=(set.elements.namedItem('confirm') as HTMLInputElement).value;
+        if(pw!==cf){ msg(set,'The two passwords do not match.'); return; }
+        const btn=set.querySelector('button') as HTMLButtonElement; btn.disabled=true;
+        try{
+          const r=await fetch('/api/account/reset',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token,password:pw})});
+          const d=await r.json();
+          if(d.ok){ try{ localStorage.setItem('apaulogy_user',JSON.stringify({name:d.name,email:d.email})); }catch{} msg(set,'Password updated. Signing you in…',true); location.href='/account/'; }
+          else { msg(set,d.error||'Could not reset the password.'); btn.disabled=false; }
+        }catch{ msg(set,'Could not reach the server. Please try again.'); btn.disabled=false; }
+      });
+    }
+    init();
+    document.addEventListener('astro:after-swap', init);
+  </script>
+</BaseLayout>
