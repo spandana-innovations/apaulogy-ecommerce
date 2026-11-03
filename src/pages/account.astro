@@ -3,21 +3,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Icon from '../components/Icon.astro';
 ---
 <BaseLayout title="Account" description="Your aPaulogy account — sign in or create an account to see your orders." noindex={true}>
-  <div class="container-page py-16 min-h-[60vh] max-w-md mx-auto" style="font-family:var(--font-sans)">
+  <div class="container-page py-16 min-h-[60vh] max-w-2xl mx-auto" style="font-family:var(--font-sans)">
 
     <!-- Signed OUT: sign in / create account -->
-    <div id="acc-auth">
+    <div id="acc-auth" class="max-w-md mx-auto">
       <div class="flex justify-center mb-4 opacity-70"><Icon name="user" size={44} stroke={1.2} /></div>
       <h1 class="text-4xl text-center" style="font-family:var(--font-display)">Your account</h1>
       <p class="text-center text-[var(--color-ink-soft)] mt-3 text-sm max-w-sm mx-auto">Sign in to see your orders, or create an account. You can also just <a href="/store/" class="link-underline">keep shopping</a> and check out as a guest.</p>
 
-      <!-- tabs -->
       <div class="flex mt-8 mb-6 border border-[var(--color-ink)] rounded-sm overflow-hidden" role="tablist">
         <button id="tab-signin" class="acc-tab is-on" role="tab">Sign in</button>
         <button id="tab-register" class="acc-tab border-l border-[var(--color-ink)]" role="tab">Create account</button>
       </div>
 
-      <!-- Sign in -->
       <form id="form-signin" class="space-y-5">
         <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /></label>
         <label class="block"><span class="field-label">Password</span><input name="password" type="password" required class="input" autocomplete="current-password" /></label>
@@ -26,7 +24,6 @@ import Icon from '../components/Icon.astro';
         <p class="acc-msg" data-msg hidden></p>
       </form>
 
-      <!-- Create account -->
       <form id="form-register" class="space-y-5 hidden">
         <label class="block"><span class="field-label">Name</span><input name="name" required class="input" autocomplete="name" /></label>
         <label class="block"><span class="field-label">Email</span><input name="email" type="email" required class="input" autocomplete="email" /></label>
@@ -38,37 +35,60 @@ import Icon from '../components/Icon.astro';
 
     <!-- Signed IN -->
     <div id="acc-in" class="hidden">
-      <div class="flex justify-center mb-5"><span class="w-14 h-14 grid place-items-center border-2 border-black rounded-full"><Icon name="user" size={26} /></span></div>
-      <h1 class="text-4xl text-center" style="font-family:var(--font-display)">Hello, <span id="acc-name"></span></h1>
-      <p id="acc-email" class="text-center text-[var(--color-muted)] mt-2 text-sm"></p>
+      <!-- Header -->
+      <div class="text-center mb-10">
+        <span class="inline-grid w-16 h-16 place-items-center border-2 border-black rounded-full mb-4"><Icon name="user" size={28} /></span>
+        <h1 class="text-4xl" style="font-family:var(--font-display)">Hello, <span id="acc-name"></span></h1>
+        <p id="acc-email" class="text-[var(--color-muted)] mt-2 text-sm"></p>
+      </div>
 
-      <!-- Profile -->
-      <p class="acc-head">Profile &amp; address</p>
-      <form id="form-profile" class="space-y-4">
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block"><span class="field-label">Name</span><input name="name" class="input" autocomplete="name" /></label>
-          <label class="block"><span class="field-label">Phone</span><input name="phone" class="input" inputmode="tel" autocomplete="tel" /></label>
+      <!-- Profile & address card -->
+      <section class="border border-[var(--color-line-strong)] rounded-sm p-6 sm:p-7 mb-6">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="acc-card-title">Profile &amp; address</h2>
+          <button id="edit-profile" type="button" class="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-[var(--color-muted)] hover:text-[var(--color-ink)] transition-colors">Edit</button>
         </div>
-        <label class="block"><span class="field-label">Address line 1</span><input name="line1" class="input" autocomplete="address-line1" /></label>
-        <label class="block"><span class="field-label">Address line 2</span><input name="line2" class="input" autocomplete="address-line2" /></label>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block"><span class="field-label">City</span><input name="city" class="input" autocomplete="address-level2" /></label>
-          <label class="block"><span class="field-label">State</span><input name="state" class="input" autocomplete="address-level1" /></label>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block"><span class="field-label">PIN / ZIP</span><input name="postcode" class="input" autocomplete="postal-code" /></label>
-          <label class="block"><span class="field-label">Country</span><input name="country" class="input" autocomplete="country-name" value="India" /></label>
-        </div>
-        <button class="btn btn-outline w-full gap-2" type="submit"><Icon name="user" size={15} /> Save details</button>
-        <p class="acc-msg" data-msg hidden></p>
-      </form>
 
-      <!-- Orders -->
-      <p class="acc-head">Your orders</p>
-      <div id="acc-orders" class="space-y-3"></div>
-      <p id="acc-noorders" class="text-sm text-[var(--color-ink-soft)] hidden">No orders yet. <a href="/store/" class="link-underline">Start shopping</a>.</p>
+        <!-- read-only summary -->
+        <dl id="profile-summary" class="text-sm">
+          <div class="acc-row"><dt>Name</dt><dd id="sum-name">—</dd></div>
+          <div class="acc-row"><dt>Email</dt><dd id="sum-email">—</dd></div>
+          <div class="acc-row"><dt>Phone</dt><dd id="sum-phone" class="text-[var(--color-muted)]">Not added</dd></div>
+          <div class="acc-row"><dt>Address</dt><dd id="sum-addr" class="text-[var(--color-muted)]">Not added</dd></div>
+        </dl>
 
-      <button id="acc-signout" class="btn btn-primary w-full mt-12">Sign out</button>
+        <!-- edit form -->
+        <form id="form-profile" class="hidden space-y-4">
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="block"><span class="field-label">Name</span><input name="name" class="input" autocomplete="name" /></label>
+            <label class="block"><span class="field-label">Phone</span><input name="phone" class="input" inputmode="tel" autocomplete="tel" /></label>
+          </div>
+          <label class="block"><span class="field-label">Address line 1</span><input name="line1" class="input" autocomplete="address-line1" /></label>
+          <label class="block"><span class="field-label">Address line 2</span><input name="line2" class="input" autocomplete="address-line2" /></label>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="block"><span class="field-label">City</span><input name="city" class="input" autocomplete="address-level2" /></label>
+            <label class="block"><span class="field-label">State</span><input name="state" class="input" autocomplete="address-level1" /></label>
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <label class="block"><span class="field-label">PIN / ZIP</span><input name="postcode" class="input" autocomplete="postal-code" /></label>
+            <label class="block"><span class="field-label">Country</span><input name="country" class="input" autocomplete="country-name" value="India" /></label>
+          </div>
+          <div class="flex gap-3 pt-1">
+            <button class="btn btn-primary flex-1 gap-2" type="submit"><Icon name="user" size={15} /> Save</button>
+            <button id="cancel-profile" class="btn btn-outline" type="button">Cancel</button>
+          </div>
+          <p class="acc-msg" data-msg hidden></p>
+        </form>
+      </section>
+
+      <!-- Orders card -->
+      <section class="border border-[var(--color-line-strong)] rounded-sm p-6 sm:p-7">
+        <h2 class="acc-card-title mb-5">Your orders</h2>
+        <div id="acc-orders" class="space-y-3"></div>
+        <p id="acc-noorders" class="text-sm text-[var(--color-ink-soft)] hidden">No orders yet. <a href="/store/" class="link-underline">Start shopping</a>.</p>
+      </section>
+
+      <button id="acc-signout" class="btn btn-outline w-full mt-8">Sign out</button>
     </div>
   </div>
 
@@ -79,9 +99,11 @@ import Icon from '../components/Icon.astro';
     .acc-tab:hover{ color:var(--color-ink) !important; }
     .acc-tab.is-on{ background-color:#000 !important; color:#fff !important; }
     .acc-msg{ font-size:.82rem; text-align:center; }
-    .acc-head{ font-family:var(--font-sans); font-size:.68rem; font-weight:600; text-transform:uppercase;
-      letter-spacing:.16em; color:var(--color-muted); margin:3rem 0 1.1rem; padding-bottom:.6rem;
-      border-bottom:1px solid var(--color-line) !important; }
+    .acc-card-title{ font-family:var(--font-sans); font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.16em; color:var(--color-ink); }
+    .acc-row{ display:flex; gap:1rem; padding:.55rem 0; border-bottom:1px solid var(--color-line) !important; }
+    .acc-row:last-child{ border-bottom:0 !important; }
+    .acc-row dt{ flex:0 0 5.5rem; font-size:.68rem; text-transform:uppercase; letter-spacing:.1em; color:var(--color-muted); padding-top:.15rem; }
+    .acc-row dd{ flex:1; line-height:1.5; }
   </style>
 
   <script>
@@ -96,8 +118,14 @@ import Icon from '../components/Icon.astro';
       const m=form.querySelector('[data-msg]') as HTMLElement; if(!m) return;
       m.hidden=false; m.style.color = ok ? '#1f6b2e' : '#b00020'; m.textContent=text;
     }
-
     function setVal(form:HTMLFormElement, name:string, v:any){ const el=form.elements.namedItem(name) as HTMLInputElement|null; if(el) el.value=v==null?'':String(v); }
+    function addrText(a:any){
+      if(!a) return '';
+      const street=[a.line1||a.address, a.line2].filter(Boolean).join(', ');
+      const cityLine=[a.city, a.state].filter(Boolean).join(', ');
+      const pin=a.postcode||a.pin||a.zip||'';
+      return [street, cityLine+(pin?(' — '+pin):''), a.country].filter(x=>x&&x.trim()).join(', ');
+    }
 
     async function toggleDetail(card:HTMLElement, ref:string){
       let panel=card.nextElementSibling as HTMLElement|null;
@@ -144,6 +172,18 @@ import Icon from '../components/Icon.astro';
       }
     }
 
+    function fillSummary(d:any){
+      $('sum-name').textContent = d.name || '—';
+      $('sum-email').textContent = d.email || '—';
+      const ph=$('sum-phone'); ph.textContent = d.phone || 'Not added'; ph.style.color = d.phone ? '' : 'var(--color-muted)';
+      const ad=$('sum-addr'); const txt=addrText(d.address); ad.textContent = txt || 'Not added'; ad.style.color = txt ? '' : 'var(--color-muted)';
+    }
+    function showForm(show:boolean){
+      $('form-profile').classList.toggle('hidden', !show);
+      $('profile-summary').classList.toggle('hidden', show);
+      ($('edit-profile') as HTMLElement).style.display = show ? 'none' : '';
+    }
+
     async function loadMe(){
       let d:any={authed:false};
       try{ d = await (await fetch('/api/account/me',{headers:{'accept':'application/json'}})).json(); }catch{}
@@ -153,10 +193,12 @@ import Icon from '../components/Icon.astro';
         $('acc-name').textContent = d.name || 'friend';
         $('acc-email').textContent = d.email || '';
         try{ localStorage.setItem('apaulogy_user', JSON.stringify({ name:d.name, email:d.email })); }catch{}
+        fillSummary(d);
         const pf=$('form-profile') as HTMLFormElement; const a=d.address||{};
         setVal(pf,'name',d.name); setVal(pf,'phone',d.phone);
         setVal(pf,'line1',a.line1); setVal(pf,'line2',a.line2); setVal(pf,'city',a.city);
         setVal(pf,'state',a.state); setVal(pf,'postcode',a.postcode); setVal(pf,'country',a.country||'India');
+        showForm(false);
         renderOrders(d.orders);
       } else {
         $('acc-in').classList.add('hidden');
@@ -184,6 +226,9 @@ import Icon from '../components/Icon.astro';
       (fS as HTMLFormElement).addEventListener('submit',(e)=>{ e.preventDefault(); submit(fS as HTMLFormElement,'/api/account/login'); });
       (fR as HTMLFormElement).addEventListener('submit',(e)=>{ e.preventDefault(); submit(fR as HTMLFormElement,'/api/account/register'); });
 
+      $('edit-profile').addEventListener('click',()=>showForm(true));
+      $('cancel-profile').addEventListener('click',()=>{ loadMe(); });
+
       const pf=$('form-profile') as HTMLFormElement;
       pf.addEventListener('submit',async(e)=>{
         e.preventDefault();
@@ -193,8 +238,12 @@ import Icon from '../components/Icon.astro';
         try{
           const r=await fetch('/api/account/profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
           const d=await r.json();
-          if(d.ok){ $('acc-name').textContent=d.name||'friend'; try{ localStorage.setItem('apaulogy_user',JSON.stringify({name:d.name,email:$('acc-email').textContent})); }catch{} showMsg(pf,'Saved.',true); }
-          else showMsg(pf, d.error||'Could not save.');
+          if(d.ok){
+            $('acc-name').textContent=d.name||'friend';
+            try{ localStorage.setItem('apaulogy_user',JSON.stringify({name:d.name,email:$('acc-email').textContent})); }catch{}
+            fillSummary({ name:d.name, email:$('acc-email').textContent, phone:d.phone, address:d.address });
+            showForm(false);
+          } else showMsg(pf, d.error||'Could not save.');
         }catch{ showMsg(pf,'Could not reach the server.'); }
         btn.disabled=false;
       });
